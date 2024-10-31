@@ -2,23 +2,43 @@
 % Please edit documentation in R/Drug_Condition_Proportion_Charts.R
 \name{Drug_Distribution}
 \alias{Drug_Distribution}
-\title{Generate Drug Status Bar Charts and Save Summary Data}
+\title{Generate and Visualize Drug Distribution Data}
 \usage{
-Drug_Distribution(df, LongLat_data, drug_col, time = NULL, saveOuput = TRUE)
+Drug_Distribution(
+  df,
+  drug_col,
+  saveOutput = TRUE,
+  time = NULL,
+  period_name = "Full",
+  colors = c(Resistant = "#525CEB", Mixed.Resistant = "#808000", Sensitive = "#800000"),
+  ...
+)
 }
 \arguments{
-\item{df}{Final GRC dataframe}
-
-\item{LongLat_data}{Dataframe containing the locations and their geographical coordinates, longitude and latitude}
+\item{df}{Final GRC dataframe.}
 
 \item{drug_col}{The name of the column representing the drug conditions (e.g., "Chloroquine").}
 
-\item{saveOuput}{This allows th users to save their ouputs or not, taking in the Values TRUE or False with TRUE as the default}
-}
-\value{
-A list containing two ggplot objects: \code{bar1} and \code{bar2}.
+\item{saveOutput}{Logical. Whether to save the output plots to files (default is FALSE).}
+
+\item{time}{Optional. A list defining time periods, where each list element contains:
+\itemize{
+\item \code{type}: Either "year" or "period" to define time scope.
+\item \code{start}: The start year of the time period.
+\item \code{end}: The end year of the time period (for periods only).
+\item \code{name}: The label to use for the period.
+}}
+
+\item{location_col}{The name of the column representing the locations (e.g., "Location").}
 }
 \description{
-This function generates bar charts for drug status based on a specified drug column
-from the provided data and saves the summary data to the global environment.
+This function generates bar charts and summary data for drug distribution conditions by location,
+either for the entire dataset or for specified time periods. It provides visual and tabular summaries of the drug
+status in each location and saves plots to a specified path if requested.
+}
+\examples{
+# Example for generating full dataset summary
+Drug_Distribution(df = my_data, location_col = "Location", drug_col = "Chloroquine", LongLat_data = location_coords)
+
+
 }

@@ -4,17 +4,36 @@
 \alias{DiversityMap}
 \title{DiversityMap}
 \usage{
-DiversityMap(df, SNP_Data, shapeFile, LongLat_data)
+DiversityMap(
+  df,
+  drug_col,
+  SNP_Data,
+  period_name = "Full",
+  labelSize = 2.5,
+  time = NULL,
+  circleNumSize = 3.1,
+  scaleCircleSize = 10,
+  saveOutput = TRUE,
+  ...
+)
 }
 \arguments{
 \item{df}{Final GRC dataframe}
 
+\item{drug_col}{The name of the column representing the drug conditions (e.g., "Chloroquine").}
+
 \item{SNP_Data}{A dataframe of SNP data, where each row represents a sample and each column corresponds to a
 genetic locus (e.g., "Pf3D7_"). The row names should correspond to the "Sample Internal ID".}
 
-\item{LongLat_data}{Dataframe containing the locations and their geographical coo-ordinates, longitude and latitude}
+\item{labelSize}{Used to set the size of the labels on the map.}
 
-\item{shapFile}{An \code{sf} object representing the shape file of the country}
+\item{time}{Optional. A list defining time periods.}
+
+\item{circleNumSize}{Used to set th sizes of the numbers in th circles.}
+
+\item{scaleCircleSize}{Used to scale the size of th circles.}
+
+\item{saveOutput}{Logical. Whether to save the output plots to files (default is FALSE).}
 }
 \value{
 A proportional map and a table of genetic diversity (mean heterozygosity) per location.
@@ -26,5 +45,6 @@ diversity based on the mean heterozygosity per location.
 }
 \examples{
 # Example usage:
-DiversityMap(df = FinalData, SNP_Data = BarcodeData, shapeFile = GMB_shapefile, LongLat_data = Coordinates)
+DiversityMap(df = FinalData, drug_col = "Chloroquine", SNP_Data = BarcodeData)
+
 }

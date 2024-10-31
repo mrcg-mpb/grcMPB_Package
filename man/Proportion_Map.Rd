@@ -2,41 +2,42 @@
 % Please edit documentation in R/Drug_Condition_Proportion_Map.R
 \name{Proportion_Map}
 \alias{Proportion_Map}
-\title{Drug Condition Map}
+\title{Proportion Map}
 \usage{
 Proportion_Map(
-  shapeFile,
-  summaryData,
-  summaryData_sf,
-  prop_column,
-  saveLocation = NULL,
-  location_col = "Location",
-  long_col = "long",
-  lat_col = "lat"
+  df,
+  drug_col,
+  saveOutput = TRUE,
+  period_name = "Full",
+  time = NULL,
+  labelSize = 2.5,
+  circleNumSize = 3.1,
+  scaleCircleSize = 10,
+  ...
 )
 }
 \arguments{
-\item{shapeFile}{An \code{sf} object representing the shape file of the country}
+\item{df}{Final GRC dataframe.}
 
-\item{summaryData}{This is the summaryTable data which contains the information on the drug conditions}
+\item{drug_col}{The name of the column representing the drug conditions (e.g., "Chloroquine").}
 
-\item{summaryData_sf}{This is the summaryTable data turned into a sf object so we can use it on the map}
+\item{saveOutput}{Logical. Whether to save the output plots to files (default is FALSE).}
 
-\item{prop_column}{This is the drug condition percentage column your want to use to plot on the map ("Mixed.Resistant.per","Resistant.per","Sensitive.per","All_Resistant.per")}
+\item{time}{Optional. A list defining time periods.}
 
-\item{saveLocation}{Loacation path to save your plot}
+\item{labelSize}{Used to set the size of the labels on the map.}
 
-\item{location_col}{The column containing the locations in your dataframe}
+\item{circleNumSize}{Used to set th sizes of the numbers in th circles.}
 
-\item{long_col}{The column containing the longitude information for you location}
-
-\item{lat_col}{The column containing the latitude information for your location}
-}
-\value{
-The function saves the drug condition map for the selected prop_column
+\item{scaleCircleSize}{Used to scale the size of th circles.}
 }
 \description{
-This function generates a map displaying the total sample counts for each location_col based on long_colitude and lat_colitude coordinates.
-It creates a proportional symbol map with sample counts represented by varying symbol sizes, and it labels each location_col with the total sample count.
-The map is saved as a JPEG file in the \code{savePath} directory.
+This function generates maps displaying the percentages of conditions
+(All.Resistant, Mixed.Resistant, Resistant, Sensitive and All_Resistant) by location
+for the selected drug column. Each circle houses the percentage of the condition for that particular location
+and is labeled using the name and samplecount for that location.
+}
+\examples{
+Proportion_Map( GRC_Data, drug_col = "Chloroquine")
+
 }

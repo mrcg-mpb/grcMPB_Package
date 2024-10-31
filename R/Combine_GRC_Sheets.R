@@ -6,13 +6,13 @@
 #' @param input_folder Path to the folder containing the GRC Excel files.
 #' @param country A character string representing the country for which specific data cleaning rules should be applied (optional).
 #' If "Gambia", location names will be re coded and some locations will be filtered out.
-#' @param saveOuput This allows th users to save their ouputs or not, taking in the Values TRUE or False with TRUE as the default
+#' @param saveOutput This allows th users to save their ouputs or not, taking in the Values TRUE or False with TRUE as the default
 #'
 #'
 #' @return A data frame containing the merged data.
 #' @export
 
-Combine_GRC_Sheets <- function(input_folder, Country = NULL, saveOuput = TRUE) {
+Combine_GRC_Sheets <- function(input_folder, Country = NULL, saveOutput = TRUE) {
   # Get list of all Excel files in the folder
   files <- list.files(input_folder, pattern = ".xlsx", full.names = TRUE)
 
@@ -63,18 +63,18 @@ Combine_GRC_Sheets <- function(input_folder, Country = NULL, saveOuput = TRUE) {
     }
   }
 
-  if(saveOuput){
+  if(saveOutput){
 
   # Create the Output Directory
-    if (!dir.exists("Outputs")) {
+    if (!dir.exists("Outputs") | !exists("OutputPaths", envir = .GlobalEnv)) {
       dir.create(file.path(getwd(), "Outputs"), showWarnings = FALSE)
       OutputPaths = list(mainPath = file.path(getwd(), "Outputs"))
       #asssign the path to you global environment
       assign("OutputPaths", OutputPaths, envir = .GlobalEnv)
-    }
-  # Export the CombinedData as a excel file
-  writexl::write_xlsx(CombinedData, file.path(OutputPaths$mainPath, "GRC_Sheet.xlsx"))
-  return(CombinedData)
+      # Export the CombinedData as a excel file
+      writexl::write_xlsx(CombinedData, file.path(OutputPaths$mainPath, "GRC_Sheet.xlsx"))
 
+    }
+    return(CombinedData)
   }else{ return(CombinedData) }
 }

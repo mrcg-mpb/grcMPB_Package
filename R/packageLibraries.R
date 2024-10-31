@@ -9,6 +9,7 @@
 #' @import tidyr
 #' @import ggnewscale
 #' @importFrom forcats fct_reorder
+#' @importFrom purrr map_chr
 #' @keywords internal
 
 "_PACKAGE"

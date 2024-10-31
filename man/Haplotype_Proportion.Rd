@@ -2,27 +2,40 @@
 % Please edit documentation in R/Haplotype_Proportion_Plots.R
 \name{Haplotype_Proportion}
 \alias{Haplotype_Proportion}
-\title{Haplotype Proportion Function}
+\title{Haplotype Proportion Plots}
 \usage{
-Haplotype_Proportion(df, shapeFile, LongLat_data, col_gene)
+Haplotype_Proportion(
+  df,
+  gene_col,
+  drug_col,
+  saveOutput = TRUE,
+  period_name = "Full",
+  labelSize = 2.5,
+  scaleCircleSize = 0.035,
+  time = NULL,
+  ...
+)
 }
 \arguments{
 \item{df}{Final GRC dataframe}
 
-\item{LongLat_data}{Dataframe containing the locations and their geographical coo-ordinates, longitude and latitude}
+\item{gene_col}{The column containing haplotype data (e.g., "PfCRT")}
 
-\item{col_gene}{The column in the df that contains haplotype data (e.g., "PfCRT").}
+\item{drug_col}{The name of the column representing the drug conditions}
 
-\item{shapFile}{An \code{sf} object representing the shape file of the country}
-}
-\value{
-A bar chart of haplotype proportions and a pie chart map saved as JPEGs.
+\item{saveOutput}{Logical. Whether to save the output plots to files (default is TRUE)}
+
+\item{labelSize}{Size of the labels on the map}
+
+\item{scaleCircleSize}{Used to scale the pie chart circle sizes}
+
+\item{time}{Optional. A list defining time periods, where each list element contains:}
 }
 \description{
-This function generates a bar chart of haplotype proportions and a pie chart map
-representing haplotype proportions across locations. It also saves the generated plots to a specified path.
+This function generates haplotype proportion visualizations (bar chart and pie chart map)
+with flexible time-based filtering and output saving capabilities.
 }
 \examples{
-Haplotype_Proportion(FinalData, GMB, LongLat, "PfCRT")
+Haplotype_Proportion(GRC_data, drug_col = "Chloroquine", gene_col = "PfCRT")
 
 }

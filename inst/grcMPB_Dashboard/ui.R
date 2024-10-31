@@ -1,8 +1,11 @@
 
 
 library(shiny)
-library(hover)
 library(bslib)
+library(shinyjs)
+library(plotly)
+library(slickR)
+library(colourpicker)
 
 # Define the theme
 # my_theme <- bslib::bs_theme(
@@ -17,44 +20,177 @@ library(bslib)
 #   danger = "#E74C3C",
 #   base_font = font_google("Inter"),
 #   code_font = font_google("JetBrains Mono")
+#   #56CC9D, #78C2AD neon green colour
 # )
 
-bslib::page_navbar(
-  title = "GRC Analyser",
-  theme = bslib::bs_theme(version = 5, bootswatch = "flatly"),
-  nav_panel(
-    title = "Home", icon = icon("house"),
-    bslib::layout_sidebar(
-      sidebar = sidebar(
-        fileInput(
-          "zipFile",
-          "Upload a single GRC excel file or a zipped folder with multiple GRC excel files.",
-          buttonLabel = list(icon("file-import")),
-          multiple = TRUE,
-          accept = c("text/csv", "text/comma-separated-values,text/plain", ".csv", ".zip")
-        ),
-      ),
-      bslib::navset_tab(
-        nav_panel(
-          title = "GRC Sheet", icon = icon("table"),
-          fluidRow(
-            column(12, DT::dataTableOutput("grcSheetTable"))
-          )
-        ),
-        nav_panel(
-          title = "Describe", icon = icon("pen-to-square")
-        ),
-        nav_panel(
-          title = "Visualizations", icon = icon("chart-column"),
-          fluidRow(column(12,h3("Bar 1 Plots"),
-                   slickROutput("bar1_slick", width = "100%"))
-          ),
 
-          fluidRow(column(12,h3("Bar 2 Plots"),
-                   slickROutput("bar2_slick", width = "100%"))
+  bslib::page_navbar(
+    title = tags$span(icon("mosquito"), "spotMalaria Genomic Report Card Analysis"),
+    theme = bslib::bs_theme(version = 5, bootswatch = "flatly"),
+
+
+    # background-color: #56CC9D;
+    # padding: 15px;
+    # border-radius: 15px;
+    # margin: 0 auto 15px auto;
+    # max-width: 95%;
+    # text-align: center;
+    # color: #FFFFFF;
+    # /* Green background for the 'GRC Sheet' tab */
+    #   .nav-item a[data-value='GRC Sheet'] {
+    #     background-color: #56CC9D;    /* Your preferred background color */
+    #       color: white !important;      /* Ensure text is white */
+    #   }  border: 6px solid #56CC9D;
+
+    # Add custom CSS for light blue background and rounded edges
+    header = tags$head(
+      tags$style(HTML("
+
+        /* Keep the green background when 'GRC Sheet' is active */
+      .nav-item a[data-value='GRC Sheet'].active,
+      .nav-item a[data-value='Drug Condition plots'].active,
+      .nav-item a[data-value='Sample Count Map'].active {
+        background-color: #56CC9D !important;
+        color: white !important;
+      }
+
+      .custom-column {
+        background-color: #f1f3f2 ;
+        border: 6px solid #f1f3f2;
+        border-radius: 8px;
+        margin: 2px;
+
+      }
+
+      .custom-column2 {
+        background-color: #56CC9D;
+        border: 2px solid #56CC9D;
+        border-radius: 15px;
+        padding: 2px;
+        color: #FFFFFF;
+        text-align: center;
+      }
+
+      .input-custom {
+        border-radius: 10px;
+      }
+
+      .input-custom .selectize-input, .input-custom .form-control {
+        border-radius: 8px;
+        border: 4px solid #56CC9D;
+      }
+
+    .btn-secondary {
+      margin-bottom: 1rem;
+      background-color: #56CC9D;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+      background-color: #45bb8c;
+    }
+    "))
+    ),
+    #2c3e50
+
+        sidebar = sidebar(
+          width = 220,
+          #bg = "#2c3e50",
+            fileInput(
+              "zipFile",
+              "Upload File.",
+              buttonLabel = list(icon("file-import")),
+              multiple = TRUE
+            ),
+          h5("Temporal Analyses",class = "custom-column2" ),
+          #wellPanel(class = "custom-column2",
+            # First level selection
+            div(class = "input-custom",
+                selectInput("period_type_main", "Plot Type",
+                            choices = c("Full", "Period"),
+                            selected = "Full")
+            ),
+
+            # Conditional panels for Period options
+            conditionalPanel(
+              condition = "input.period_type_main == 'Period'",
+              div(class = "input-custom",
+                  textInput("period_name", "Enter Period Name", "Period")
+              ),
+              div(class = "input-custom",
+                  selectInput("period_type", "Select Period Type",
+                              choices = c("year" = "year", "range" = "range"))
+              ),
+              # Start year (shown for both year and range)
+              uiOutput("start_year_ui"),
+              # End year (only shown for range)
+              conditionalPanel(
+                condition = "input.period_type == 'range'",
+                uiOutput("end_year_ui")
+              )
+            )
+          #)
+        ),
+        bslib::navset_tab(
+          id = "nav",
+          nav_panel(
+            title = "GRC Sheet", icon = icon("table"),
+            br(),
+            fluidRow(
+              column(12,
+                     DT::dataTableOutput("grcSheetTable"))
+            )
+          ),
+          nav_panel(
+            title = "Drug Condition plots",
+            icon = icon("chart-column"),
+            br(),
+            fluidRow( h4("Color Settings"),
+              column(3,class = "custom-column",colourpicker::colourInput("resistant_color", "Resistant", value = "#525CEB")),
+              column(1),
+              column(3,class = "custom-column",colourpicker::colourInput("mixed_resistant_color", "Mixed Resistant", value = "#808000")),
+              column(1),
+              column(3,class = "custom-column",colourpicker::colourInput("sensitive_color", "Sensitive", value = "#800000"))
+                     ),
+            fluidRow(column(4,actionButton("reset_colors", "Reset Colors", class = "btn-secondary"))),
+            fluidRow(class = "custom-column",
+              #h4("Distribution by Location",class = "custom-column"),
+              column(12, br(),
+                     plotlyOutput("bar1_plot", height = "500px"))
+            ),
+            fluidRow(class = "custom-column",
+              #h4("Proportion Distribution",class = "custom-column"),
+              column(12, br(),
+                     plotlyOutput("bar2_plot", height = "500px"))
+            ),br(),
+            # fluidRow(
+            #   column(12,
+            #          actionButton("toggle_plot", "Switch Plot View"),
+            #          br(), br(),
+            #          uiOutput("current_plot")
+            #   )
+            # )
+          ),
+          nav_panel(
+            title = "Sample Count Map", icon = icon("map-location-dot"),br(),
+            fluidRow(
+              column(3,
+                     fileInput("shapefiles", "Upload Mapping Meta Data (.shp, .shx, .csv or .xlsx)",
+                               accept = c(".shp", ".shx", ".csv", ".xlsx"),
+                               multiple = TRUE)),
+
+              column(4, class = "custom-column", numericInput("labelSize", "Label Size:", 2.5, min = 1, max = 100)),
+              column(4, class = "custom-column", numericInput("scaleCircleSize", "Circle  Size:", 11, min = 11, max = 100))
+            ),
+            fluidRow(#class = "custom-column",
+              column(12,
+                     plotOutput("sampleCountMapPlot", height = "500px")), br()
+            )
           )
         )
       )
-    )
-  )
-)
+

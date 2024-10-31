@@ -28,7 +28,8 @@ library(readxl)
 
 FinalData <-
     Combine_GRC_Sheets(input_folder="C:/Users/bngwa/Documents/Brandon/GDA_Markdown/All_GRC_Reads_Gambia",
-                       Country = "Gambia", saveOuput = FALSE)
+                       Country = "Gambia", 
+                       saveOutput = TRUE)
 ```
 
 
@@ -41,47 +42,71 @@ FinalData <-
 ```
 
 
-## Create Distrubution table and barchart 
-```{r, echo=FALSE, out.width="100%}
+## Create your meta data for the maps
+```{r}
+## load the shapefile for Gambia first
+GMB <- st_read("C:/Users/bngwa/Documents/Brandon/GDA_Markdown/geoBoundaries-GMB-ADM3-all/geoBoundaries-GMB-ADM3-all/geoBoundaries-GMB-ADM3_simplified.shp")
 
 ## Read the logitude and latitude data
 LongLat <- read_excel("C:/Users/bngwa/Documents/Brandon/GDA_Markdown/LongLat_data.xlsx")
 
-# ## You can creat a single or range of yeras to filter buy before generating the plots
-# Periods <-
-#   list( list(name="2021", type ="year", start="2021"), 
-#         list(name="2017-19",  type= "period", start="2017",  end="2019") )
 
-Drug_Distribution(df = FinalData, 
-                  LongLat_data = LongLat, 
-                  drug_col = "Chloroquine",
-                  saveOuput = TRUE)
+MappingData(shapefile = GMB ,
+            LongLat_data = LongLat,
+            location_col = "Location",
+            long_col = "long",
+            lat_col = "lat" )
+
+
 ```
 
 
 ## Create Sample Count Map
 ```{r,echo=FALSE, out.width="100%" }
-## load the shapefile for Gambia first
-GMB <- st_read("C:/Users/bngwa/Documents/Brandon/GDA_Markdown/geoBoundaries-GMB-ADM3-all/geoBoundaries-GMB-ADM3-all/geoBoundaries-GMB-ADM3_simplified.shp")
 
-SampleCountMap(summaryData = SummaryData$summaryTable,
-               shapeFile = GMB)
+## You can creat a single or range of years to filter buy before generating the plots
+Periods <-
+  list( list(name="2021", type ="year", start="2021"),
+        list(name="2017-19",  type= "period", start="2017",  end="2019"))
+
+
+SampleCountMap(df = FinalData, 
+               drug_col = "Chloroquine",
+               saveOutput = TRUE,
+               time = NULL,
+               breaks = c(10, 100, 200, 300),
+               labelSize = 2.5, 
+               scaleCircleSize = 11)
 
 ```
+
+
+## Create Distrubution table and barchart 
+```{r, echo=FALSE, out.width="100%}
+
+Drug_Distribution(df = FinalData, 
+                  drug_col = "Chloroquine",
+                  saveOutput = FALSE,
+                  time = Periods,
+                  colors = c("Resistant" = "#525CEB",
+                             "Mixed.Resistant" = "#808000",
+                             "Sensitive" = "#800000") )
+```
+
+
 
 
 ## Drug Resistance Prevalence Proportion Maps
 ```{r, echo=FALSE, out.width="100%}
 
-## use this function to plot and save all proportion maps.
-for (p_column in colnames(SummaryData$summaryTable)[grep("\\.per$", colnames(SummaryData$summaryTable))]) {
-  print(
-  Proportion_Map(shapeFile = GMB,
-                 summaryData = SummaryData$summaryTable,
-                 summaryData_sf = SummaryData$summaryTable_sf,
-                 prop_column = p_column)
-  )
-}
+Proportion_Map(df = FinalData, 
+               drug_col = "Chloroquine",
+               saveOutput = TRUE,
+               time = NULL,
+               labelSize = 2.5,
+               circleNumSize = 3.1, 
+               scaleCircleSize = 10)
+               
 ```
 
 
@@ -90,13 +115,14 @@ for (p_column in colnames(SummaryData$summaryTable)[grep("\\.per$", colnames(Sum
 
 Mutation_Frequency(df = FinalData, 
                    gene = "pfcrt", 
-                   col_gene = "PfCRT", 
-                   LongLat_data = LongLat,
-                   shapeFile = GMB,
-                   col_location = "Location", 
-                   location = NULL,
-                   year = NULL, 
-                   include_mixed = FALSE) 
+                   gene_col = "PfCRT", 
+                   drug_col = "Chloroquine",
+                   saveOutput = FALSE,
+                   time = Periods,
+                   labelSize = 2.5,
+                   circleNumSize = 3.1, 
+                   scaleCircleSize = 10,
+                   include_mixed = FALSE)
 
 ```
 
@@ -105,9 +131,13 @@ Mutation_Frequency(df = FinalData,
 ```{r, echo=FALSE, out.width="100%}
 
 Haplotype_Proportion(df = FinalData, 
-                     shapeFile = GMB, 
-                     LongLat_data = LongLat,
-                     col_gene = "PfCRT")
+                     gene_col = "PfCRT", 
+                     drug_col = "Chloroquine",
+                     saveOutput = FALSE,
+                     time = Periods,
+                     labelSize = 2.5,
+                     scaleCircleSize = 0.035)
+
 ```
 
 
@@ -115,7 +145,7 @@ Haplotype_Proportion(df = FinalData,
 ```{r}
 
 Filter_SNPs_Samples(df = FinalData, 
-                    missingnessThreshold =   0.40)
+                    missingnessThreshold = 0.40)
 
 ```
 
@@ -123,9 +153,13 @@ Filter_SNPs_Samples(df = FinalData,
 ## Diversity Map
 ```{r, echo=FALSE, out.width="100%}
 DiversityMap(df = FinalData, 
+             drug_col = "Chloroquine",
              SNP_Data = BarcodeData, 
-             shapeFile = GMB, 
-             LongLat_data = LongLat)
+             labelSize = 2.5,
+             circleNumSize = 3.1, 
+             scaleCircleSize = 10,
+             time = NULL,
+             saveOutput = TRUE)
 ```
 
 
@@ -136,6 +170,8 @@ GenerateIBS_Data(df = FinalData,
                  SNP_Data = BarcodeData, 
                  LongLat_data = LongLat)
 ```
+
+
 ## Summarise IBS by the same location and draw th propoertion map
 ```{r}
 
@@ -165,6 +201,8 @@ Proportion_Map(shapeFile = GMB,
                saveLocation = savePath)
 
 ```
+
+
 ## Summarise IBS by diffrent location and draw th propoertion map
 ```{r}
 

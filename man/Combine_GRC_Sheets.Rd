@@ -4,12 +4,12 @@
 \alias{Combine_GRC_Sheets}
 \title{Combine GRC Sheets Function}
 \usage{
-Combine_GRC_Sheets(input_folder, Country = NULL, saveOuput = TRUE)
+Combine_GRC_Sheets(input_folder, Country = NULL, saveOutput = TRUE)
 }
 \arguments{
 \item{input_folder}{Path to the folder containing the GRC Excel files.}
 
-\item{saveOuput}{This allows th users to save their ouputs or not, taking in the Values TRUE or False with TRUE as the default}
+\item{saveOutput}{This allows th users to save their ouputs or not, taking in the Values TRUE or False with TRUE as the default}
 
 \item{country}{A character string representing the country for which specific data cleaning rules should be applied (optional).
 If "Gambia", location names will be re coded and some locations will be filtered out.}

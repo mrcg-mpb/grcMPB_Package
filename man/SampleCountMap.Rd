@@ -4,29 +4,50 @@
 \alias{SampleCountMap}
 \title{Sample Count Map}
 \usage{
-SampleCountMap(summaryData, shapeFile, breaks = NULL)
+SampleCountMap(
+  df,
+  drug_col,
+  breaks = NULL,
+  saveOutput = TRUE,
+  period_name = "Full",
+  labelSize = 2.5,
+  scaleCircleSize = 11,
+  time = NULL,
+  ...
+)
 }
 \arguments{
-\item{summaryData}{A dataframe containing location names, total sample counts, longitude (\code{long}), and latitude (\code{lat}) columns. It also includes other drug status information.}
+\item{df}{Final GRC dataframe.}
 
-\item{shapeFile}{An \code{sf} object representing the shape file of the country}
+\item{drug_col}{The name of the column representing the drug conditions (e.g., "Chloroquine").}
 
-\item{breaks}{A numeric vector of break points for symbol sizes. If \code{NULL}, default breaks of c(10, 100, 200, 300) are used.}
+\item{breaks}{Used to set the breaks for the circle sizes}
+
+\item{saveOutput}{Logical. Whether to save the output plots to files (default is FALSE).}
+
+\item{labelSize}{Used to set the size of th labels on the map}
+
+\item{scaleCircleSize}{Used to scale the circle sizes.}
+
+\item{time}{Optional. A list defining time periods, where each list element contains:
+\itemize{
+\item \code{type}: Either "year" or "period" to define time scope.
+\item \code{start}: The start year of the time period.
+\item \code{end}: The end year of the time period (for periods only).
+\item \code{name}: The label to use for the period.
 }
-\value{
-The function saves a sample count map (\code{SampleCountMap.jpeg}) in the \code{savePath} directory and does not return any object to the R console.
+
+Example for generating time-period-based summary
+time_periods <- list(list(type = "year", start = 2010, name = "2010"),
+list(type = "period", start = 2015, end = 2019, name = "2015-2019"))}
 }
 \description{
-This function generates a map displaying the total sample counts for each location based on longitude and latitude coordinates.
-It creates a proportional symbol map with sample counts represented by varying symbol sizes, and it labels each location with the total sample count.
-The map is saved as a JPEG file in the \code{savePath} directory.
-}
-\details{
-This function first converts the \code{summaryData} into an \code{sf} object using the longitude and latitude coordinates. It then creates a proportional symbol map, where symbol sizes represent total sample counts at each location.
-Labels are added to each point with the location name and the total sample count. The map is saved as a JPEG file in the folder specified by \code{savePath}.
+This function generates a map displaying the Sample_Count sample counts for each location based on longitude and latitude coordinates.
+It creates a proportional symbol map with sample counts represented by varying symbol sizes, and labels each location with the Sample_Count sample count.
+The map is saved as a JPEG file in the \code{savePath} directory if \code{saveOutput} is set to \code{TRUE}.
 }
 \examples{
-# Ensure that summaryData and shapeFile are properly prepared and are in your global environment
-SampleCountMap(summaryData, shapeFile)
+# Ensure that df, shapeFile, and LongLat_data are properly prepared in your global environment
+SampleCountMap(GRC_data, drug_col = "Chlroquine",)
 
 }

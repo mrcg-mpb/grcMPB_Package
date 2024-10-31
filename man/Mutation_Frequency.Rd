@@ -7,13 +7,16 @@
 Mutation_Frequency(
   df,
   gene,
-  col_gene,
-  LongLat_data,
-  shapeFile,
-  col_location = NULL,
-  location = NULL,
-  year = NULL,
-  include_mixed = FALSE
+  gene_col,
+  drug_col,
+  saveOutput = TRUE,
+  period_name = "Full",
+  time = NULL,
+  labelSize = 2.5,
+  circleNumSize = 3.1,
+  scaleCircleSize = 10,
+  include_mixed = FALSE,
+  ...
 )
 }
 \arguments{
@@ -21,26 +24,26 @@ Mutation_Frequency(
 
 \item{gene}{The gene to analyze ("pfcrt", "pfdhps", "pfdhfr", "pfmdr1")}
 
-\item{col_gene}{The column in the df that contains haplotype data (e.g., "PfCRT").}
+\item{gene_col}{The column in the df that contains haplotype data (e.g., "PfCRT").}
 
-\item{LongLat_data}{Dataframe containing the locations and their geographical coo-ordinates, longitude and latitude}
+\item{time}{Optional. A list defining time periods.}
 
-\item{col_location}{Column in the dataframe that contains location information}
+\item{labelSize}{Used to set the size of the labels on the map.}
 
-\item{location}{Location to filter by (optional)}
+\item{circleNumSize}{Used to set th sizes of the numbers in th circles.}
 
-\item{year}{Year to filter by (optional)}
+\item{scaleCircleSize}{Used to scale the size of th circles.}
 
 \item{include_mixed}{Boolean, whether to include mixed haplotypes in counts}
-
-\item{shapFile}{An \code{sf} object representing the shape file of the country}
-}
-\value{
-A list containing result tables and mutation plots
 }
 \description{
-This function calculates the frequency of wild, mutated, mixed, and missing haplotypes for a specified gene,
-and optionally filters the data by location and year. It also generates two tables: one for mutation types
-by position and another for mutations by location. The function provides the option to include mixed haplotypes
-in the counts for both tables.
+This function calculates the frequency of wild, mutated, mixed, and missing haplotypes for a specified gene.
+It also generates two tables: one for mutation types by position and another for mutations by location.
+The function provides the option to include mixed haplotypes in the counts for both tables.
+The first Table is didspolayed in a form of a barshart with the percentages of the, wild, muataed, mixed and missing for the haplotype.
+The second tabke is displayed using the maps with this percentages in circles and circle represewntaimg a location.
+}
+\examples{
+Mutation_Frequency( GRC_Data, gene = pfcrt, gene_col = "PfCRT", drug_col = "Chloroquine")
+
 }

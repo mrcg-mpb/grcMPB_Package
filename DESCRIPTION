@@ -19,4 +19,6 @@ Imports:
     ggplot2,
     sf,
     scatterpie,
-    ggrepel
+    ggrepel,
+    stringr,
+    purrr

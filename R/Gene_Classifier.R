@@ -17,11 +17,6 @@
 
 Gene_Classifier <- function(df, drug_column = "Chloroquine") {
 
-  # Helper function for splitting haplotypes
-  split_haplotype <- function(haplotype) {
-    unlist(strsplit(haplotype, "(?<=\\])(?=\\[)|(?<=\\])(?=\\w)|(?<=\\w)(?=\\[)|(?<=\\w)(?=\\w)|(?<=\\w)(?=-)|(?<=-)(?=\\[)|(?<=-)(?=\\w)|(?<=-)(?=-)|(?<=\\])(?=-)", perl = TRUE))
-  }
-
   # Helper function for the Chloroquine classifier
   Chloroquine_Classifier <- function(df, crtClmne) {
     df <- df %>%
@@ -118,4 +113,10 @@ Gene_Classifier <- function(df, drug_column = "Chloroquine") {
     df <- df %>% dplyr::filter(!(!!sym(drug_column) %in% c("Undetermined", "Missing")))
 
   return(df)
+}
+
+
+# Helper function for splitting haplotypes
+split_haplotype <- function(haplotype) {
+  unlist(strsplit(haplotype, "(?<=\\])(?=\\[)|(?<=\\])(?=\\w)|(?<=\\w)(?=\\[)|(?<=\\w)(?=\\w)|(?<=\\w)(?=-)|(?<=-)(?=\\[)|(?<=-)(?=\\w)|(?<=-)(?=-)|(?<=\\])(?=-)", perl = TRUE))
 }
