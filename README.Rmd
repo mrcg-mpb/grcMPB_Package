@@ -9,8 +9,10 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+## MPB grcMalaria Package
+Below are the is a workflow of how th packahge fucntions will be used.
 
-## Create your final GRC Data 
+#### Create your final GRC Data 
 ```{r, echo = TRUE, eval = FALSE}
 
 GRC_Data <-
@@ -20,16 +22,16 @@ GRC_Data <-
 ```
 
 
-## Create the drug status columns
+#### Create the drug status columns
 ```{r, echo = TRUE, eval = FALSE}
 
 GRC_Data <-
   Gene_Classifier(df = GRC_Data, 
                   drug_column = "Chloroquine")
 ```
-git commit -m "Update README files and fucntion documentations"
 
-## Create your meta data for the maps
+
+#### Create your meta data for the maps
 ```{r, echo = TRUE, eval = FALSE}
 ## load the shapefile for Gambia first
 GMB <- st_read("C:/Users/bngwa/Documents/Brandon/GDA_Markdown/geoBoundaries-GMB-ADM3-all/geoBoundaries-GMB-ADM3-all/geoBoundaries-GMB-ADM3_simplified.shp")
@@ -48,7 +50,7 @@ MappingData(shapefile = GMB ,
 ```
 
 
-## Create Sample Count Map
+#### Create Sample Count Map
 ```{r, echo = TRUE, eval = FALSE}
 
 ## You can creat a single or range of years to filter buy before generating the plots
@@ -68,7 +70,7 @@ SampleCountMap(df = GRC_Data,
 ```
 
 
-## Create Distrubution table and barchart 
+#### Create Distrubution table and barchart 
 ```{r, echo = TRUE, eval = FALSE}
 
 Drug_Distribution(df = GRC_Data, 
@@ -81,7 +83,7 @@ Drug_Distribution(df = GRC_Data,
 ```
 
 
-## Drug Resistance Prevalence Proportion Maps
+#### Drug Resistance Prevalence Proportion Maps
 ```{r, echo = TRUE, eval = FALSE}
 
 Proportion_Map(df = GRC_Data, 
@@ -96,7 +98,7 @@ Proportion_Map(df = GRC_Data,
 ```
 
 
-## Mutation Frequency table and plots 
+#### Mutation Frequency table and plots 
 ```{r, echo = TRUE, eval = FALSE}
 
 Mutation_Frequency(df = GRC_Data, 
@@ -114,7 +116,7 @@ Mutation_Frequency(df = GRC_Data,
 ```
 
 
-## Haplotype Proportion plots
+#### Haplotype Proportion plots
 ```{r, echo = TRUE, eval = FALSE}
 
 Haplotype_Proportion(df = GRC_Data, 
@@ -129,7 +131,7 @@ Haplotype_Proportion(df = GRC_Data,
 ```
 
 
-## Filter SNPs and Smaples for missigness
+#### Filter SNPs and Smaples for missigness
 ```{r, echo=FALSE, eval = FALSE}
 
 Filter_SNPs_Samples(df = GRC_Data, 
@@ -138,7 +140,7 @@ Filter_SNPs_Samples(df = GRC_Data,
 ```
 
 
-## Diversity Map
+#### Diversity Map
 ```{r, echo=FALSE, eval = FALSE}
 
 DiversityMap(df = GRC_Data, 
