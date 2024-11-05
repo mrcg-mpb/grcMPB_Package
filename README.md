@@ -108,7 +108,3 @@ Haplotype_Proportion(df = GRC_Data,
                      label_size = 2.5,
                      scale_circle_size = 0.035)
 ```
-
-#### Filter SNPs and Smaples for missigness
-
-#### Diversity Map

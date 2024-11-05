@@ -19,7 +19,7 @@ GRC_Data <-
 ```
 
 
-#### Create the drug status columns
+### Create the drug status columns
 ```{r, echo = TRUE, eval = FALSE}
 
 GRC_Data <-
