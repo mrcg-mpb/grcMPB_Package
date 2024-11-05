@@ -601,20 +601,21 @@ padding-top: 0px;
 
 <body>
 
-<h1 id="grcmpb-use_case">GRCMPB Use_Case</h1>
-<p>Brandon Ngwa 2024-10-07</p>
-<h2 id="create-your-final-grc-data">Create your final GRC Data</h2>
+<h2 id="mpb-grcmalaria-package">MPB grcMalaria Package</h2>
+<p>Below is the is a workflow of how the package functions will be
+used.</p>
+<h4 id="create-your-final-grc-data">Create your final GRC Data</h4>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>GRC_Data <span class="ot">&lt;-</span></span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>    <span class="fu">Combine_GRC_Sheets</span>(<span class="at">input_folder=</span><span class="st">&quot;C:/Users/bngwa/Documents/Brandon/GDA_Markdown/All_GRC_Reads_Gambia&quot;</span>,</span>
 <span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>                       <span class="at">Country =</span> <span class="st">&quot;Gambia&quot;</span>, </span>
 <span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>                       <span class="at">save_output =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
-<h2 id="create-the-drug-status-columns">Create the drug status
-columns</h2>
+<h4 id="create-the-drug-status-columns">Create the drug status
+columns</h4>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>GRC_Data <span class="ot">&lt;-</span></span>
 <span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>  <span class="fu">Gene_Classifier</span>(<span class="at">df =</span> GRC_Data, </span>
 <span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>                  <span class="at">drug_column =</span> <span class="st">&quot;Chloroquine&quot;</span>)</span></code></pre></div>
-<h2 id="create-your-meta-data-for-the-maps">Create your meta data for
-the maps</h2>
+<h4 id="create-your-meta-data-for-the-maps">Create your meta data for
+the maps</h4>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="do">## load the shapefile for Gambia first</span></span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>GMB <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="st">&quot;C:/Users/bngwa/Documents/Brandon/GDA_Markdown/geoBoundaries-GMB-ADM3-all/geoBoundaries-GMB-ADM3-all/geoBoundaries-GMB-ADM3_simplified.shp&quot;</span>)</span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
@@ -627,7 +628,7 @@ the maps</h2>
 <span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>            <span class="at">location_col =</span> <span class="st">&quot;Location&quot;</span>,</span>
 <span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>            <span class="at">long_col =</span> <span class="st">&quot;long&quot;</span>,</span>
 <span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>            <span class="at">lat_col =</span> <span class="st">&quot;lat&quot;</span> )</span></code></pre></div>
-<h2 id="create-sample-count-map">Create Sample Count Map</h2>
+<h4 id="create-sample-count-map">Create Sample Count Map</h4>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="do">## You can creat a single or range of years to filter buy before generating the plots</span></span>
 <span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>Periods <span class="ot">&lt;-</span></span>
 <span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="fu">list</span>( <span class="fu">list</span>(<span class="at">name=</span><span class="st">&quot;2021&quot;</span>, <span class="at">type =</span><span class="st">&quot;year&quot;</span>, <span class="at">start=</span><span class="st">&quot;2021&quot;</span>),</span>
@@ -641,8 +642,8 @@ the maps</h2>
 <span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>               <span class="at">label_size =</span> <span class="fl">2.5</span>, </span>
 <span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>               <span class="at">scale_circle_size =</span> <span class="dv">11</span>,</span>
 <span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>               <span class="at">save_output =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
-<h2 id="create-distrubution-table-and-barchart">Create Distrubution
-table and barchart</h2>
+<h4 id="create-distrubution-table-and-barchart">Create Distrubution
+table and barchart</h4>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">Drug_Distribution</span>(<span class="at">df =</span> GRC_Data, </span>
 <span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>                  <span class="at">drug_col =</span> <span class="st">&quot;Chloroquine&quot;</span>,</span>
 <span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>                  <span class="at">save_output =</span> <span class="cn">FALSE</span>,</span>
@@ -650,8 +651,8 @@ table and barchart</h2>
 <span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>                  <span class="at">colors =</span> <span class="fu">c</span>(<span class="st">&quot;Resistant&quot;</span> <span class="ot">=</span> <span class="st">&quot;#525CEB&quot;</span>,</span>
 <span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>                             <span class="st">&quot;Mixed.Resistant&quot;</span> <span class="ot">=</span> <span class="st">&quot;#808000&quot;</span>,</span>
 <span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>                             <span class="st">&quot;Sensitive&quot;</span> <span class="ot">=</span> <span class="st">&quot;#800000&quot;</span>) )</span></code></pre></div>
-<h2 id="drug-resistance-prevalence-proportion-maps">Drug Resistance
-Prevalence Proportion Maps</h2>
+<h4 id="drug-resistance-prevalence-proportion-maps">Drug Resistance
+Prevalence Proportion Maps</h4>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">Proportion_Map</span>(<span class="at">df =</span> GRC_Data, </span>
 <span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>               <span class="at">drug_col =</span> <span class="st">&quot;Chloroquine&quot;</span>,</span>
 <span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>               <span class="at">save_output =</span> <span class="cn">FALSE</span>,</span>
@@ -660,8 +661,8 @@ Prevalence Proportion Maps</h2>
 <span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>               <span class="at">label_size =</span> <span class="fl">2.5</span>,</span>
 <span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>               <span class="at">circle_num_size =</span> <span class="fl">3.1</span>, </span>
 <span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>               <span class="at">scale_circle_size =</span> <span class="dv">10</span>)</span></code></pre></div>
-<h2 id="mutation-frequency-table-and-plots">Mutation Frequency table and
-plots</h2>
+<h4 id="mutation-frequency-table-and-plots">Mutation Frequency table and
+plots</h4>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">Mutation_Frequency</span>(<span class="at">df =</span> GRC_Data, </span>
 <span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>                   <span class="at">gene =</span> <span class="st">&quot;pfcrt&quot;</span>, </span>
 <span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>                   <span class="at">gene_col =</span> <span class="st">&quot;PfCRT&quot;</span>, </span>
@@ -673,7 +674,7 @@ plots</h2>
 <span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>                   <span class="at">circle_num_size =</span> <span class="fl">3.1</span>, </span>
 <span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>                   <span class="at">scale_circle_size =</span> <span class="dv">10</span>,</span>
 <span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>                   <span class="at">include_mixed =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
-<h2 id="haplotype-proportion-plots">Haplotype Proportion plots</h2>
+<h4 id="haplotype-proportion-plots">Haplotype Proportion plots</h4>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">Haplotype_Proportion</span>(<span class="at">df =</span> GRC_Data, </span>
 <span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>                     <span class="at">gene_col =</span> <span class="st">&quot;PfCRT&quot;</span>, </span>
 <span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>                     <span class="at">drug_col =</span> <span class="st">&quot;Chloroquine&quot;</span>,</span>
@@ -682,9 +683,9 @@ plots</h2>
 <span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>                     <span class="at">mData =</span> mapping_data,</span>
 <span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>                     <span class="at">label_size =</span> <span class="fl">2.5</span>,</span>
 <span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>                     <span class="at">scale_circle_size =</span> <span class="fl">0.035</span>)</span></code></pre></div>
-<h2 id="filter-snps-and-smaples-for-missigness">Filter SNPs and Smaples
-for missigness</h2>
-<h2 id="diversity-map">Diversity Map</h2>
+<h4 id="filter-snps-and-smaples-for-missigness">Filter SNPs and Smaples
+for missigness</h4>
+<h4 id="diversity-map">Diversity Map</h4>
 
 </body>
 </html>

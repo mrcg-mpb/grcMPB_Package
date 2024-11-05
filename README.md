@@ -1,9 +1,9 @@
-GRCMPB Use_Case
-================
-Brandon Ngwa
-2024-10-07
 
-## Create your final GRC Data
+## MPB grcMalaria Package
+
+Below is the is a workflow of how the package functions will be used.
+
+#### Create your final GRC Data
 
 ``` r
 GRC_Data <-
@@ -12,7 +12,7 @@ GRC_Data <-
                        save_output = TRUE)
 ```
 
-## Create the drug status columns
+#### Create the drug status columns
 
 ``` r
 GRC_Data <-
@@ -20,7 +20,7 @@ GRC_Data <-
                   drug_column = "Chloroquine")
 ```
 
-## Create your meta data for the maps
+#### Create your meta data for the maps
 
 ``` r
 ## load the shapefile for Gambia first
@@ -37,7 +37,7 @@ MappingData(shapefile = GMB ,
             lat_col = "lat" )
 ```
 
-## Create Sample Count Map
+#### Create Sample Count Map
 
 ``` r
 ## You can creat a single or range of years to filter buy before generating the plots
@@ -55,7 +55,7 @@ SampleCountMap(df = GRC_Data,
                save_output = TRUE)
 ```
 
-## Create Distrubution table and barchart
+#### Create Distrubution table and barchart
 
 ``` r
 Drug_Distribution(df = GRC_Data, 
@@ -67,7 +67,7 @@ Drug_Distribution(df = GRC_Data,
                              "Sensitive" = "#800000") )
 ```
 
-## Drug Resistance Prevalence Proportion Maps
+#### Drug Resistance Prevalence Proportion Maps
 
 ``` r
 Proportion_Map(df = GRC_Data, 
@@ -80,7 +80,7 @@ Proportion_Map(df = GRC_Data,
                scale_circle_size = 10)
 ```
 
-## Mutation Frequency table and plots
+#### Mutation Frequency table and plots
 
 ``` r
 Mutation_Frequency(df = GRC_Data, 
@@ -96,7 +96,7 @@ Mutation_Frequency(df = GRC_Data,
                    include_mixed = FALSE)
 ```
 
-## Haplotype Proportion plots
+#### Haplotype Proportion plots
 
 ``` r
 Haplotype_Proportion(df = GRC_Data, 
@@ -109,6 +109,6 @@ Haplotype_Proportion(df = GRC_Data,
                      scale_circle_size = 0.035)
 ```
 
-## Filter SNPs and Smaples for missigness
+#### Filter SNPs and Smaples for missigness
 
-## Diversity Map
+#### Diversity Map
