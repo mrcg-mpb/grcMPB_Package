@@ -1,7 +1,4 @@
 ---
-title: "GRCMPB Use_Case"
-author: "Brandon Ngwa"
-date: "2024-10-07"
 output: github_document
 ---
 
@@ -10,7 +7,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## MPB grcMalaria Package
-Below are the is a workflow of how th packahge fucntions will be used.
+Below is the is a workflow of how the package functions will be used.
 
 #### Create your final GRC Data 
 ```{r, echo = TRUE, eval = FALSE}
