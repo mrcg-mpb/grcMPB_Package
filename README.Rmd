@@ -7,9 +7,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## MPB grcMalaria Package
-Below is the is a workflow of how the package functions will be used.
+This README provides a workflow example demonstrating the main functions in the MPB grcMalaria package.
 
-#### Create your final GRC Data 
+### Creating the Final GRC Data
+The `Combine_GRC_Sheets` function combines multiple GRC sheets into a final dataset for analysis. 
 ```{r, echo = TRUE, eval = FALSE}
 
 GRC_Data <-
@@ -20,6 +21,7 @@ GRC_Data <-
 
 
 ### Create the drug status columns
+Gene_Classifier assigns drug status based on specified genetic markers, helping identify resistance and sensitivity profiles.
 ```{r, echo = TRUE, eval = FALSE}
 
 GRC_Data <-
@@ -28,7 +30,8 @@ GRC_Data <-
 ```
 
 
-#### Create your meta data for the maps
+### Preparing Metadata for Mapping
+Before creating maps, load geographic shapefiles and longitude/latitude data, then use MappingData to format the data for mapping.
 ```{r, echo = TRUE, eval = FALSE}
 ## load the shapefile for Gambia first
 GMB <- st_read("C:/Users/bngwa/Documents/Brandon/GDA_Markdown/geoBoundaries-GMB-ADM3-all/geoBoundaries-GMB-ADM3-all/geoBoundaries-GMB-ADM3_simplified.shp")
@@ -46,19 +49,24 @@ MappingData(shapefile = GMB ,
 
 ```
 
-
-#### Create Sample Count Map
-```{r, echo = TRUE, eval = FALSE}
-
+### Setting Time Periods
+Define specific time periods to filter data when generating plots. Below is an example of a list specifying individual years and ranges.
+```{r}
 ## You can creat a single or range of years to filter buy before generating the plots
 Periods <-
   list( list(name="2021", type ="year", start="2021"),
         list(name="2017-19",  type= "period", start="2017",  end="2019"))
+```
+
+
+### Generating a Sample Count Map
+Create a map displaying sample counts across different locations, adjusting parameters for circle size and map labels.
+```{r, echo = TRUE, eval = FALSE}
 
 SampleCountMap(df = GRC_Data, 
                drug_col = "Chloroquine",
                mData = mapping_data,
-               time = NULL,
+               time = Periods,
                breaks = c(10, 100, 200, 300),
                label_size = 2.5, 
                scale_circle_size = 11,
@@ -67,7 +75,8 @@ SampleCountMap(df = GRC_Data,
 ```
 
 
-#### Create Distrubution table and barchart 
+#### Producing a Drug Distribution Table and Bar Chart
+Generate bar charts showing the proportion of the diffrent conditions for th slected drug.
 ```{r, echo = TRUE, eval = FALSE}
 
 Drug_Distribution(df = GRC_Data, 
@@ -80,7 +89,8 @@ Drug_Distribution(df = GRC_Data,
 ```
 
 
-#### Drug Resistance Prevalence Proportion Maps
+#### Mapping Drug Resistance Prevalence Proportion
+The Proportion_Map function visualizes the proportion of the drug condtions in various locations, with options for customizing label and circle sizes.
 ```{r, echo = TRUE, eval = FALSE}
 
 Proportion_Map(df = GRC_Data, 
@@ -93,62 +103,3 @@ Proportion_Map(df = GRC_Data,
                scale_circle_size = 10)
                
 ```
-
-
-#### Mutation Frequency table and plots 
-```{r, echo = TRUE, eval = FALSE}
-
-Mutation_Frequency(df = GRC_Data, 
-                   gene = "pfcrt", 
-                   gene_col = "PfCRT", 
-                   drug_col = "Chloroquine",
-                   save_output = FALSE,
-                   time = NULL,
-                   mData = mapping_data,
-                   label_size = 2.5,
-                   circle_num_size = 3.1, 
-                   scale_circle_size = 10,
-                   include_mixed = FALSE)
-
-```
-
-
-#### Haplotype Proportion plots
-```{r, echo = TRUE, eval = FALSE}
-
-Haplotype_Proportion(df = GRC_Data, 
-                     gene_col = "PfCRT", 
-                     drug_col = "Chloroquine",
-                     save_output = FALSE,
-                     time = NULL,
-                     mData = mapping_data,
-                     label_size = 2.5,
-                     scale_circle_size = 0.035)
-
-```
-
-
-#### Filter SNPs and Smaples for missigness
-```{r, echo=FALSE, eval = FALSE}
-
-Filter_SNPs_Samples(df = GRC_Data, 
-                    missingnessThreshold = 0.40)s
-
-```
-
-
-#### Diversity Map
-```{r, echo=FALSE, eval = FALSE}
-
-DiversityMap(df = GRC_Data, 
-             drug_col = "Chloroquine",
-             SNP_Data = BarcodeData, 
-             mData = mapping_data,
-             label_size = 2.5,
-             circle_num_size = 3.1, 
-             scale_circle_size = 10,
-             time = NULL,
-             save_output = FALSE)
-```
-
-

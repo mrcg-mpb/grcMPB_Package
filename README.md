@@ -1,9 +1,13 @@
 
 ## MPB grcMalaria Package
 
-Below is the is a workflow of how the package functions will be used.
+This README provides a workflow example demonstrating the main functions
+in the MPB grcMalaria package.
 
-#### Create your final GRC Data
+### Creating the Final GRC Data
+
+The `Combine_GRC_Sheets` function combines multiple GRC sheets into a
+final dataset for analysis.
 
 ``` r
 GRC_Data <-
@@ -12,7 +16,10 @@ GRC_Data <-
                        save_output = TRUE)
 ```
 
-#### Create the drug status columns
+### Create the drug status columns
+
+Gene_Classifier assigns drug status based on specified genetic markers,
+helping identify resistance and sensitivity profiles.
 
 ``` r
 GRC_Data <-
@@ -20,7 +27,10 @@ GRC_Data <-
                   drug_column = "Chloroquine")
 ```
 
-#### Create your meta data for the maps
+### Preparing Metadata for Mapping
+
+Before creating maps, load geographic shapefiles and longitude/latitude
+data, then use MappingData to format the data for mapping.
 
 ``` r
 ## load the shapefile for Gambia first
@@ -37,25 +47,38 @@ MappingData(shapefile = GMB ,
             lat_col = "lat" )
 ```
 
-#### Create Sample Count Map
+### Setting Time Periods
+
+Define specific time periods to filter data when generating plots. Below
+is an example of a list specifying individual years and ranges.
 
 ``` r
 ## You can creat a single or range of years to filter buy before generating the plots
 Periods <-
   list( list(name="2021", type ="year", start="2021"),
         list(name="2017-19",  type= "period", start="2017",  end="2019"))
+```
 
+### Generating a Sample Count Map
+
+Create a map displaying sample counts across different locations,
+adjusting parameters for circle size and map labels.
+
+``` r
 SampleCountMap(df = GRC_Data, 
                drug_col = "Chloroquine",
                mData = mapping_data,
-               time = NULL,
+               time = Periods,
                breaks = c(10, 100, 200, 300),
                label_size = 2.5, 
                scale_circle_size = 11,
                save_output = TRUE)
 ```
 
-#### Create Distrubution table and barchart
+#### Producing a Drug Distribution Table and Bar Chart
+
+Generate bar charts showing the proportion of the diffrent conditions
+for th slected drug.
 
 ``` r
 Drug_Distribution(df = GRC_Data, 
@@ -67,7 +90,11 @@ Drug_Distribution(df = GRC_Data,
                              "Sensitive" = "#800000") )
 ```
 
-#### Drug Resistance Prevalence Proportion Maps
+#### Mapping Drug Resistance Prevalence Proportion
+
+The Proportion_Map function visualizes the proportion of the drug
+condtions in various locations, with options for customizing label and
+circle sizes.
 
 ``` r
 Proportion_Map(df = GRC_Data, 
@@ -78,33 +105,4 @@ Proportion_Map(df = GRC_Data,
                label_size = 2.5,
                circle_num_size = 3.1, 
                scale_circle_size = 10)
-```
-
-#### Mutation Frequency table and plots
-
-``` r
-Mutation_Frequency(df = GRC_Data, 
-                   gene = "pfcrt", 
-                   gene_col = "PfCRT", 
-                   drug_col = "Chloroquine",
-                   save_output = FALSE,
-                   time = NULL,
-                   mData = mapping_data,
-                   label_size = 2.5,
-                   circle_num_size = 3.1, 
-                   scale_circle_size = 10,
-                   include_mixed = FALSE)
-```
-
-#### Haplotype Proportion plots
-
-``` r
-Haplotype_Proportion(df = GRC_Data, 
-                     gene_col = "PfCRT", 
-                     drug_col = "Chloroquine",
-                     save_output = FALSE,
-                     time = NULL,
-                     mData = mapping_data,
-                     label_size = 2.5,
-                     scale_circle_size = 0.035)
 ```
