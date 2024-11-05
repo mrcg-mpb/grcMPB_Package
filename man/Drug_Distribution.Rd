@@ -7,7 +7,7 @@
 Drug_Distribution(
   df,
   drug_col,
-  saveOutput = TRUE,
+  save_output = TRUE,
   time = NULL,
   period_name = "Full",
   colors = c(Resistant = "#525CEB", Mixed.Resistant = "#808000", Sensitive = "#800000"),
@@ -15,30 +15,18 @@ Drug_Distribution(
 )
 }
 \arguments{
-\item{df}{Final GRC dataframe.}
+\item{df}{Final GRC data frame.}
 
-\item{drug_col}{The name of the column representing the drug conditions (e.g., "Chloroquine").}
+\item{drug_col}{The name of the column representing the drug conditions (e.g., "Chloroquine" with conditions, Resistant, mixed resistant and sensitive).}
 
-\item{saveOutput}{Logical. Whether to save the output plots to files (default is FALSE).}
+\item{save_output}{Logical. Whether to save the output plots to files (default is FALSE).}
 
-\item{time}{Optional. A list defining time periods, where each list element contains:
-\itemize{
-\item \code{type}: Either "year" or "period" to define time scope.
-\item \code{start}: The start year of the time period.
-\item \code{end}: The end year of the time period (for periods only).
-\item \code{name}: The label to use for the period.
-}}
+\item{time}{Optional. A list defining time periods, where each list element contains:}
 
-\item{location_col}{The name of the column representing the locations (e.g., "Location").}
+\item{colors}{A three color pallet for th drug_col conditions.}
 }
 \description{
-This function generates bar charts and summary data for drug distribution conditions by location,
-either for the entire dataset or for specified time periods. It provides visual and tabular summaries of the drug
-status in each location and saves plots to a specified path if requested.
-}
-\examples{
-# Example for generating full dataset summary
-Drug_Distribution(df = my_data, location_col = "Location", drug_col = "Chloroquine", LongLat_data = location_coords)
-
-
+This function generates bar charts and summary data of drug conditions for s specific drug,(e.g, Chloroquine)
+It provides returns two bar charts one for the the overall proportion of the drug condition for th entire data set
+and another for each location.
 }

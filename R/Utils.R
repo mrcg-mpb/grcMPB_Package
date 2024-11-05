@@ -18,8 +18,8 @@ MappingData <- function(shapefile, LongLat_data, location_col, long_col, lat_col
       lat = {{lat_col}}
     )
 
-  # Store the processed data in the global environment
-  mapping_data <<- list(shapefile = shapefile, LongLat_data = LongLat_data)
+
+  return(list(shapefile = shapefile, LongLat_data = LongLat_data))
 }
 
 
@@ -75,3 +75,75 @@ TemporalData_List <- function(df, func, time, ...) {
 
   return(results)
 }
+
+
+
+
+#' Initialize Output Paths
+#'
+#' A helper function to create output directories and nested directories based on the user's specifications.
+#' This function is internal and should not be called directly by the user.
+#'
+#' @param dir1 (Optional) Name for the first subdirectory within Outputs.
+#' @param dir2 (Optional) Name for the nested subdirectory within dir1.
+#'
+#' @return The path to the directory where outputs can be saved.
+#'
+initialize_output_paths <- function(dir1 = NULL, dir2 = NULL) {
+  # Check if Outputs directory exists in the working directory or as a global variable
+  if (!dir.exists("Outputs") || !exists("Outputs", envir = .GlobalEnv)) {
+    # Create Outputs directory in the working directory
+    dir.create(file.path(getwd(), "Outputs"), showWarnings = FALSE)
+
+    # Assign main path to Outputs in the global environment
+    Outputs <- list(mainPath = file.path(getwd(), "Outputs"))
+    assign("Outputs", Outputs, envir = .GlobalEnv)
+  }
+
+  # Retrieve the main path from the Outputs list
+  main_path <- Outputs$mainPath
+
+  # Initialize path for dir1 if provided
+  if (!is.null(dir1)) {
+    dir1_path <- file.path(main_path, dir1)
+
+    if (!dir.exists(dir1_path)) {
+      dir.create(dir1_path, showWarnings = FALSE)
+    }
+  } else {
+    dir1_path <- main_path
+  }
+
+  # Initialize path for dir2 if provided, nested within dir1
+  if (!is.null(dir2) && !is.null(dir1)) {
+    dir2_path <- file.path(dir1_path, dir2)
+
+    if (!dir.exists(dir2_path)) {
+      dir.create(dir2_path, showWarnings = FALSE)
+    }
+  } else {
+    dir2_path <- dir1_path
+  }
+
+  # Update Outputs with the additional paths if dir1 or dir2 are specified
+  Outputs$subDir1 <- if (!is.null(dir1)) dir1_path else NULL
+  Outputs$subDir2 <- if (!is.null(dir2)) dir2_path else NULL
+
+  # Return the final path for saving outputs (either Outputs, dir1, or dir2)
+  return(dir2_path)
+}
+
+
+
+#' Split Haplotype
+#'
+#' A helper function to split th haplotypes combination into a vector if strings
+#'
+#'@param haploype haplotype to string to split (e.g, "CVIE[M/T]" )
+#'
+#' @return a vector with of each element in the splitted string.
+#'
+split_haplotype <- function(haplotype) {
+  unlist(strsplit(haplotype, "(?<=\\])(?=\\[)|(?<=\\])(?=\\w)|(?<=\\w)(?=\\[)|(?<=\\w)(?=\\w)|(?<=\\w)(?=-)|(?<=-)(?=\\[)|(?<=-)(?=\\w)|(?<=-)(?=-)|(?<=\\])(?=-)", perl = TRUE))
+}
+

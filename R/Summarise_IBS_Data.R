@@ -1,6 +1,9 @@
 #' Manipulate the IBS Group Dataframes
 #'
-#' This function processes and summarizes a melted IBS dataframe. It calculates the mean and median IBS values for each location pair, counts the total number of pairs, and determines the number of pairs above a user-defined IBS threshold. The function also calculates various percentages and appends geographical coordinates for each location.
+#' This function processes and summarizes a melted IBS matrix
+#' It calculates the mean and median IBS values for each location pair, counts the total number of pairs,
+#' and determines the number of pairs above a user-defined IBS threshold.
+#' The function also calculates various percentages and appends geographical coordinates for each location.
 #'
 #' @param MeltIbsData A dataframe containing the melted IBS data. This dataframe should include the columns `LS1`, `LS2`, and `value`, where `value` represents the IBS score between two locations.
 #' @param LongLat_data A dataframe containing the latitude and longitude for each location. The dataframe should include the columns `Location`, `lat`, and `long`.
@@ -28,7 +31,7 @@
 #' IBS_DataSummary(MeltIbsData, LongLat_data, IBS_Threshold = 0.75)
 
 IBS_DataSummary <-
-  function(MeltIbsData, LongLat_data, IBS_Threshold = 0.75) {
+  function(MeltIbsData, mData, IBS_Threshold = 0.75) {
 
     # Ensure the IBS_Threshold is between 0 and 1
     if (IBS_Threshold < 0 | IBS_Threshold > 1) {

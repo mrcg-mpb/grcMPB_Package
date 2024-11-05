@@ -7,12 +7,12 @@
 Proportion_Map(
   df,
   drug_col,
-  saveOutput = TRUE,
+  save_output = TRUE,
   period_name = "Full",
   time = NULL,
-  labelSize = 2.5,
-  circleNumSize = 3.1,
-  scaleCircleSize = 10,
+  label_size = 2.5,
+  circle_num_size = 3.1,
+  scale_circle_size = 10,
   ...
 )
 }
@@ -21,15 +21,15 @@ Proportion_Map(
 
 \item{drug_col}{The name of the column representing the drug conditions (e.g., "Chloroquine").}
 
-\item{saveOutput}{Logical. Whether to save the output plots to files (default is FALSE).}
+\item{save_output}{Logical. Whether to save the output plots to files (default is FALSE).}
 
 \item{time}{Optional. A list defining time periods.}
 
-\item{labelSize}{Used to set the size of the labels on the map.}
+\item{label_size}{Used to set the size of the labels on the map.}
 
-\item{circleNumSize}{Used to set th sizes of the numbers in th circles.}
+\item{circle_num_size}{Used to set th sizes of the numbers in th circles.}
 
-\item{scaleCircleSize}{Used to scale the size of th circles.}
+\item{scale_circle_size}{Used to scale the size of th circles.}
 }
 \description{
 This function generates maps displaying the percentages of conditions

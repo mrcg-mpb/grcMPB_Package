@@ -1,29 +1,19 @@
 #' Generate and Visualize Drug Distribution Data
 #'
-#' @description This function generates bar charts and summary data for drug distribution conditions by location,
-#' either for the entire dataset or for specified time periods. It provides visual and tabular summaries of the drug
-#' status in each location and saves plots to a specified path if requested.
+#' @description This function generates bar charts and summary data of drug conditions for s specific drug,(e.g, Chloroquine)
+#' It provides returns two bar charts one for the the overall proportion of the drug condition for th entire data set
+#' and another for each location.
 #'
-#' @param df Final GRC dataframe.
-#' @param location_col The name of the column representing the locations (e.g., "Location").
-#' @param drug_col The name of the column representing the drug conditions (e.g., "Chloroquine").
-#' @param saveOutput Logical. Whether to save the output plots to files (default is FALSE).
+#' @param df Final GRC data frame.
+#' @param drug_col The name of the column representing the drug conditions (e.g., "Chloroquine" with conditions, Resistant, mixed resistant and sensitive).
+#' @param save_output Logical. Whether to save the output plots to files (default is FALSE).
 #' @param time Optional. A list defining time periods, where each list element contains:
-#'   \itemize{
-#'     \item \code{type}: Either "year" or "period" to define time scope.
-#'     \item \code{start}: The start year of the time period.
-#'     \item \code{end}: The end year of the time period (for periods only).
-#'     \item \code{name}: The label to use for the period.
-#'   }
-#'
-#' @examples
-#' # Example for generating full dataset summary
-#' Drug_Distribution(df = my_data, location_col = "Location", drug_col = "Chloroquine", LongLat_data = location_coords)
+#' @param colors A three color pallet for th drug_col conditions.
 #'
 #'
 #' @export
 #'
-Drug_Distribution <- function(df, drug_col, saveOutput = TRUE, time = NULL,
+Drug_Distribution <- function(df, drug_col, save_output = TRUE, time = NULL,
                               period_name = "Full", colors = c("Resistant" = "#525CEB",
                                                                "Mixed.Resistant" = "#808000",
                                                                "Sensitive" = "#800000"), ...) {
@@ -34,7 +24,7 @@ Drug_Distribution <- function(df, drug_col, saveOutput = TRUE, time = NULL,
       df,
       drug_col,
       period_name,
-      saveOutput,
+      save_output,
       colors
     ))
   }
@@ -45,13 +35,13 @@ Drug_Distribution <- function(df, drug_col, saveOutput = TRUE, time = NULL,
     func = create_plots,
     drug_col = drug_col,
     time = time,
-    saveOutput = saveOutput,
+    save_output = save_output,
     colors = colors,
     ...))
 }
 
 # Internal function to create plots for Drug Distribution
-create_plots <- function(df, drug_col, period_name = "Full", saveOutput = TRUE,
+create_plots <- function(df, drug_col, period_name = "Full", save_output = TRUE,
                          colors = c("Resistant" = "#525CEB",
                                     "Mixed.Resistant" = "#808000",
                                     "Sensitive" = "#800000"), ...) {
@@ -108,28 +98,15 @@ create_plots <- function(df, drug_col, period_name = "Full", saveOutput = TRUE,
           axis.title = element_text(size = 12, face = "bold")) +
     geom_text(aes(label = paste0(prob, "%")), hjust = -0.8, fontface = "bold")
 
-  if (saveOutput) {
-    tryCatch({
-      # Get or create OutputPaths from global environment
-      if (!exists("OutputPaths", envir = .GlobalEnv) || !dir.exists("Outputs")) {
-        message("OutputPaths is not available in your directory or environment. Please run the Combine_GRC function with saveOutput = TRUE to create the required directories.")
-        return()
-      } else {
-      OutputPaths <- get("OutputPaths", envir = .GlobalEnv)
+  if (save_output) {
 
-      # Define and create path
-      path <- file.path(OutputPaths$mainPath, drug_col, "Proportion_Maps")
-      dir.create(path, showWarnings = FALSE, recursive = TRUE)
+      save_path <- initialize_output_paths(dir1 = "Proportion_Maps")
 
-      # Save plots
       ggsave(filename = paste0("DrugStatus_BarChart1_", period_name, ".jpeg"),
-             plot = bar1, dpi = 300, width = 11, height = 7, path = path)
+             plot = bar1, dpi = 300, width = 11, height = 7, path = save_path)
       ggsave(filename = paste0("DrugStatus_BarChart2_", period_name, ".jpeg"),
-             plot = bar2, dpi = 300, width = 15, height = 7, path = path)
-      }
-    }, error = function(e) {
-      warning("Error saving plots: ", e$message)
-    })
+             plot = bar2, dpi = 300, width = 15, height = 7, path = save_path)
+
   }
 
   return(list(

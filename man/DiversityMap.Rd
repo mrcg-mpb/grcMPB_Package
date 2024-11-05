@@ -9,10 +9,10 @@ DiversityMap(
   drug_col,
   SNP_Data,
   period_name = "Full",
-  labelSize = 2.5,
+  label_size = 2.5,
   time = NULL,
-  circleNumSize = 3.1,
-  scaleCircleSize = 10,
+  circle_num_size = 3.1,
+  scale_circle_size = 10,
   saveOutput = TRUE,
   ...
 )
@@ -25,13 +25,13 @@ DiversityMap(
 \item{SNP_Data}{A dataframe of SNP data, where each row represents a sample and each column corresponds to a
 genetic locus (e.g., "Pf3D7_"). The row names should correspond to the "Sample Internal ID".}
 
-\item{labelSize}{Used to set the size of the labels on the map.}
+\item{label_size}{Used to set the size of the labels on the map.}
 
 \item{time}{Optional. A list defining time periods.}
 
-\item{circleNumSize}{Used to set th sizes of the numbers in th circles.}
+\item{circle_num_size}{Used to set th sizes of the numbers in th circles.}
 
-\item{scaleCircleSize}{Used to scale the size of th circles.}
+\item{scale_circle_size}{Used to scale the size of th circles.}
 
 \item{saveOutput}{Logical. Whether to save the output plots to files (default is FALSE).}
 }

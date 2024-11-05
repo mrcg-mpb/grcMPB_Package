@@ -7,11 +7,12 @@
 SampleCountMap(
   df,
   drug_col,
+  mData,
   breaks = NULL,
-  saveOutput = TRUE,
+  save_output = TRUE,
   period_name = "Full",
-  labelSize = 2.5,
-  scaleCircleSize = 11,
+  label_size = 2.5,
+  scale_circle_size = 11,
   time = NULL,
   ...
 )
@@ -19,15 +20,15 @@ SampleCountMap(
 \arguments{
 \item{df}{Final GRC dataframe.}
 
-\item{drug_col}{The name of the column representing the drug conditions (e.g., "Chloroquine").}
+\item{drug_col}{The name of the column representing the drug conditions (e.g., "Chloroquine" with conditions, Resisatant, mixed resistant and sensitive).}
+
+\item{mData}{The metatdata list that contains your shapefile and Longitude Latitude data.}
 
 \item{breaks}{Used to set the breaks for the circle sizes}
 
-\item{saveOutput}{Logical. Whether to save the output plots to files (default is FALSE).}
+\item{label_size}{Used to set the size of th labels on the map}
 
-\item{labelSize}{Used to set the size of th labels on the map}
-
-\item{scaleCircleSize}{Used to scale the circle sizes.}
+\item{scale_circle_size}{Used to scale the circle sizes.}
 
 \item{time}{Optional. A list defining time periods, where each list element contains:
 \itemize{
@@ -40,11 +41,13 @@ SampleCountMap(
 Example for generating time-period-based summary
 time_periods <- list(list(type = "year", start = 2010, name = "2010"),
 list(type = "period", start = 2015, end = 2019, name = "2015-2019"))}
+
+\item{save_uutput}{Logical. Whether to save the output plots to files (default is FALSE).}
 }
 \description{
-This function generates a map displaying the Sample_Count sample counts for each location based on longitude and latitude coordinates.
-It creates a proportional symbol map with sample counts represented by varying symbol sizes, and labels each location with the Sample_Count sample count.
-The map is saved as a JPEG file in the \code{savePath} directory if \code{saveOutput} is set to \code{TRUE}.
+This function generates a map displaying the sample counts for each location based on the longitude and latitude coordinates.
+It creates a map with circle for each location whose sizes are determined by how many samples come from that location.
+The labels of the locations are also repelled from each circle with their sample counts in curly brackets.
 }
 \examples{
 # Ensure that df, shapeFile, and LongLat_data are properly prepared in your global environment

@@ -2,7 +2,7 @@
 title: "GRCMPB Use_Case"
 author: "Brandon Ngwa"
 date: "2024-10-07"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
@@ -10,21 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-## Load the libraries
-```{r}
-
-library(tidyverse)
-library(devtools)
-library(ggrepel)
-library(ggthemes)
-library(sf)
-library(readxl)
-
-```
-
-
 ## Create your final GRC Data 
-```{r }
+```{r, echo = TRUE, eval = FALSE}
 
 GRC_Data <-
     Combine_GRC_Sheets(input_folder="C:/Users/bngwa/Documents/Brandon/GDA_Markdown/All_GRC_Reads_Gambia",
@@ -34,16 +21,16 @@ GRC_Data <-
 
 
 ## Create the drug status columns
-```{r, echo=FALSE}
+```{r, echo = TRUE, eval = FALSE}
 
 GRC_Data <-
   Gene_Classifier(df = GRC_Data, 
                   drug_column = "Chloroquine")
 ```
-
+git commit -m "Update README files and fucntion documentations"
 
 ## Create your meta data for the maps
-```{r}
+```{r, echo = TRUE, eval = FALSE}
 ## load the shapefile for Gambia first
 GMB <- st_read("C:/Users/bngwa/Documents/Brandon/GDA_Markdown/geoBoundaries-GMB-ADM3-all/geoBoundaries-GMB-ADM3-all/geoBoundaries-GMB-ADM3_simplified.shp")
 
@@ -62,7 +49,7 @@ MappingData(shapefile = GMB ,
 
 
 ## Create Sample Count Map
-```{r,echo=FALSE, out.width="100%" }
+```{r, echo = TRUE, eval = FALSE}
 
 ## You can creat a single or range of years to filter buy before generating the plots
 Periods <-
@@ -82,7 +69,7 @@ SampleCountMap(df = GRC_Data,
 
 
 ## Create Distrubution table and barchart 
-```{r, echo=FALSE, out.width="100%}
+```{r, echo = TRUE, eval = FALSE}
 
 Drug_Distribution(df = GRC_Data, 
                   drug_col = "Chloroquine",
@@ -95,7 +82,7 @@ Drug_Distribution(df = GRC_Data,
 
 
 ## Drug Resistance Prevalence Proportion Maps
-```{r, echo=FALSE, out.width="100%}
+```{r, echo = TRUE, eval = FALSE}
 
 Proportion_Map(df = GRC_Data, 
                drug_col = "Chloroquine",
@@ -110,7 +97,7 @@ Proportion_Map(df = GRC_Data,
 
 
 ## Mutation Frequency table and plots 
-```{r, echo=FALSE, out.width="100%}
+```{r, echo = TRUE, eval = FALSE}
 
 Mutation_Frequency(df = GRC_Data, 
                    gene = "pfcrt", 
@@ -128,7 +115,7 @@ Mutation_Frequency(df = GRC_Data,
 
 
 ## Haplotype Proportion plots
-```{r, echo=FALSE, out.width="100%}
+```{r, echo = TRUE, eval = FALSE}
 
 Haplotype_Proportion(df = GRC_Data, 
                      gene_col = "PfCRT", 
@@ -143,7 +130,7 @@ Haplotype_Proportion(df = GRC_Data,
 
 
 ## Filter SNPs and Smaples for missigness
-```{r}
+```{r, echo=FALSE, eval = FALSE}
 
 Filter_SNPs_Samples(df = GRC_Data, 
                     missingnessThreshold = 0.40)s
@@ -152,7 +139,7 @@ Filter_SNPs_Samples(df = GRC_Data,
 
 
 ## Diversity Map
-```{r, echo=FALSE, out.width="100%}
+```{r, echo=FALSE, eval = FALSE}
 
 DiversityMap(df = GRC_Data, 
              drug_col = "Chloroquine",
@@ -165,75 +152,4 @@ DiversityMap(df = GRC_Data,
              save_output = FALSE)
 ```
 
-
-## Calculate the Identity By State (IBS) and save it as a dataframe.
-```{r, echo=FALSE, out.width="100%}
-IBS_Data <- 
-GenerateIBS_Data(df = GRC_Data, 
-                 SNP_Data = BarcodeData)
-```
-
-
-## Summarise IBS by the same location and draw the propoertion map
-```{r}
-
-# Assuming MeltIbsData and LongLat_data are available:
-IBS_SummarisedData1 <-
-IBS_DataSummary(MeltIbsData = IBS_Data$IbsMeltedMatrix %>% filter(LS1 == LS2),
-                LongLat_data = LongLat,
-                IBS_Threshold = 0.75) 
-
-# select th columns you need 
-IBS_SummarisedData1 <- IBS_SummarisedData1 %>% select(LS1,median_IBS,,Lat1,Long1) %>% mutate(median_IBS = round(median_IBS * 100, 1))
-
-# Get th sample count information from the DiversityDataframe 
-IBS_SummarisedData1 <- IBS_SummarisedData1 %>% left_join(DData$Data %>% select(Location, Total), by = c("LS1" = "Location"))
-
-# create sf object 
-IBS_SummarisedData1_Sf <- st_as_sf(IBS_SummarisedData1, coords = c("Long1", "Lat1"), crs = st_crs(GMB))
-
-# use the proportion map fucntion to plot the summary data
-Proportion_Map(shapeFile = GMB,
-               summaryData = IBS_SummarisedData1,
-               summaryData_sf = IBS_SummarisedData1_Sf,
-               prop_column = "median_IBS",
-               location_col = "LS1",
-               long_col = "Long1",
-               lat_col = "Lat1",
-               saveLocation = savePath)
-
-```
-
-
-## Summarise IBS by diffrent location and draw th propoertion map
-```{r}
-
-# Assuming MeltIbsData and LongLat_data are available:
-IBS_SummarisedData2 <-
-IBS_DataSummary(MeltIbsData = IBS_Data$IbsMeltedMatrix %>% filter(LS1 != LS2),
-                LongLat_data = LongLat,
-                IBS_Threshold = 0.75) 
-
-# For which ever perecentage column we want to plot let's filter th summary data for percentage 5 percent and above
-IBS_SummarisedData2a <- IBS_SummarisedData2 %>% filter(TotalPairCount.per >= 1)
-
-## create sf objects for your longitude and latitude data
-LongLat <- LongLat %>% filter(Location %in% unique(IBS_SummarisedData2a$LS1))
-LongLatSf <- st_as_sf(LongLat, coords = c("long", "lat"), crs = st_crs(GMB))
-
-
-colnames(IBS_SummarisedData2a)[grep("\\.per$", colnames(IBS_SummarisedData2a))]
-
-# Use the IBS_ConnectednessMap funcion to plot th summary data
-IBS_ConnectednesMaps( shapeFile = GMB,
-                      LongLatData_sf = LongLatSf,
-                      IbsData = IBS_SummarisedData2a ,
-                      LongLatData = LongLat,
-                      prop_column = "TotalPairCount.per",
-                      plotName = "IBS Connection plot for All pairs >= 0.75",
-                      breaks = seq(0,8,2),
-                      limits = c(0,8),
-                      saveName = "GroupConnectionLP")
-
-```
 

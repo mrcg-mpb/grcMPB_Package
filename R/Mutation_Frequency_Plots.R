@@ -3,16 +3,17 @@
 #' This function calculates the frequency of wild, mutated, mixed, and missing haplotypes for a specified gene.
 #' It also generates two tables: one for mutation types by position and another for mutations by location.
 #' The function provides the option to include mixed haplotypes in the counts for both tables.
-#' The first Table is didspolayed in a form of a barshart with the percentages of the, wild, muataed, mixed and missing for the haplotype.
-#' The second tabke is displayed using the maps with this percentages in circles and circle represewntaimg a location.
+#' The first plot is a bar chart with the percentages of, wild, mutated, mixed and missing for the haplotype.
+#' The second plots are maps which show these percentages in circles and the circle representing a location.
 #'
 #' @param df Final GRC dataframe
 #' @param gene The gene to analyze ("pfcrt", "pfdhps", "pfdhfr", "pfmdr1")
 #' @param gene_col The column in the df that contains haplotype data (e.g., "PfCRT").
 #' @param time Optional. A list defining time periods.
-#' @param labelSize Used to set the size of the labels on the map.
-#' @param circleNumSize Used to set th sizes of the numbers in th circles.
-#' @param scaleCircleSize Used to scale the size of th circles.
+#' @param mData The metatdata list that contains your shapefile and Longitude Latitude data.
+#' @param label_size Used to set the size of the labels on the map.
+#' @param circle_num_size Used to set th sizes of the numbers in th circles.
+#' @param scale_circle_size Used to scale the size of th circles.
 #' @param include_mixed Boolean, whether to include mixed haplotypes in counts
 #'
 #'
@@ -22,8 +23,8 @@
 #' @export
 #'
 
-Mutation_Frequency <- function(df, gene, gene_col, drug_col, saveOutput = TRUE, period_name = "Full", time = NULL,
-                               labelSize = 2.5, circleNumSize = 3.1, scaleCircleSize = 10, include_mixed = FALSE, ...) {
+Mutation_Frequency <- function(df, gene, gene_col, drug_col, save_output = TRUE, period_name = "Full", time = NULL, mData,
+                               label_size = 2.5, circle_num_size = 3.1, scale_circle_size = 10, include_mixed = FALSE, ...) {
 
   if (is.null(time)) {
     return(create_M_Plots(
@@ -31,11 +32,12 @@ Mutation_Frequency <- function(df, gene, gene_col, drug_col, saveOutput = TRUE, 
       gene = gene,
       gene_col = gene_col,
       drug_col = drug_col,
-      saveOutput = saveOutput,
+      save_output = save_output,
+      mData = mData,
       period_name = period_name,
-      labelSize = labelSize,
-      circleNumSize = circleNumSize,
-      scaleCircleSize = scaleCircleSize
+      label_size = label_size,
+      circle_num_size = circle_num_size,
+      scale_circle_size = scale_circle_size
       ))
   }
 
@@ -46,10 +48,11 @@ Mutation_Frequency <- function(df, gene, gene_col, drug_col, saveOutput = TRUE, 
     gene = gene,
     gene_col = gene_col,
     drug_col = drug_col,
-    saveOutput = saveOutput,
-    labelSize = labelSize,
-    circleNumSize = circleNumSize,
-    scaleCircleSize = scaleCircleSize,
+    save_output = save_output,
+    mData = mData,
+    label_size = label_size,
+    circle_num_size = circle_num_size,
+    scale_circle_size = scale_circle_size,
     include_mixed = include_mixed,
     ...))
 }
@@ -57,8 +60,8 @@ Mutation_Frequency <- function(df, gene, gene_col, drug_col, saveOutput = TRUE, 
 
 
 
-create_M_Plots <- function(df, gene, gene_col, drug_col, saveOutput = TRUE, period_name = "Full",
-                           labelSize = 2.5, circleNumSize = 3.1, scaleCircleSize = 10, include_mixed = FALSE, ...) {
+create_M_Plots <- function(df, gene, gene_col, drug_col, save_output = TRUE, period_name = "Full", mData,
+                           label_size = 2.5, circle_num_size = 3.1, scale_circle_size = 10, include_mixed = FALSE, ...) {
 
 
   # Define the reference haplotypes and positions for each gene
@@ -202,10 +205,10 @@ create_M_Plots <- function(df, gene, gene_col, drug_col, saveOutput = TRUE, peri
   ### Generate proportion maps for each mutation by location ###
   Mutation_Table <- result_table2 %>%
     mutate(across(-c(Location, Total), ~ as.numeric(gsub(".*\\((\\d+(?:\\.\\d+)?)%\\).*", "\\1", .)))) %>%
-    left_join(mapping_data$LongLat_data, by = "Location")
+    left_join(mData$LongLat_data, by = "Location")
 
 
-  Mutation_Table_Sf <- st_as_sf(Mutation_Table, coords = c("long", "lat"), crs = sf::st_crs(mapping_data$shapefile))
+  Mutation_Table_Sf <- st_as_sf(Mutation_Table, coords = c("long", "lat"), crs = sf::st_crs(mData$shapefile))
 
   # Initialize a list to store plots
   MutationPlots <- list(M_BarChart = mBar, M_Maps = list())
@@ -215,12 +218,12 @@ create_M_Plots <- function(df, gene, gene_col, drug_col, saveOutput = TRUE, peri
       # Build the ggplot map
     p <-
         ggplot() +
-        geom_sf(data = mapping_data$shapefile, fill = "white", color = "#023020", linewidth = 0.4) +
+        geom_sf(data = mData$shapefile, fill = "white", color = "#023020", linewidth = 0.4) +
         geom_sf(data = Mutation_Table_Sf, aes(size = 50, color = get(p_column))) +
-        geom_label_repel(data = Mutation_Table,
+      ggrepel::geom_label_repel(data = Mutation_Table,
                          aes(label = Location , x = long, y = lat, fontface = "bold"),
                          color = "black",
-                         size = labelSize,
+                         size = label_size,
                          box.padding = unit(1.2, "lines"),
                          segment.color = '#132B43',
                          angle = 45,
@@ -228,7 +231,7 @@ create_M_Plots <- function(df, gene, gene_col, drug_col, saveOutput = TRUE, peri
         ) +
         geom_text(data = Mutation_Table,
                   aes(label = get(p_column), x = long, y = lat),
-                  size = circleNumSize,
+                  size = circle_num_size,
                   color = "white",
                   fontface = "bold") +
         theme_void() +
@@ -239,7 +242,7 @@ create_M_Plots <- function(df, gene, gene_col, drug_col, saveOutput = TRUE, peri
               legend.key.width = unit(1, "cm"),
               legend.title = element_text(size = 12, vjust = 0.75)) +
         scale_color_gradient(high = "#132B43", low = "#56B1F7", name = "Percentages", limits = c(0, 100), labels = c("0%", "25%", "50%", "75%", "100%")) +
-        scale_size_continuous(range = c(1, scaleCircleSize))
+        scale_size_continuous(range = c(1, scale_circle_size))
 
 
       # Add plot to the list with the proportion column name
@@ -250,38 +253,26 @@ create_M_Plots <- function(df, gene, gene_col, drug_col, saveOutput = TRUE, peri
   # Save your tables in a list
   MutationFrequencyTables <- list(Table1 = result_table1, Tbale2 = result_table2 )
 
-  # Now save all plots if saveOutput is TRUE
-  if (saveOutput) {
-    # Check if the necessary directories and global variable exist
-    if (!exists("OutputPaths", envir = .GlobalEnv) || !dir.exists("Outputs")) {
-      message("OutputPaths is not available in your directory or environment. Please run the Combine_GRC function with saveOutput = TRUE to create the required directories.")
-      return()  # Stop further execution if OutputPaths doesn't exist
-    } else {
-      # Fetch OutputPaths from the global environment
-      OutputPaths <- get("OutputPaths", envir = .GlobalEnv)
-      savePath <- file.path(OutputPaths$mainPath, drug_col, "Proportion_Maps")
+  # Now save all plots if save_output is TRUE
+  if (save_output) {
 
-      # Create the main savePath directory if it doesn't exist
-      if (!dir.exists(savePath)) {
-        dir.create(savePath, showWarnings = FALSE, recursive = TRUE)
-      } else {
-        # Create the MutationPlots directory if it doesn't exist
-        mutation_plots_path <- file.path(savePath, "MutationPlots")
-        if (!dir.exists(mutation_plots_path)) {
-          dir.create(mutation_plots_path, showWarnings = FALSE)
-        }
-      }
+     save_path <- initialize_output_paths(dir1 = "Proportion_Maps", dir2 = "Mutation_Plots" )
 
-      writexl::write_xlsx(result_table1, file.path(mutation_plots_path, paste0("MutationFrequency_Table1", "_", period_name, ".xlsx") ))
-      writexl::write_xlsx(result_table2, file.path(mutation_plots_path, paste0("MutationFrequency_Table2", "_", period_name, ".xlsx") ))
+      writexl::write_xlsx(result_table1, file.path(save_path, paste0("MutationFrequency_Table1", "_", period_name, ".xlsx") ))
+      writexl::write_xlsx(result_table2, file.path(save_path, paste0("MutationFrequency_Table2", "_", period_name, ".xlsx") ))
+
+      # save th barchart first
+      ggsave(
+        filename = paste0("Mutation_BarChart_", period_name, ".jpeg"),
+        plot = MutationPlots$M_BarChart$BarPlot,
+        path = save_path, dpi = 300, width = 11, height = 6)
 
       # Loop through the MutationPlots and save each plot
-      for (plot_name in names(MutationPlots$M_Maps)) {
-        plot_path <- file.path(mutation_plots_path, paste0(plot_name, "_", period_name, ".jpeg"))
-        ggsave(filename = plot_path, plot = MutationPlots$M_Maps[[plot_name]], dpi = 300, width = 11, height = 6)
-        message(paste("Saved plot:", plot_path))
+      for (plot_name in names(MutationPlots$M_Maps )) {
+        ggsave(filename =  paste0(plot_name, "_", period_name, ".jpeg"),
+               plot = MutationPlots$M_Maps[[plot_name]],
+               path = save_path,  dpi = 300, width = 11, height = 6)
       }
-    }
   }
 
   return(list(

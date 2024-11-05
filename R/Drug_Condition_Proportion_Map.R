@@ -7,11 +7,12 @@
 #'
 #' @param df Final GRC dataframe.
 #' @param drug_col The name of the column representing the drug conditions (e.g., "Chloroquine").
-#' @param saveOutput Logical. Whether to save the output plots to files (default is FALSE).
+#' @param mData The metatdata list that contains your shapefile and Longitude Latitude data.
+#' @param save_output Logical. Whether to save the output plots to files (default is FALSE).
 #' @param time Optional. A list defining time periods.
-#' @param labelSize Used to set the size of the labels on the map.
-#' @param circleNumSize Used to set th sizes of the numbers in th circles.
-#' @param scaleCircleSize Used to scale the size of th circles.
+#' @param label_size Used to set the size of the labels on the map.
+#' @param circle_num_size Used to set th sizes of the numbers in th circles.
+#' @param scale_circle_size Used to scale the size of th circles.
 #'
 #'
 #'
@@ -20,18 +21,19 @@
 #'
 #' @export
 #'
-Proportion_Map <- function(df, drug_col, saveOutput = TRUE, period_name = "Full",
-                           time = NULL, labelSize = 2.5, circleNumSize = 3.1, scaleCircleSize = 10, ...) {
+Proportion_Map <- function(df, drug_col, save_output = TRUE, period_name = "Full", mData,
+                           time = NULL, label_size = 2.5, circle_num_size = 3.1, scale_circle_size = 10, ...) {
 
   if (is.null(time)) {
     return(create_CP_map(
       df = df,
       drug_col = drug_col,
-      saveOutput = saveOutput,
+      save_output = save_output,
       period_name = period_name,
-      labelSize = labelSize,
-      circleNumSize = circleNumSize,
-      scaleCircleSize = scaleCircleSize))
+      mData = mData,
+      label_size = label_size,
+      circle_num_size = circle_num_size,
+      scale_circle_size = scale_circle_size))
   }
 
    return(TemporalData_List(
@@ -39,18 +41,19 @@ Proportion_Map <- function(df, drug_col, saveOutput = TRUE, period_name = "Full"
      func = create_CP_map,
      drug_col = drug_col,
      time = time,
-     saveOutput = saveOutput,
-     labelSize = labelSize,
-     circleNumSize = circleNumSize,
-     scaleCircleSize = scaleCircleSize,
+     save_output = save_output,
+     mData = mData,
+     label_size = label_size,
+     circle_num_size = circle_num_size,
+     scale_circle_size = scale_circle_size,
      ...))
 
 }
 
 # Internal function to create plots for proportion maps
 # Not exported; used within `Proportion_Map`.
-create_CP_map <- function(df, drug_col,  saveOutput = TRUE, period_name = "Full",
-                          labelSize = 2.5, circleNumSize = 3.1, scaleCircleSize = 10, ...) {
+create_CP_map <- function(df, drug_col,  save_output = TRUE, period_name = "Full", mData,
+                          label_size = 2.5, circle_num_size = 3.1, scale_circle_size = 10, ...) {
 
   # Summarize the data by location and sample count
   summaryTable <- data.frame(unclass(table(df[["Location"]], df[[drug_col]])))
@@ -61,10 +64,10 @@ create_CP_map <- function(df, drug_col,  saveOutput = TRUE, period_name = "Full"
     dplyr::select(-Total.per)
   summaryTable$Location <- rownames(summaryTable)
   rownames(summaryTable) <- NULL
-  summaryTable <- dplyr::left_join(summaryTable, mapping_data$LongLat_data, by = "Location")
+  summaryTable <- dplyr::left_join(summaryTable, mData$LongLat_data, by = "Location")
 
   # Create sf object for summaryTable using longitude and latitude
-  summaryTable_sf <- sf::st_as_sf(summaryTable, coords = c("long", "lat"), crs = sf::st_crs(mapping_data$shapefile))
+  summaryTable_sf <- sf::st_as_sf(summaryTable, coords = c("long", "lat"), crs = sf::st_crs(mData$shapefile))
 
   # Initialize a list to store plots
   DrugResistantMaps <- list()
@@ -74,12 +77,12 @@ create_CP_map <- function(df, drug_col,  saveOutput = TRUE, period_name = "Full"
     # Build the ggplot map
     p <-
       ggplot() +
-      geom_sf(data = mapping_data$shapefile, fill = "white", color = "#023020", linewidth = 0.4) +
+      geom_sf(data = mData$shapefile, fill = "white", color = "#023020", linewidth = 0.4) +
       geom_sf(data = summaryTable_sf, aes(size = 50, color = get(p_column))) +
-      geom_label_repel(data = summaryTable,
+      ggrepel::geom_label_repel(data = summaryTable,
                        aes(label = paste(Location, " (", Total, ")", sep = ""), x = long, y = lat, fontface = "bold"),
                        color = "black",
-                       size = as.numeric(labelSize),
+                       size = as.numeric(label_size),
                        box.padding = unit(1.2, "lines"),
                        segment.color = '#132B43',
                        angle = 45,
@@ -87,7 +90,7 @@ create_CP_map <- function(df, drug_col,  saveOutput = TRUE, period_name = "Full"
       ) +
       geom_text(data = summaryTable,
                 aes(label = get(p_column), x = long, y = lat),
-                size = as.numeric(circleNumSize),
+                size = as.numeric(circle_num_size),
                 color = "white",
                 fontface = "bold") +
       theme_void() +
@@ -98,45 +101,28 @@ create_CP_map <- function(df, drug_col,  saveOutput = TRUE, period_name = "Full"
             legend.key.width = unit(1, "cm"),
             legend.title = element_text(size = 12, vjust = 0.75)) +
       scale_color_gradient(high = "#132B43", low = "#56B1F7", name = "Percentages", limits = c(0, 100), labels = c("0%", "25%", "50%", "75%", "100%")) +
-      scale_size_continuous(range = c(1, as.numeric(scaleCircleSize)))
+      scale_size_continuous(range = c(1, as.numeric(scale_circle_size)))
 
     # Add plot to the list with the proportion column name
     DrugResistantMaps[[p_column]] <- p
   }
 
-  # Now save all plots if saveOutput is TRUE
-  if (saveOutput) {
-    # Check if the necessary directories and global variable exist
-    if (!exists("OutputPaths", envir = .GlobalEnv) || !dir.exists("Outputs")) {
-      message("OutputPaths is not available in your directory or environment. Please run the Combine_GRC function with saveOutput = TRUE to create the required directories.")
-      return()  # Stop further execution if OutputPaths doesn't exist
-    } else {
-      # Fetch OutputPaths from the global environment
-      OutputPaths <- get("OutputPaths", envir = .GlobalEnv)
-      savePath <- file.path(OutputPaths$mainPath, drug_col, "Proportion_Maps")
+  # Now save all plots if save_output is TRUE
+  if (save_output) {
 
-      # Create the main savePath directory if it doesn't exist
-      if (!dir.exists(savePath)) {
-        dir.create(savePath, showWarnings = FALSE, recursive = TRUE)
-      } else {
-        # Create the Drug_Resistant_Maps directory if it doesn't exist
-        drug_resistant_maps_path <- file.path(savePath, "Drug_Resistant_Maps")
-        if (!dir.exists(drug_resistant_maps_path)) {
-          dir.create(drug_resistant_maps_path, showWarnings = FALSE)
-        }
-      }
+      save_path <- initialize_output_paths(dir1 = "Proportion_Maps", dir2 = "Drug_Resistant_Maps" )
 
       # Loop through the DrugResistantMaps and save each plot
       for (p_column in names(DrugResistantMaps)) {
         ggsave(filename = paste0(p_column, "_", period_name, ".jpeg"),
-               path = drug_resistant_maps_path,
+               path = save_path,
                plot = DrugResistantMaps[[p_column]], dpi = 300, width = 11, height = 6)
       }
-    }
   }
+
   # Return both the plots and the summary table as a list
   return(list(
     Plots = list(DC_Maps = DrugResistantMaps),
     Data = list(DC_Table = summaryTable)))
 }
-
+"Drug_Resistant_Maps"

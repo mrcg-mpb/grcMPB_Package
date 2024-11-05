@@ -8,10 +8,10 @@ Haplotype_Proportion(
   df,
   gene_col,
   drug_col,
-  saveOutput = TRUE,
+  save_output = TRUE,
   period_name = "Full",
-  labelSize = 2.5,
-  scaleCircleSize = 0.035,
+  label_size = 2.5,
+  scale_circle_size = 0.035,
   time = NULL,
   ...
 )
@@ -23,17 +23,16 @@ Haplotype_Proportion(
 
 \item{drug_col}{The name of the column representing the drug conditions}
 
-\item{saveOutput}{Logical. Whether to save the output plots to files (default is TRUE)}
+\item{save_output}{Logical. Whether to save the output plots to files (default is TRUE)}
 
-\item{labelSize}{Size of the labels on the map}
+\item{label_size}{Size of the labels on the map}
 
-\item{scaleCircleSize}{Used to scale the pie chart circle sizes}
+\item{scale_circle_size}{Used to scale the pie chart circle sizes}
 
 \item{time}{Optional. A list defining time periods, where each list element contains:}
 }
 \description{
-This function generates haplotype proportion visualizations (bar chart and pie chart map)
-with flexible time-based filtering and output saving capabilities.
+This function generates the proportion of unique haplotypes for a specific gene (e.g, PfCRT)
 }
 \examples{
 Haplotype_Proportion(GRC_data, drug_col = "Chloroquine", gene_col = "PfCRT")

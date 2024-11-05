@@ -1,14 +1,12 @@
 #' GenerateIBS_Data
 #'
-#' This function calculates identity-by-state (IBS) scores between samples based on SNP data. It reshapes the
-#' IBS matrix into a long format and annotates the data with metadata, including sample locations, drug
-#' conditions, and regions.
+#' This function calculates identity-by-state (IBS) scores between samples based on the barcodedata sequence which is made
+#' up of the SNPs columns in th GRC Data. It reshapes the IBS matrix into a long format and annotates the data with metadata, including sample locations, drug
+#' drug conditions, loacction of the samples pairing, etc.
 #'
 #' @param df Final GRC dataframe
 #' @param SNP_Data A dataframe of SNP data, where each row represents a sample and each column corresponds to a
 #'                    genetic locus (e.g., "Pf3D7_"). The row names should correspond to the "Sample Internal ID".
-#' @param LongLat_data A dataframe containing the longitude, latitude, and region information for each location.
-#'                     It should have columns for "Location" and "Regions".
 #'
 #' @return A list containing a histogram of IBS scores and dataframe in long format containing the IBS scores between sample pairs along with associated metadata.
 #'         The dataframe will include the following columns:
@@ -29,10 +27,10 @@
 #'
 #' @examples
 #' # Example usage:
-#' GenerateIBS_Data(df = FinalData, SNP_Data = BarcodeData, LongLat_data = Coordinates)
+#' GenerateIBS_Data(df = FinalData, SNP_Data = BarcodeData, mapping_data$LongLat_data = Coordinates)
 #' head(IBS_Data)
 
-GenerateIBS_Data <- function(df, SNP_Data, LongLat_data ) {
+GenerateIBS_Data <- function(df, SNP_Data) {
 
   # Inner function to calculate IBS scores between sample pairs
   CalculateIBS <- function(input) {
@@ -81,30 +79,26 @@ GenerateIBS_Data <- function(df, SNP_Data, LongLat_data ) {
   IBS_Matrix <- CalculateIBS(SNP_Data)
 
   # Reshape the IBS matrix to a long format for easier analysis
-  IBS_Data <- reshape2::melt(IBS_Matrix, varnames = c("S1", "S2"))
+  IBS_DataTable <- reshape2::melt(IBS_Matrix, varnames = c("S1", "S2"))
 
   # Add metadata (locations, drug conditions, regions) for both samples
-  IBS_Data <- IBS_Data %>%
+  IBS_DataTable <- IBS_DataTable %>%
     left_join(df %>% dplyr::select(`Sample Internal ID`, LS1 = Location), by = c("S1" = "Sample Internal ID")) %>%
     left_join(df %>% dplyr::select(`Sample Internal ID`, LS2 = Location), by = c("S2" = "Sample Internal ID")) %>%
     left_join(df %>% dplyr::select(`Sample Internal ID`, DCS1 = Chloroquine), by = c("S1" = "Sample Internal ID")) %>%
-    left_join(df %>% dplyr::select(`Sample Internal ID`, DCS2 = Chloroquine), by = c("S2" = "Sample Internal ID")) %>%
-    left_join(LongLat_data %>% dplyr::select(Location, RgS1 = Regions), by = c("LS1" = "Location")) %>%
-    left_join(LongLat_data %>% dplyr::select(Location, RgS2 = Regions), by = c("LS2" = "Location"))
-
-  # save th Ibs matrix and melted matrix in a list
-  IBS_Data <- list(IbsMatrix = IBS_Matrix, IbsMeltedMatrix = IBS_Data)
-
-  # Save the IBS_Data to the global environment for potential future use
-  assign("IBS_Data", IBS_Data, envir = .GlobalEnv)
+    left_join(df %>% dplyr::select(`Sample Internal ID`, DCS2 = Chloroquine), by = c("S2" = "Sample Internal ID")) #%>%
+    # left_join(mapping_data$LongLat_data %>% dplyr::select(Location, RgS1 = Regions), by = c("LS1" = "Location")) %>%
+    # left_join(mapping_data$LongLat_data %>% dplyr::select(Location, RgS2 = Regions), by = c("LS2" = "Location"))
 
   # plot the IBS scores on a histogram
   p <-
-  ggplot(IBS_Data$IbsMeltedMatrix, aes(x = value)) +
+  ggplot(IBS_DataTable, aes(x = value)) +
     geom_histogram(binwidth = 0.02, fill = "blue", color = "black", alpha = 0.7) +
     labs(title = "Distribution of IBS Scores", x = "IBS Score", y = "Frequency") +
     theme_classic()
 
   # Return a preview of the IBS data
-  return(list(Ibs_Data = head(IBS_Data$IbsMeltedMatrix), Ibs_His = p))
+  return(list(
+    Plot = p,
+    Data = list(IBS_Melted_Matrix = IBS_DataTable, IBS_Matrix = IBS_Matrix)))
 }

@@ -8,9 +8,9 @@
 #' @param drug_col The name of the column representing the drug conditions (e.g., "Chloroquine").
 #' @param SNP_Data A dataframe of SNP data, where each row represents a sample and each column corresponds to a
 #'                    genetic locus (e.g., "Pf3D7_"). The row names should correspond to the "Sample Internal ID".
-#' @param labelSize Used to set the size of the labels on the map.
-#' @param circleNumSize Used to set th sizes of the numbers in th circles.
-#' @param scaleCircleSize Used to scale the size of th circles.
+#' @param label_size Used to set the size of the labels on the map.
+#' @param circle_num_size Used to set th sizes of the numbers in th circles.
+#' @param scale_circle_size Used to scale the size of th circles.
 #' @param saveOutput Logical. Whether to save the output plots to files (default is FALSE).
 #' @param time Optional. A list defining time periods.
 #'
@@ -25,8 +25,8 @@
 
 
 
-DiversityMap <- function(df, drug_col, SNP_Data, period_name = "Full", labelSize = 2.5, time = NULL,
-                         circleNumSize = 3.1, scaleCircleSize = 10, saveOutput = TRUE, ...) {
+DiversityMap <- function(df, drug_col, SNP_Data, period_name = "Full", label_size = 2.5, time = NULL, mData ,
+                         circle_num_size = 3.1, scale_circle_size = 10, saveOutput = TRUE, ...) {
 
   if (is.null(time)) {
     return(Create_DM(
@@ -35,9 +35,10 @@ DiversityMap <- function(df, drug_col, SNP_Data, period_name = "Full", labelSize
       SNP_Data = SNP_Data,
       saveOutput = saveOutput,
       period_name = period_name,
-      labelSize = labelSize,
-      circleNumSize = circleNumSize,
-      scaleCircleSize = scaleCircleSize))
+      mData = mData,
+      label_size = label_size,
+      circle_num_size = circle_num_size,
+      scale_circle_size = scale_circle_size))
   }
 
   return(TemporalData_List(
@@ -47,17 +48,18 @@ DiversityMap <- function(df, drug_col, SNP_Data, period_name = "Full", labelSize
     time = time,
     SNP_Data = SNP_Data,
     saveOutput = saveOutput,
-    labelSize = labelSize,
-    circleNumSize = circleNumSize,
-    scaleCircleSize = scaleCircleSize,
+    mData = mData,
+    label_size = label_size,
+    circle_num_size = circle_num_size,
+    scale_circle_size = scale_circle_size,
     ...))
 
 }
 
 
 
-Create_DM <- function(df, drug_col, SNP_Data, period_name = "Full", labelSize = 2.5,
-                      circleNumSize = 3.1, scaleCircleSize = 10, saveOutput = TRUE, ...) {
+Create_DM <- function(df, drug_col, SNP_Data, period_name = "Full", label_size = 2.5, mData,
+                      circle_num_size = 3.1, scale_circle_size = 10, saveOutput = TRUE, ...) {
 
   # Helper function to calculate heterozygosity for a single SNP locus
   calculate_snp_heterozygosity <- function(alleles) {
@@ -84,22 +86,22 @@ Create_DM <- function(df, drug_col, SNP_Data, period_name = "Full", labelSize = 
     select(Location, meanSnpHeterozygosity, Total, starts_with("het_"))  # Keep relevant columns
 
   # Add longitude and latitude for each location
-  DiversityData <- DiversityData %>% left_join(mapping_data$LongLat_data, by = "Location")
+  DiversityData <- DiversityData %>% left_join(mData$LongLat_data, by = "Location")
 
   # Create an sf object for spatial plotting
-  DiversityData_Sf <- st_as_sf(DiversityData, coords = c("long", "lat"), crs = st_crs(mapping_data$shapefile))
+  DiversityData_Sf <- st_as_sf(DiversityData, coords = c("long", "lat"), crs = st_crs(mData$shapefile))
 
 
   # Generate a proportional map using the `Proportion_Map` function
 
   p <-
     ggplot() +
-    geom_sf(data = mapping_data$shapefile, fill = "white", color = "#023020", linewidth = 0.4) +
+    geom_sf(data = mData$shapefile, fill = "white", color = "#023020", linewidth = 0.4) +
     geom_sf(data = DiversityData_Sf, aes(size = 50, color = meanSnpHeterozygosity)) +
     geom_label_repel(data = DiversityData,
                      aes(label = paste(Location, " (", Total, ")", sep = ""), x = long, y = lat, fontface = "bold"),
                      color = "black",
-                     size = as.numeric(labelSize),
+                     size = as.numeric(label_size),
                      box.padding = unit(1.2, "lines"),
                      segment.color = '#132B43',
                      angle = 45,
@@ -107,7 +109,7 @@ Create_DM <- function(df, drug_col, SNP_Data, period_name = "Full", labelSize = 
     ) +
     geom_text(data = DiversityData,
               aes(label = meanSnpHeterozygosity , x = long, y = lat),
-              size = as.numeric(circleNumSize),
+              size = as.numeric(circle_num_size),
               color = "white",
               fontface = "bold") +
     theme_void() +
@@ -118,36 +120,19 @@ Create_DM <- function(df, drug_col, SNP_Data, period_name = "Full", labelSize = 
           legend.key.width = unit(1, "cm"),
           legend.title = element_text(size = 12, vjust = 0.75)) +
     scale_color_gradient(high = "#132B43", low = "#56B1F7", name = "Percentages", limits = c(0, 100), labels = c("0%", "25%", "50%", "75%", "100%")) +
-    scale_size_continuous(range = c(1, as.numeric(scaleCircleSize)))
+    scale_size_continuous(range = c(1, as.numeric(scale_circle_size)))
 
   # Save the plots if saveOutput is TRUE
   if (saveOutput) {
-    # Check if OutputPaths exists and Outputs directory is available
-    if (!exists("OutputPaths", envir = .GlobalEnv) || !dir.exists("Outputs")) {
-      message("OutputPaths is not available in your directory or environment.
-              Please run the Combine_GRC function with saveOutput = TRUE to create the required directories.")
-      return()
-    } else {
-      # Fetch OutputPaths from the global environment
-      OutputPaths <- get("OutputPaths", envir = .GlobalEnv)
-      savePath <- file.path(OutputPaths$mainPath, drug_col, "Proportion_Maps")
 
-      # Create the save directory if it doesn't exist
-      if (!dir.exists(savePath)) {
-        dir.create(savePath, showWarnings = FALSE, recursive = TRUE)
-      }
+     save_path <- initialize_output_paths(dir1 = "Proportion_Maps")
 
       # Save the map
       ggsave(
         filename = paste0("meanSnpHet_", period_name, ".jpeg"),
-        path = savePath,
-        plot = p,
-        dpi = 300,
-        width = 11,
-        height = 6
+        path = save_path, plot = p, dpi = 300, width = 11, height = 6
       )
 
-    }
   }
 
   return(list(

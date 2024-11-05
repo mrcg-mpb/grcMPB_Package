@@ -9,12 +9,12 @@ Mutation_Frequency(
   gene,
   gene_col,
   drug_col,
-  saveOutput = TRUE,
+  save_output = TRUE,
   period_name = "Full",
   time = NULL,
-  labelSize = 2.5,
-  circleNumSize = 3.1,
-  scaleCircleSize = 10,
+  label_size = 2.5,
+  circle_num_size = 3.1,
+  scale_circle_size = 10,
   include_mixed = FALSE,
   ...
 )
@@ -28,11 +28,11 @@ Mutation_Frequency(
 
 \item{time}{Optional. A list defining time periods.}
 
-\item{labelSize}{Used to set the size of the labels on the map.}
+\item{label_size}{Used to set the size of the labels on the map.}
 
-\item{circleNumSize}{Used to set th sizes of the numbers in th circles.}
+\item{circle_num_size}{Used to set th sizes of the numbers in th circles.}
 
-\item{scaleCircleSize}{Used to scale the size of th circles.}
+\item{scale_circle_size}{Used to scale the size of th circles.}
 
 \item{include_mixed}{Boolean, whether to include mixed haplotypes in counts}
 }
@@ -40,8 +40,8 @@ Mutation_Frequency(
 This function calculates the frequency of wild, mutated, mixed, and missing haplotypes for a specified gene.
 It also generates two tables: one for mutation types by position and another for mutations by location.
 The function provides the option to include mixed haplotypes in the counts for both tables.
-The first Table is didspolayed in a form of a barshart with the percentages of the, wild, muataed, mixed and missing for the haplotype.
-The second tabke is displayed using the maps with this percentages in circles and circle represewntaimg a location.
+The first plot is a bar chart with the percentages of, wild, mutated, mixed and missing for the haplotype.
+The second plots are maps which show these percentages in circles and the circle representing a location.
 }
 \examples{
 Mutation_Frequency( GRC_Data, gene = pfcrt, gene_col = "PfCRT", drug_col = "Chloroquine")

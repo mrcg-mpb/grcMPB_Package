@@ -2,21 +2,23 @@
 % Please edit documentation in R/Combine_GRC_Sheets.R
 \name{Combine_GRC_Sheets}
 \alias{Combine_GRC_Sheets}
-\title{Combine GRC Sheets Function}
+\title{Combine GRC Sheets}
 \usage{
-Combine_GRC_Sheets(input_folder, Country = NULL, saveOutput = TRUE)
+Combine_GRC_Sheets(input_folder, Country = NULL, save_output = TRUE)
 }
 \arguments{
 \item{input_folder}{Path to the folder containing the GRC Excel files.}
 
-\item{saveOutput}{This allows th users to save their ouputs or not, taking in the Values TRUE or False with TRUE as the default}
+\item{save_output}{Logical. Whether to save the output plots to the Outputs folder (default is FALSE).}
 
 \item{country}{A character string representing the country for which specific data cleaning rules should be applied (optional).
 If "Gambia", location names will be re coded and some locations will be filtered out.}
 }
 \value{
-A data frame containing the merged data.
+A data frame containing multiple GRC excel sheets merged together.
 }
 \description{
 This function merges data from multiple GRC Excel files, cleans the data and filters by country if specified.
+If save_output equals to TRUE then a folder called Outputs in created in the working directory which will host all th outputs.
+Outputs is also passed as a list containing paths to your output folders in the working environment.
 }

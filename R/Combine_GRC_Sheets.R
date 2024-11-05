@@ -1,18 +1,20 @@
 
-#' Combine GRC Sheets Function
+#' @title Combine GRC Sheets
 #'
 #' @description This function merges data from multiple GRC Excel files, cleans the data and filters by country if specified.
+#' If save_output equals to TRUE then a folder called Outputs in created in the working directory which will host all th outputs.
+#' Outputs is also passed as a list containing paths to your output folders in the working environment.
 #'
 #' @param input_folder Path to the folder containing the GRC Excel files.
 #' @param country A character string representing the country for which specific data cleaning rules should be applied (optional).
 #' If "Gambia", location names will be re coded and some locations will be filtered out.
-#' @param saveOutput This allows th users to save their ouputs or not, taking in the Values TRUE or False with TRUE as the default
+#' @param save_output Logical. Whether to save the output plots to the Outputs folder (default is FALSE).
 #'
 #'
-#' @return A data frame containing the merged data.
+#' @return A data frame containing multiple GRC excel sheets merged together.
 #' @export
 
-Combine_GRC_Sheets <- function(input_folder, Country = NULL, saveOutput = TRUE) {
+Combine_GRC_Sheets <- function(input_folder, Country = NULL, save_output = TRUE) {
   # Get list of all Excel files in the folder
   files <- list.files(input_folder, pattern = ".xlsx", full.names = TRUE)
 
@@ -63,18 +65,16 @@ Combine_GRC_Sheets <- function(input_folder, Country = NULL, saveOutput = TRUE) 
     }
   }
 
-  if(saveOutput){
+  if(save_output){
 
-  # Create the Output Directory
-    if (!dir.exists("Outputs") | !exists("OutputPaths", envir = .GlobalEnv)) {
-      dir.create(file.path(getwd(), "Outputs"), showWarnings = FALSE)
-      OutputPaths = list(mainPath = file.path(getwd(), "Outputs"))
-      #asssign the path to you global environment
-      assign("OutputPaths", OutputPaths, envir = .GlobalEnv)
-      # Export the CombinedData as a excel file
-      writexl::write_xlsx(CombinedData, file.path(OutputPaths$mainPath, "GRC_Sheet.xlsx"))
+   # Use the initialize_output_paths function to get the save path
+    save_path <- initialize_output_paths()
 
-    }
-    return(CombinedData)
-  }else{ return(CombinedData) }
+    # Export the CombinedData as an Excel file to the specified save path
+    writexl::write_xlsx(CombinedData, file.path(save_path, "GRC_Sheet.xlsx"))
+  }
+
+  return(CombinedData)
 }
+
+

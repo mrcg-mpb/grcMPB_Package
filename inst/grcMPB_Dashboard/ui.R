@@ -55,8 +55,8 @@ library(colourpicker)
       }
 
       .custom-column {
-        background-color: #f1f3f2 ;
-        border: 6px solid #f1f3f2;
+        background-color: #56CC9D ;
+        border: 6px solid #56CC9D;
         border-radius: 8px;
         margin: 2px;
 
@@ -78,6 +78,19 @@ library(colourpicker)
       .input-custom .selectize-input, .input-custom .form-control {
         border-radius: 8px;
         border: 4px solid #56CC9D;
+      }
+
+
+      .input-custom2 {
+        border-radius: 10px;
+        border: 4px solid #f1f3f2;
+        background-color: #56CC9D;
+      }
+
+      .input-label {
+        color: white;  /* Change the color to white */
+        font-weight: bold; /* Make the text bold */
+        font-size: 20px;  /* Increase the font size */
       }
 
     .btn-secondary {
@@ -102,10 +115,15 @@ library(colourpicker)
           #bg = "#2c3e50",
             fileInput(
               "zipFile",
-              "Upload File.",
+              "Upload GRC Data.",
               buttonLabel = list(icon("file-import")),
               multiple = TRUE
             ),
+          fileInput("mdataFiles", "Upload Shapefile (.shp, .shx) and LongLat data (.csv or .xlsx)",
+                    buttonLabel = list(icon("file-import")),
+                    multiple = TRUE,
+                    accept = c(".shp", ".shx", ".csv", ".xlsx")),
+          textOutput("statusMessage"),
           h5("Temporal Analyses",class = "custom-column2" ),
           #wellPanel(class = "custom-column2",
             # First level selection
@@ -150,19 +168,19 @@ library(colourpicker)
             icon = icon("chart-column"),
             br(),
             fluidRow( h4("Color Settings"),
-              column(3,class = "custom-column",colourpicker::colourInput("resistant_color", "Resistant", value = "#525CEB")),
+              column(3,class = "input-custom2",colourpicker::colourInput("resistant_color", label = tags$span(class = "input-label", "Resistant"), value = "#525CEB")),
               column(1),
-              column(3,class = "custom-column",colourpicker::colourInput("mixed_resistant_color", "Mixed Resistant", value = "#808000")),
+              column(3,class = "input-custom2",colourpicker::colourInput("mixed_resistant_color", label = tags$span(class = "input-label","Mixed Resistant"), value = "#808000")),
               column(1),
-              column(3,class = "custom-column",colourpicker::colourInput("sensitive_color", "Sensitive", value = "#800000"))
+              column(3,class = "input-custom2",colourpicker::colourInput("sensitive_color", label = tags$span(class = "input-label", "Sensitive"), value = "#800000"))
                      ),
             fluidRow(column(4,actionButton("reset_colors", "Reset Colors", class = "btn-secondary"))),
-            fluidRow(class = "custom-column",
+            fluidRow(#class = "custom-column",
               #h4("Distribution by Location",class = "custom-column"),
               column(12, br(),
                      plotlyOutput("bar1_plot", height = "500px"))
             ),
-            fluidRow(class = "custom-column",
+            fluidRow(#class = "custom-column",
               #h4("Proportion Distribution",class = "custom-column"),
               column(12, br(),
                      plotlyOutput("bar2_plot", height = "500px"))
@@ -177,16 +195,16 @@ library(colourpicker)
           ),
           nav_panel(
             title = "Sample Count Map", icon = icon("map-location-dot"),br(),
-            fluidRow(
-              column(3,
-                     fileInput("shapefiles", "Upload Mapping Meta Data (.shp, .shx, .csv or .xlsx)",
-                               accept = c(".shp", ".shx", ".csv", ".xlsx"),
-                               multiple = TRUE)),
+            fluidRow(h4("Plot Controls"),
+              column(3, class = "input-custom2", numericInput("labelSize", label = tags$span(class = "input-label","Label Size:"), 2.5, min = 1, max = 100)),
+              column(1),
+              column(3, class = "input-custom2", numericInput("scaleCircleSize", label = tags$span(class = "input-label", "Circle  Size:"), 11, min = 11, max = 100)),
+              column(1),
+              column(3, class = "input-custom2", textInput("breaksInput", label = tags$span(class = "input-label","Enter breaks (comma-separated):"), value = "10,100,200,300"))
 
-              column(4, class = "custom-column", numericInput("labelSize", "Label Size:", 2.5, min = 1, max = 100)),
-              column(4, class = "custom-column", numericInput("scaleCircleSize", "Circle  Size:", 11, min = 11, max = 100))
             ),
-            fluidRow(#class = "custom-column",
+            fluidRow(column(4, downloadButton("downloadSCMap", "Download Map", class = "btn-secondary"))),
+            fluidRow(
               column(12,
                      plotOutput("sampleCountMapPlot", height = "500px")), br()
             )

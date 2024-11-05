@@ -1,14 +1,14 @@
 #' @title Haplotype Proportion Plots
 #'
-#' @description This function generates haplotype proportion visualizations (bar chart and pie chart map)
-#' with flexible time-based filtering and output saving capabilities.
+#' @description This function generates the proportion of unique haplotypes for a specific gene (e.g, PfCRT)
 #'
 #' @param df Final GRC dataframe
 #' @param gene_col The column containing haplotype data (e.g., "PfCRT")
 #' @param drug_col The name of the column representing the drug conditions
-#' @param saveOutput Logical. Whether to save the output plots to files (default is TRUE)
-#' @param labelSize Size of the labels on the map
-#' @param scaleCircleSize Used to scale the pie chart circle sizes
+#' @param save_output Logical. Whether to save the output plots to files (default is TRUE)
+#' @param label_size Size of the labels on the map
+#' @param mData The metatdata list that contains your shapefile and Longitude Latitude data.
+#' @param scale_circle_size Used to scale the pie chart circle sizes
 #' @param time Optional. A list defining time periods, where each list element contains:
 #'
 #' @examples
@@ -16,9 +16,9 @@
 #'
 #' @export
 #'
-Haplotype_Proportion <- function(df, gene_col, drug_col, saveOutput = TRUE,
-                                period_name = "Full", labelSize = 2.5,
-                                scaleCircleSize = 0.035, time = NULL, ...) {
+Haplotype_Proportion <- function(df, gene_col, drug_col, save_output = TRUE,
+                                period_name = "Full", label_size = 2.5,mData,
+                                scale_circle_size = 0.035, time = NULL, ...) {
 
   # If no time specification, create map for full dataset
   if (is.null(time)) {
@@ -26,10 +26,11 @@ Haplotype_Proportion <- function(df, gene_col, drug_col, saveOutput = TRUE,
       df = df,
       gene_col = gene_col,
       drug_col = drug_col,
-      saveOutput = saveOutput,
+      save_output = save_output,
       period_name = period_name,
-      labelSize = labelSize,
-      scaleCircleSize = scaleCircleSize
+      label_size = label_size,
+      mData = mData,
+      scale_circle_size = scale_circle_size
     ))
   }
 
@@ -40,18 +41,19 @@ Haplotype_Proportion <- function(df, gene_col, drug_col, saveOutput = TRUE,
     time = time,
     gene_col = gene_col,
     drug_col = drug_col,
-    saveOutput = saveOutput,
-    labelSize = labelSize,
-    scaleCircleSize = scaleCircleSize,
+    save_output = save_output,
+    label_size = label_size,
+    mData = mData,
+    scale_circle_size = scale_circle_size,
     ...
   ))
 }
 
 # Internal function to create haplotype proportion plots
 # Not exported; used within `HaplotypeProportion`
-create_haplotype_plots <- function(df, gene_col, drug_col, saveOutput = TRUE,
-                                   period_name = "Full", labelSize = 2.5,
-                                   scaleCircleSize = 0.035, ...) {
+create_haplotype_plots <- function(df, gene_col, drug_col, save_output = TRUE,
+                                   period_name = "Full", label_size = 2.5, mData ,
+                                   scale_circle_size = 0.035, ...) {
 
   # Group the dataframe by the gene_col and count occurrences
   HaplotypFreq_long <- df %>% group_by(!!sym(gene_col)) %>% dplyr::summarise(Count = n())
@@ -111,7 +113,7 @@ create_haplotype_plots <- function(df, gene_col, drug_col, saveOutput = TRUE,
   rownames(HaplotypFreq) <- NULL
 
   # Join HaplotypFreq with the longitude and latitude data for all locations
-  HaplotypFreq <- left_join(HaplotypFreq, mapping_data$LongLat_data, by = "Location")
+  HaplotypFreq <- left_join(HaplotypFreq, mData$LongLat_data, by = "Location")
 
   # Color palette
   colors2 <- c('#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0',
@@ -121,12 +123,12 @@ create_haplotype_plots <- function(df, gene_col, drug_col, saveOutput = TRUE,
 
   # Build the Pie Chart Map
   pieChart <- ggplot() +
-    geom_sf(data = mapping_data$shapefile, fill = "white", color = "#023020", linewidth = 0.7) +
+    geom_sf(data = mData$shapefile, fill = "white", color = "#023020", linewidth = 0.7) +
     geom_label_repel(
       data = HaplotypFreq,
       aes(label = paste(Location, " (", Total, ")", sep = ""), x = long, y = lat, fontface = "bold"),
       color = 'black',
-      size = labelSize,
+      size = label_size,
       box.padding = unit(1.5, "lines"),
       segment.color = '#132B43',
       angle = 90,
@@ -134,7 +136,7 @@ create_haplotype_plots <- function(df, gene_col, drug_col, saveOutput = TRUE,
     ) +
     geom_scatterpie(
       data = HaplotypFreq,
-      aes(x = long, y = lat, r = scaleCircleSize),
+      aes(x = long, y = lat, r = scale_circle_size),
       cols = colnames(HaplotypFreq %>% select(-c(Location, long, lat, Regions, Total))),
       color = NA
     ) +
@@ -149,43 +151,22 @@ create_haplotype_plots <- function(df, gene_col, drug_col, saveOutput = TRUE,
       legend.text = element_text(size = 15)
     )
 
-  # Save the plots if saveOutput is TRUE
-  if (saveOutput) {
-    # Check if OutputPaths exists and Outputs directory is available
-    if (!exists("OutputPaths", envir = .GlobalEnv) || !dir.exists("Outputs")) {
-      message("OutputPaths is not available in your directory or environment.
-              Please run the Combine_GRC function with saveOutput = TRUE to create the required directories.")
-      return()
-    } else {
-      # Fetch OutputPaths from the global environment
-      OutputPaths <- get("OutputPaths", envir = .GlobalEnv)
-      savePath <- file.path(OutputPaths$mainPath, drug_col, "Proportion_Maps")
+  # Save the plots if save_output is TRUE
+  if (save_output) {
 
-      # Create the save directory if it doesn't exist
-      if (!dir.exists(savePath)) {
-        dir.create(savePath, showWarnings = FALSE, recursive = TRUE)
-      }
+    save_path <- initialize_output_paths(dir1 = "Proportion_Maps")
 
       # Save bar chart
       ggsave(
         filename = paste0("HaplotypeBarChart_", period_name, ".jpeg"),
-        path = savePath,
-        plot = barChart,
-        dpi = 300,
-        width = 11,
-        height = 6
-      )
+        path = save_path, plot = barChart, dpi = 300, width = 11, height = 6
+        )
 
       # Save pie chart
       ggsave(
         filename = paste0("HaplotypePieChart_", period_name, ".jpeg"),
-        path = savePath,
-        plot = pieChart,
-        dpi = 300,
-        width = 11,
-        height = 8
-      )
-    }
+        path = save_path, plot = pieChart,dpi = 300, width = 11, height = 8
+        )
   }
 
   # Return both plots and the summary data

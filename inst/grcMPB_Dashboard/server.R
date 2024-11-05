@@ -211,6 +211,14 @@ function(input, output, session) {
   })
 
 
+
+  # MappingData(shapefile = GMB ,
+  #             LongLat_data = LongLat,
+  #             location_col = "Location",
+  #             long_col = "long",
+  #             lat_col = "lat" )
+
+
   # Reactive value to store drug distribution results
   drug_distribution_results <- reactiveVal(NULL)
 
@@ -221,7 +229,6 @@ function(input, output, session) {
 
     results <- Drug_Distribution(
       df = gene_classifier_result(),
-      location_col = "Location",
       drug_col = "Chloroquine",
       saveOutput = FALSE,
       time = period_structure(),
@@ -244,7 +251,7 @@ function(input, output, session) {
     }
 
     # Convert ggplot to plotly
-    ggplotly(results$Plots$bar1, tooltip = "text") %>%
+    ggplotly(results$Plots$Bar1, tooltip = "text") %>%
       layout(
         hoverlabel = list(bgcolor = "white"),
         showlegend = TRUE,
@@ -266,7 +273,7 @@ function(input, output, session) {
     }
 
     # Convert ggplot to plotly
-    ggplotly(results$Plots$bar2, tooltip = "text") %>%
+    ggplotly(results$Plots$Bar2, tooltip = "text") %>%
       layout(
         hoverlabel = list(bgcolor = "white"),
         showlegend = FALSE,
@@ -293,68 +300,104 @@ function(input, output, session) {
   #   }
   # })
 
-
+################################################################################ Sample Count Map Section ###
 
 
   # Create a temporary directory to store uploaded files
   temp_dir <- normalizePath(tempdir(), winslash = "/")
 
-  # Reactive value to store shapefile data
-  shapefile_data <- reactiveVal(NULL)
-  # Reactive value to store longitude and latitude data
+  # Reactive values to store uploaded file paths
+  shapefile_shp <- reactiveVal(NULL)
+  shapefile_shx <- reactiveVal(NULL)
   LongLat_data <- reactiveVal(NULL)
 
-  # Observe the loadData button to read the uploaded shapefiles and LongLat file
-  observeEvent(input$shapefiles, {
-    req(input$shapefiles)  # Ensure that shapefiles are uploaded
+  # Helper function to update status message with missing files information
+  updateStatusMessage <- function() {
+    # Check the presence of each required file
+    shp_loaded <- !is.null(shapefile_shp())
+    shx_loaded <- !is.null(shapefile_shx())
+    coords_loaded <- !is.null(LongLat_data()) && nrow(LongLat_data()) > 0
 
-    # Extract the uploaded files
-    uploaded_files <- input$shapefiles
+    # Build messages for uploaded files
+    uploaded_messages <- c()
+    if (shp_loaded) uploaded_messages <- c(uploaded_messages, "Shapefile (.shp) loaded")
+    if (shx_loaded) uploaded_messages <- c(uploaded_messages, "Shapefile (.shx) loaded")
+    if (coords_loaded) uploaded_messages <- c(uploaded_messages, "Coordinates data loaded")
 
-    # Loop through the uploaded files and save them to the temp directory
-    for (i in seq_len(nrow(uploaded_files))) {
-      file.copy(uploaded_files$datapath[i], file.path(temp_dir, uploaded_files$name[i]), overwrite = TRUE)
+    # Build missing file messages
+    missing_files <- c()
+    if (!shp_loaded) missing_files <- c(missing_files, ".shp file")
+    if (!shx_loaded) missing_files <- c(missing_files, ".shx file")
+    if (!coords_loaded) missing_files <- c(missing_files, "coordinates data (.csv or .xlsx)")
+
+    # Final message if all files are uploaded and valid
+    if (shp_loaded && shx_loaded && coords_loaded) {
+      output$statusMessage <- renderText("All required files uploaded successfully!")
+    } else {
+      output$statusMessage <- renderText(paste(
+        paste(uploaded_messages, collapse = "; "),
+        if (length(missing_files) > 0) paste("Still required:", paste(missing_files, collapse = ", ")) else "",
+        sep = "; "
+      ))
     }
+  }
 
-    # Identify the uploaded .shp and .shx files
-    shp_file <- file.path(temp_dir, uploaded_files$name[tools::file_ext(uploaded_files$name) == "shp"])
-    shx_file <- file.path(temp_dir, uploaded_files$name[tools::file_ext(uploaded_files$name) == "shx"])
+  # Observe file uploads and determine file types
+  observeEvent(input$mdataFiles, {
+    req(input$mdataFiles)
 
-    # Check if both files are present
-    if (length(shp_file) == 0 || length(shx_file) == 0) {
-      output$statusMessage <- renderText("Please upload both .shp and .shx files.")
-      return()
-    }
+    # Process each uploaded file and save it to the correct reactive value
+    for (i in seq_len(nrow(input$mdataFiles))) {
+      file_name <- input$mdataFiles$name[i]
+      file_ext <- tools::file_ext(file_name)
+      file_path <- file.path(temp_dir, file_name)
 
-    # Read the shapefile
-    tryCatch({
-      shapefile_data(sf::st_read(shp_file))  # Automatically looks for .shx file
-      output$statusMessage <- renderText("Shapefile loaded successfully!")
-    }, error = function(e) {
-      output$statusMessage <- renderText(paste("Error loading shapefile:", e$message))
-    })
+      # Copy file to the temp directory
+      file.copy(input$mdataFiles$datapath[i], file_path, overwrite = TRUE)
 
-    # Check for LongLat file (.csv or .xlsx)
-    longlat_file <- uploaded_files$name[tools::file_ext(uploaded_files$name) %in% c("csv", "xlsx")]
-
-    if (length(longlat_file) == 0) {
-      output$statusMessage <- renderText("Please upload a .csv or .xlsx file containing coordinates.")
-      return()
-    }
-
-    # Read the LongLat file
-    tryCatch({
-      if (tools::file_ext(longlat_file) == "csv") {
-        LongLat_data(read.csv(file.path(temp_dir, longlat_file)))
-      } else if (tools::file_ext(longlat_file) == "xlsx") {
-        LongLat_data(readxl::read_excel(file.path(temp_dir, longlat_file)))
+      # Assign files to appropriate reactive values
+      if (file_ext == "shp") {
+        shapefile_shp(file_path)
+      } else if (file_ext == "shx") {
+        shapefile_shx(file_path)
+      } else if (file_ext == "csv") {
+        LongLat_data(read.csv(file_path))
+      } else if (file_ext == "xlsx") {
+        LongLat_data(readxl::read_excel(file_path))
       }
-      output$statusMessage <- renderText("Coordinates data loaded successfully!")
-    }, error = function(e) {
-      output$statusMessage <- renderText(paste("Error loading coordinates data:", e$message))
-    })
+    }
+
+    # Update the status message based on files uploaded
+    updateStatusMessage()
   })
 
+  # Process mapping data as soon as all files are uploaded and valid
+  mapping_data <- reactive({
+    req(shapefile_shp(), shapefile_shx(), LongLat_data())  # Wait for all files to be uploaded
+
+    # Load the shapefile
+    tryCatch({
+      shapefile <- sf::st_read(shapefile_shp())  # .shx is used automatically if in the same directory
+    }, error = function(e) {
+      output$statusMessage <- renderText(paste("Error loading shapefile:", e$message))
+      return(NULL)
+    })
+
+    # Process and return mapping data
+    MappingData(
+      shapefile = shapefile,
+      LongLat_data = LongLat_data(),
+      location_col = "Location",
+      long_col = "long",
+      lat_col = "lat"
+    )
+  })
+
+  # Reactive expression to parse the breaks input
+  breaks <- reactive({
+    # Split the input string by commas, trim whitespace, and convert to numeric
+    as.numeric(unlist(strsplit(input$breaksInput, ",")))
+  })
 
   # Reactive value to store drug distribution results
   sample_count_plot <- reactiveVal(NULL)
@@ -362,24 +405,19 @@ function(input, output, session) {
   # Observer to update drug distribution results
   observe({
     req(gene_classifier_result())
-    req(shapefile_data())
-    req(LongLat_data())
+    req(mapping_data())
     req(input$labelSize)
     req(input$scaleCircleSize)
 
     results <- SampleCountMap(
-      shapeFile = shapefile_data(),
       df = gene_classifier_result(),
-      location_col = "Location",
-      long_col = "long",
-      lat_col = "lat",
       drug_col = "Chloroquine",
-      saveOutput = FALSE,
+      mData = mapping_data(),
       time = period_structure(),
-      LongLat_data = LongLat_data(),
-      breaks = c(10, 100, 200, 300),
+      breaks = breaks(),,
       labelSize = input$labelSize,
-      scaleCircleSize = input$scaleCircleSize
+      scaleCircleSize = input$scaleCircleSize,
+      saveOutput = FALSE
     )
 
     sample_count_plot(results)
@@ -398,16 +436,28 @@ function(input, output, session) {
     }
     # call th plot
     print(
-      results$Plots$map +
-        theme(
-          panel.background = element_rect(fill = "#f1f3f2", color = "#f1f3f2"), # Remove panel background
-          plot.background = element_rect(fill = "#f1f3f2", color = "#f1f3f2"),  # Remove plot background
-        ))
+      results$Plots$SampleCount_Map +
+        coord_sf() #+
+        # theme(
+        #   panel.background = element_rect(fill = "#f1f3f2", color = "#f1f3f2"), # Remove panel background
+        #   plot.background = element_rect(fill = "#f1f3f2", color = "#f1f3f2"),  # Remove plot background
+        # )
+        )
   })
 
+  # Download Handler for Sample Count Map
+  output$downloadSCMap <- downloadHandler(
+    filename = function() {
+      paste("SampleCount_Map", Sys.Date(), ".jpeg", sep = "")
+    },
+    content = function(file) {
+      results <- sample_count_plot()$Plots$SampleCount_Map
+      ggsave(file, results, dpi = 300, width = 11, height = 6)
+    }
+  )
+
   # output$sampleCountMapPlot <- renderPlotly({
-  #   req(sample_count_plot(),
-  #       LongLat_data())
+  #   req(sample_count_plot())
   #
   #   # Get the appropriate results based on period selection
   #   results <- if (input$period_type_main == "Full") {
@@ -417,11 +467,18 @@ function(input, output, session) {
   #     sample_count_plot()[[input$period_name]]
   #   }
   #
-  #   # Retrieve latitude, longitude, and location data from LongLat_data()
-  #   annotation_data <- LongLat_data()
+  #   # Retrieve latitude, longitude, and location
+  #   annotation_data <- sample_count_plot()$Data$SampleCount_Table
+  #
+  #   # Check if the plot is a valid ggplot object
+  #   gg_plot <- results$Plots$SampleCount_Map
+  #   req(gg_plot)  # Ensure it's not NULL
+  #
+  #   # Convert ggplot to plotly
+  #   plotly_plot <- ggplotly(gg_plot)
   #
   #   # Add annotations for each location
-  #   ggplotly(results$Plots$map) %>%
+  #   plotly_plot %>%
   #     layout(
   #       annotations = lapply(1:nrow(annotation_data), function(i) {
   #         list(
@@ -430,15 +487,21 @@ function(input, output, session) {
   #           text = annotation_data$Location[i],
   #           xref = "x",
   #           yref = "y",
-  #           showarrow = FALSE,  # No arrow for the label
-  #           font = list(color = "black", size = 10),
+  #           showarrow = TRUE,
+  #           arrowhead = 7,
+  #           arrowsize = .8,
+  #           ax = 20,
+  #           ay = -40,
+  #           font = list(color = "black", size = 15),
   #           bgcolor = "rgba(255, 255, 255, 0.6)"  # Semi-transparent background for readability
   #         )
   #       }),
   #       paper_bgcolor = rgb(0, 0, 0, 0),
   #       plot_bgcolor = rgb(0, 0, 0, 0)
   #     )
+  #
   # })
+
 
 
 

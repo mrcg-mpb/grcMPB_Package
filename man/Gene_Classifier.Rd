@@ -7,20 +7,29 @@
 Gene_Classifier(df, drug_column = "Chloroquine")
 }
 \arguments{
-\item{df}{A dataframe containing malaria sample data, including haplotype information.}
+\item{df}{Final GRC Data}
 
-\item{drug_column}{A character string representing the drug resistance column to filter by (default is "Chloroquine").
+\item{drug_column}{A character string representing the drug column to filter by (default is "Chloroquine").
 Filtering will exclude samples marked as "Undetermined" or "Missing" in the selected column.}
 }
 \value{
 A cleaned and classified dataframe with new columns for drug resistance status: Chloroquine, MultiDrug, Kelch13, Sulfadoxine, and Pyrimethamine.
 }
 \description{
-This function classifies malaria sample data for drug resistance based on specific haplotypes.
-It classifies resistance for Chloroquine, MultiDrug, Kelch13, Sulfadoxine, and Pyrimethamine,
-allowing the user to filter based on a selected drug resistance column.
+This function uses the haplotypes in the gene columns, (PfCRT, PfMDR1, Kelch, PfDHPS and PfDHFR ) and classifies them as
+Resistant, Mixed Resistant, Sensitive, missing and undetermined for their specific aasocated drugs.
+It creates new columns containing this categories and names them with the drugs they assocoate with.
+E.g
+\itemize{
+\item \code{Chloroquine}: for PfCRT.
+\item \code{MultiDrug}: for PfMDR1.
+\item \code{Kelch13}: for Kelch.
+\item \code{Sulfadoxine}: for PfDHPS.
+\item \code{Pyrimethamine}: for PfDHFR.
+}
+After this it then filters out missing and undetermined cases for a specific drug determined on which the user wants to work with.
 }
 \examples{
-clean_data <- Gene_Classifier(FinalData, drug_column = "Chloroquine", Country = "Gambia")
+Gene_Classifier(df = GRC_Data, drug_column = "Chloroquine")
 
 }

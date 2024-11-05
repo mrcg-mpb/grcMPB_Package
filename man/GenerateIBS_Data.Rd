@@ -4,16 +4,13 @@
 \alias{GenerateIBS_Data}
 \title{GenerateIBS_Data}
 \usage{
-GenerateIBS_Data(df, SNP_Data, LongLat_data)
+GenerateIBS_Data(df, SNP_Data)
 }
 \arguments{
 \item{df}{Final GRC dataframe}
 
 \item{SNP_Data}{A dataframe of SNP data, where each row represents a sample and each column corresponds to a
 genetic locus (e.g., "Pf3D7_"). The row names should correspond to the "Sample Internal ID".}
-
-\item{LongLat_data}{A dataframe containing the longitude, latitude, and region information for each location.
-It should have columns for "Location" and "Regions".}
 }
 \value{
 A list containing a histogram of IBS scores and dataframe in long format containing the IBS scores between sample pairs along with associated metadata.
@@ -32,12 +29,12 @@ The dataframe will include the following columns:
 }
 }
 \description{
-This function calculates identity-by-state (IBS) scores between samples based on SNP data. It reshapes the
-IBS matrix into a long format and annotates the data with metadata, including sample locations, drug
-conditions, and regions.
+This function calculates identity-by-state (IBS) scores between samples based on the barcodedata sequence which is made
+up of the SNPs columns in th GRC Data. It reshapes the IBS matrix into a long format and annotates the data with metadata, including sample locations, drug
+drug conditions, loacction of the samples pairing, etc.
 }
 \examples{
 # Example usage:
-GenerateIBS_Data(df = FinalData, SNP_Data = BarcodeData, LongLat_data = Coordinates)
+GenerateIBS_Data(df = FinalData, SNP_Data = BarcodeData, mapping_data$LongLat_data = Coordinates)
 head(IBS_Data)
 }
