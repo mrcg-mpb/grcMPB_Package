@@ -1,8 +1,20 @@
 
 ## MPB grcMalaria Package
 
-This README provides a workflow example demonstrating the main functions
-in the MPB grcMalaria package.
+This package, inspired by the malariagen/grcMalaria project, aims to
+streamline the analysis of SpotMalaria Genetic Report Cards (GRCs). The
+package offers tools to achieve several key objectives:
+
+1.  **Prevalence and Diversity**: Analyzing the distribution and genetic
+    variation of malaria strains in different regions.
+2.  **Drug Resistance Profiling**: Identifying drug resistance markers.
+3.  **Geographical Mapping**: Visualizing the spread of various malaria
+    strains geographically.
+4.  **Genetic Relationships**: Exploring genetic relatedness among
+    samples using IBS matrices and associated plots.
+
+Below is a simple workflow example demonstrating the main functions in
+the MPB grcMalaria package.
 
 ### Creating the Final GRC Data
 
@@ -73,36 +85,4 @@ SampleCountMap(df = GRC_Data,
                label_size = 2.5, 
                scale_circle_size = 11,
                save_output = TRUE)
-```
-
-#### Producing a Drug Distribution Table and Bar Chart
-
-Generate bar charts showing the proportion of the diffrent conditions
-for th slected drug.
-
-``` r
-Drug_Distribution(df = GRC_Data, 
-                  drug_col = "Chloroquine",
-                  save_output = FALSE,
-                  time = Periods,
-                  colors = c("Resistant" = "#525CEB",
-                             "Mixed.Resistant" = "#808000",
-                             "Sensitive" = "#800000") )
-```
-
-#### Mapping Drug Resistance Prevalence Proportion
-
-The Proportion_Map function visualizes the proportion of the drug
-condtions in various locations, with options for customizing label and
-circle sizes.
-
-``` r
-Proportion_Map(df = GRC_Data, 
-               drug_col = "Chloroquine",
-               save_output = FALSE,
-               time = NULL,
-               mData = mapping_data,
-               label_size = 2.5,
-               circle_num_size = 3.1, 
-               scale_circle_size = 10)
 ```
