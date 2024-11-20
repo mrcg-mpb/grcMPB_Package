@@ -1,15 +1,16 @@
-#' GenerateIBS_Data
+#' @title Generate IBS data frame
 #'
-#' This function calculates identity-by-state (IBS) scores between samples based on the barcodedata sequence which is made
-#' up of the SNPs columns in th GRC Data. It reshapes the IBS matrix into a long format and annotates the data with metadata, including sample locations, drug
-#' drug conditions, loacction of the samples pairing, etc.
+#' @description This function calculates identity-by-state (IBS) scores between samples based on the barcode_data sequence which is made
+#' up of the SNPs columns in th GRC Data. It reshapes the IBS matrix into a long format and annotates the data with metadata,
+#' including sample locations, drug conditions, location of the samples pairing, etc.
 #'
-#' @param df Final GRC dataframe
-#' @param SNP_Data A dataframe of SNP data, where each row represents a sample and each column corresponds to a
-#'                    genetic locus (e.g., "Pf3D7_"). The row names should correspond to the "Sample Internal ID".
-#'
-#' @return A list containing a histogram of IBS scores and dataframe in long format containing the IBS scores between sample pairs along with associated metadata.
-#'         The dataframe will include the following columns:
+#' @param df Final GRC data frame
+#' @param snp_data A data frame of SNP data, where each row represents a sample and each column corresponds to a
+#' genetic locus (e.g., "Pf3D7_"). The row names should correspond to the "Sample Internal ID".
+#' @param drug_col The name of the column representing the drug conditions (e.g., "Chloroquine" with
+#' categories like Resistant, Mixed Resistant, and Sensitive).
+#' @return A list containing a histogram of IBS scores and data frame containing the IBS scores between sample pairs along with associated metadata.
+#'         The data frame will include the following columns:
 #' \itemize{
 #'   \item \code{S1}: First sample in the pair
 #'   \item \code{S2}: Second sample in the pair
@@ -27,78 +28,80 @@
 #'
 #' @examples
 #' # Example usage:
-#' GenerateIBS_Data(df = FinalData, SNP_Data = BarcodeData, mapping_data$LongLat_data = Coordinates)
+#' generate_ibs_data(df = GRC_Data, snp_data = BarcodeData, drug_col = "Chloroquine")
 #' head(IBS_Data)
 
-GenerateIBS_Data <- function(df, SNP_Data) {
+generate_ibs_data <- function(df, snp_data, drug_col) {
 
   # Inner function to calculate IBS scores between sample pairs
-  CalculateIBS <- function(input) {
+  calculate_ibs <- function(input) {
     # Convert input to matrix
     file <- as.matrix(input)
     n <- nrow(file)
 
     # Initialize IBS matrix with ones (1 for identical samples)
-    IBS_Matrix <- matrix(1, nrow = n, ncol = n)
-    rownames(IBS_Matrix) <- rownames(file)
-    colnames(IBS_Matrix) <- rownames(file)
+    ibs_matrix <- matrix(1, nrow = n, ncol = n)
+    rownames(ibs_matrix) <- rownames(file)
+    colnames(ibs_matrix) <- rownames(file)
 
     # Loop through each sample to calculate pairwise IBS
-    for (i in 1:(n-1)) {
-      #message(paste("******* Processing sample row [", i , "] *******"))
+    for (i in 1:(n - 1)) {
+      message(paste("******* Processing sample row [", i, "] *******"))
 
       # Compare each sample to the subsequent samples
-      for (k in (i+1):n) {
+      for (k in (i + 1):n) {
         # Extract genotype data for sample i and sample k
         sample1 <- file[i, ]
         sample2 <- file[k, ]
 
         # Calculate number of missing data points or 'X' alleles
-        missingD <- sum(is.na(sample1) | is.na(sample2) | sample1 == "X" | sample2 == "X")
+        missing_data <- sum(is.na(sample1) | is.na(sample2) | sample1 == "X" | sample2 == "X")
 
         # Calculate the IBS score based on matching alleles
         s1_vs_s2 <- ifelse(
           (sample1 == sample2 & !is.na(sample1) & !is.na(sample2) & sample1 != "X" & sample2 != "X"), 1,
           ifelse(
-            (sample1 == "N" & sample2 %in% c("A", "C", "G", "T")) |
-              (sample2 == "N" & sample1 %in% c("A", "C", "G", "T")), 0.5, 0)
+                 (sample1 == "N" & sample2 %in% c("A", "C", "G", "T")) |
+                   (sample2 == "N" & sample1 %in% c("A", "C", "G", "T")), 0.5, 0)
         )
 
         # Calculate the IBS value
-        Ibs <- sum(s1_vs_s2, na.rm = TRUE) / (ncol(file) - missingD)
+        ibs_value <- sum(s1_vs_s2, na.rm = TRUE) / (ncol(file) - missing_data)
 
         # Store IBS values symmetrically in the matrix
-        IBS_Matrix[i, k] <- Ibs
-        IBS_Matrix[k, i] <- Ibs
+        ibs_matrix[i, k] <- ibs_value
+        ibs_matrix[k, i] <- ibs_value
       }
     }
-    return(IBS_Matrix)
+    return(ibs_matrix)
   }
 
   # Calculate the IBS matrix for the SNP data
-  IBS_Matrix <- CalculateIBS(SNP_Data)
+  ibs_matrix <- calculate_ibs(snp_data)
 
   # Reshape the IBS matrix to a long format for easier analysis
-  IBS_DataTable <- reshape2::melt(IBS_Matrix, varnames = c("S1", "S2"))
+  ibs_data_frame <- reshape2::melt(ibs_matrix, varnames = c("S1", "S2"))
 
   # Add metadata (locations, drug conditions, regions) for both samples
-  IBS_DataTable <- IBS_DataTable %>%
-    left_join(df %>% dplyr::select(`Sample Internal ID`, LS1 = Location), by = c("S1" = "Sample Internal ID")) %>%
-    left_join(df %>% dplyr::select(`Sample Internal ID`, LS2 = Location), by = c("S2" = "Sample Internal ID")) %>%
-    left_join(df %>% dplyr::select(`Sample Internal ID`, DCS1 = Chloroquine), by = c("S1" = "Sample Internal ID")) %>%
-    left_join(df %>% dplyr::select(`Sample Internal ID`, DCS2 = Chloroquine), by = c("S2" = "Sample Internal ID")) #%>%
-    # left_join(mapping_data$LongLat_data %>% dplyr::select(Location, RgS1 = Regions), by = c("LS1" = "Location")) %>%
-    # left_join(mapping_data$LongLat_data %>% dplyr::select(Location, RgS2 = Regions), by = c("LS2" = "Location"))
+  ibs_data_frame <- ibs_data_frame %>%
+    dplyr::left_join(df %>% dplyr::select(`Sample Internal ID`, LS1 = Location), by = c("S1" = "Sample Internal ID")
+    ) %>%
+    dplyr::left_join(df %>% dplyr::select(`Sample Internal ID`, LS2 = Location), by = c("S2" = "Sample Internal ID")
+    ) %>%
+    dplyr::left_join(df %>% dplyr::select(`Sample Internal ID`, DCS1 = drug_col), by = c("S1" = "Sample Internal ID")
+    ) %>%
+    dplyr::left_join(df %>% dplyr::select(`Sample Internal ID`, DCS2 = drug_col), by = c("S2" = "Sample Internal ID"))
 
   # plot the IBS scores on a histogram
   p <-
-  ggplot(IBS_DataTable, aes(x = value)) +
+    ggplot(ibs_data_frame, aes(x = value)) +
     geom_histogram(binwidth = 0.02, fill = "blue", color = "black", alpha = 0.7) +
     labs(title = "Distribution of IBS Scores", x = "IBS Score", y = "Frequency") +
     theme_classic()
 
-  # Return a preview of the IBS data
   return(list(
-    Plot = p,
-    Data = list(IBS_Melted_Matrix = IBS_DataTable, IBS_Matrix = IBS_Matrix)))
+    IBS_Histogram = p,
+    IBS_Melted_Matrix = ibs_data_frame,
+    IBS_matrix = ibs_matrix
+  ))
 }

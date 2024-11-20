@@ -9,21 +9,23 @@
 #' @param df Final GRC dataframe
 #' @param gene The gene to analyze ("pfcrt", "pfdhps", "pfdhfr", "pfmdr1")
 #' @param gene_col The column in the df that contains haplotype data (e.g., "PfCRT").
+#' @param drug_col The name of the column representing the drug conditions (e.g., "Chloroquine" with conditions, Resistant, mixed resistant and sensitive).
 #' @param time Optional. A list defining time periods.
-#' @param mData The metatdata list that contains your shapefile and Longitude Latitude data.
+#' @param map_data The metatdata list that contains your shapefile and Longitude Latitude data.
 #' @param label_size Used to set the size of the labels on the map.
 #' @param circle_num_size Used to set th sizes of the numbers in th circles.
 #' @param scale_circle_size Used to scale the size of th circles.
+#' @param save_output Logical. Whether to save the output plots to files (default is FALSE).
 #' @param include_mixed Boolean, whether to include mixed haplotypes in counts
 #'
 #'
 #' @examples
-#' Mutation_Frequency( GRC_Data, gene = pfcrt, gene_col = "PfCRT", drug_col = "Chloroquine")
+#' mutation_frequency( GRC_Data, gene = pfcrt, gene_col = "PfCRT", drug_col = "Chloroquine")
 #'
 #' @export
 #'
 
-Mutation_Frequency <- function(df, gene, gene_col, drug_col, save_output = TRUE, period_name = "Full", time = NULL, mData,
+mutation_frequency <- function(df, gene, gene_col, drug_col, save_output = TRUE, period_name = "Full", time = NULL, map_data,
                                label_size = 2.5, circle_num_size = 3.1, scale_circle_size = 10, include_mixed = FALSE, ...) {
 
   if (is.null(time)) {
@@ -33,7 +35,7 @@ Mutation_Frequency <- function(df, gene, gene_col, drug_col, save_output = TRUE,
       gene_col = gene_col,
       drug_col = drug_col,
       save_output = save_output,
-      mData = mData,
+      map_data = map_data,
       period_name = period_name,
       label_size = label_size,
       circle_num_size = circle_num_size,
@@ -41,7 +43,7 @@ Mutation_Frequency <- function(df, gene, gene_col, drug_col, save_output = TRUE,
       ))
   }
 
-  return(TemporalData_List(
+  return(temporal_data_list(
     df = df,
     func = create_M_Plots,
     time = time,
@@ -49,7 +51,7 @@ Mutation_Frequency <- function(df, gene, gene_col, drug_col, save_output = TRUE,
     gene_col = gene_col,
     drug_col = drug_col,
     save_output = save_output,
-    mData = mData,
+    map_data = map_data,
     label_size = label_size,
     circle_num_size = circle_num_size,
     scale_circle_size = scale_circle_size,
@@ -60,7 +62,7 @@ Mutation_Frequency <- function(df, gene, gene_col, drug_col, save_output = TRUE,
 
 
 
-create_M_Plots <- function(df, gene, gene_col, drug_col, save_output = TRUE, period_name = "Full", mData,
+create_M_Plots <- function(df, gene, gene_col, drug_col, save_output = TRUE, period_name = "Full", map_data,
                            label_size = 2.5, circle_num_size = 3.1, scale_circle_size = 10, include_mixed = FALSE, ...) {
 
 
@@ -205,10 +207,10 @@ create_M_Plots <- function(df, gene, gene_col, drug_col, save_output = TRUE, per
   ### Generate proportion maps for each mutation by location ###
   Mutation_Table <- result_table2 %>%
     mutate(across(-c(Location, Total), ~ as.numeric(gsub(".*\\((\\d+(?:\\.\\d+)?)%\\).*", "\\1", .)))) %>%
-    left_join(mData$LongLat_data, by = "Location")
+    left_join(map_data$LongLat_data, by = "Location")
 
 
-  Mutation_Table_Sf <- st_as_sf(Mutation_Table, coords = c("long", "lat"), crs = sf::st_crs(mData$shapefile))
+  Mutation_Table_Sf <- st_as_sf(Mutation_Table, coords = c("long", "lat"), crs = sf::st_crs(map_data$shapefile))
 
   # Initialize a list to store plots
   MutationPlots <- list(M_BarChart = mBar, M_Maps = list())
@@ -218,7 +220,7 @@ create_M_Plots <- function(df, gene, gene_col, drug_col, save_output = TRUE, per
       # Build the ggplot map
     p <-
         ggplot() +
-        geom_sf(data = mData$shapefile, fill = "white", color = "#023020", linewidth = 0.4) +
+        geom_sf(data = map_data$shapefile, fill = "white", color = "#023020", linewidth = 0.4) +
         geom_sf(data = Mutation_Table_Sf, aes(size = 50, color = get(p_column))) +
       ggrepel::geom_label_repel(data = Mutation_Table,
                          aes(label = Location , x = long, y = lat, fontface = "bold"),

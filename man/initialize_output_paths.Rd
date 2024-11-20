@@ -7,9 +7,9 @@
 initialize_output_paths(dir1 = NULL, dir2 = NULL)
 }
 \arguments{
-\item{dir1}{(Optional) Name for the first subdirectory within Outputs.}
+\item{dir1}{(Optional) Name for the first sub directory within Outputs.}
 
-\item{dir2}{(Optional) Name for the nested subdirectory within dir1.}
+\item{dir2}{(Optional) Name for the nested sub directory within dir1.}
 }
 \value{
 The path to the directory where outputs can be saved.
