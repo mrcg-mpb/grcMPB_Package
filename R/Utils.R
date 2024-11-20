@@ -1,17 +1,18 @@
-#' @title MappingData Helper Function
+#' @title Mapping data helper function
 #' @description Standardizes the structure of location data for mapping functions by checking and renaming specified columns.
 #'
 #' @param shapefile An `sf` object representing the shape file of the country.
-#' @param LongLat_data A dataframe containing the locations and their geographical coordinates (longitude and latitude).
+#' @param long_lat_data A dataframe containing the locations and their geographical coordinates (longitude and latitude).
 #' @param location_col The name of the column representing location identifiers.
 #' @param long_col The name of the longitude column.
 #' @param lat_col The name of the latitude column.
 #'
-#' @return A list containing the `shapefile` and standardized `LongLat_data`.
+#' @return A list containing the `shapefile` and standardized `long_lat_data`.
 #' @export
-MappingData <- function(shapefile, LongLat_data, location_col, long_col, lat_col) {
+#'
+mapping_data <- function(shapefile, long_lat_data, location_col, long_col, lat_col) {
   # Standardize column names
-  LongLat_data <- LongLat_data %>%
+  long_lat_data <- long_lat_data %>%
     dplyr::rename(
       Location = {{location_col}},
       long = {{long_col}},
@@ -19,14 +20,14 @@ MappingData <- function(shapefile, LongLat_data, location_col, long_col, lat_col
     )
 
 
-  return(list(shapefile = shapefile, LongLat_data = LongLat_data))
+  return(list(shapefile = shapefile, long_lat_data = long_lat_data))
 }
 
 
 
 
 
-#' Process Data for Temporal Analysis
+#' @title Process Data for Temporal Analysis
 #'
 #' @description A helper function that processes data based on specified time periods and applies
 #' a given function to each temporal subset. This function standardizes temporal analysis across
@@ -34,9 +35,6 @@ MappingData <- function(shapefile, LongLat_data, location_col, long_col, lat_col
 #'
 #' @param df The input dataframe containing the temporal data
 #' @param func The function to apply to each temporal subset
-#' @param location_col Name of the location column
-#' @param drug_col Name of the drug column
-#' @param LongLat_data Dataframe containing geographical coordinates
 #' @param time List of time periods, where each element contains:
 #'   \itemize{
 #'     \item type: Either "year" or "period"
@@ -48,7 +46,7 @@ MappingData <- function(shapefile, LongLat_data, location_col, long_col, lat_col
 #'
 #' @return A list containing results for each time period
 #'
-TemporalData_List <- function(df, func, time, ...) {
+temporal_data_list <- function(df, func, time, ...) {
   # Initialize results list
   results <- list()
 
@@ -79,29 +77,29 @@ TemporalData_List <- function(df, func, time, ...) {
 
 
 
-#' Initialize Output Paths
+#' @title Initialize Output Paths
 #'
-#' A helper function to create output directories and nested directories based on the user's specifications.
+#' @description A helper function to create output directories and nested directories based on the user's specifications.
 #' This function is internal and should not be called directly by the user.
 #'
-#' @param dir1 (Optional) Name for the first subdirectory within Outputs.
-#' @param dir2 (Optional) Name for the nested subdirectory within dir1.
+#' @param dir1 (Optional) Name for the first sub directory within Outputs.
+#' @param dir2 (Optional) Name for the nested sub directory within dir1.
 #'
 #' @return The path to the directory where outputs can be saved.
 #'
 initialize_output_paths <- function(dir1 = NULL, dir2 = NULL) {
   # Check if Outputs directory exists in the working directory or as a global variable
-  if (!dir.exists("Outputs") || !exists("Outputs", envir = .GlobalEnv)) {
+  if (!dir.exists("Outputs") || !exists("outputs", envir = .GlobalEnv)) {
     # Create Outputs directory in the working directory
     dir.create(file.path(getwd(), "Outputs"), showWarnings = FALSE)
 
     # Assign main path to Outputs in the global environment
-    Outputs <- list(mainPath = file.path(getwd(), "Outputs"))
-    assign("Outputs", Outputs, envir = .GlobalEnv)
+    outputs <- list(mainPath = file.path(getwd(), "Outputs"))
+    assign("Outputs", outputs, envir = .GlobalEnv)
   }
 
   # Retrieve the main path from the Outputs list
-  main_path <- Outputs$mainPath
+  main_path <- outputs$mainPath
 
   # Initialize path for dir1 if provided
   if (!is.null(dir1)) {
@@ -126,8 +124,8 @@ initialize_output_paths <- function(dir1 = NULL, dir2 = NULL) {
   }
 
   # Update Outputs with the additional paths if dir1 or dir2 are specified
-  Outputs$subDir1 <- if (!is.null(dir1)) dir1_path else NULL
-  Outputs$subDir2 <- if (!is.null(dir2)) dir2_path else NULL
+  outputs$subDir1 <- if (!is.null(dir1)) dir1_path else NULL
+  outputs$subDir2 <- if (!is.null(dir2)) dir2_path else NULL
 
   # Return the final path for saving outputs (either Outputs, dir1, or dir2)
   return(dir2_path)
@@ -135,15 +133,50 @@ initialize_output_paths <- function(dir1 = NULL, dir2 = NULL) {
 
 
 
-#' Split Haplotype
+#' @title Split Haplotype
 #'
-#' A helper function to split th haplotypes combination into a vector if strings
+#' @description A helper function to split th haplotypes combination into a vector if strings
 #'
-#'@param haploype haplotype to string to split (e.g, "CVIE[M/T]" )
+#' @param haploype haplotype to string to split (e.g, "CVIE[M/T]" )
 #'
 #' @return a vector with of each element in the splitted string.
 #'
 split_haplotype <- function(haplotype) {
-  unlist(strsplit(haplotype, "(?<=\\])(?=\\[)|(?<=\\])(?=\\w)|(?<=\\w)(?=\\[)|(?<=\\w)(?=\\w)|(?<=\\w)(?=-)|(?<=-)(?=\\[)|(?<=-)(?=\\w)|(?<=-)(?=-)|(?<=\\])(?=-)", perl = TRUE))
+  unlist(strsplit(haplotype,
+                  "(?<=\\])(?=\\[)|(?<=\\])(?=\\w)|(?<=\\w)(?=\\[)|(?<=\\w)(?=\\w)|(?<=\\w)(?=-)|(?<=-)(?=\\[)|(?<=-)(?=\\w)|(?<=-)(?=-)|(?<=\\])(?=-)",
+                  perl = TRUE))
 }
 
+
+
+#' Generate a Color Palette for Locations
+#'
+#' @description This function assigns colors to unique locations in a GRC data frame
+#'
+#' @param df A data frame containing a `Location` column.
+#' @param location_col The name of the column representing locations (default is "Location").
+#'
+#' @return A named vector of colors where names correspond to unique locations.
+#'
+generate_location_colors <- function(df, location_col = "Location") {
+  # Predefined color palette
+  base_colors <- c(
+    "#e52165", "#0d1137", "#d72613", "#077b8a", "#5c3c92", "#e2d810",
+    "#12a4d9", "#CD853F", "#BDB76B", "#fbcbc9", "#6b7c8c", "#ff6c40",
+    "#000075", "#c4a35a", "#12e761", "#526400", "#641200", "#D9F98A",
+    "#361402", "#02362B", "#6495ED", "#e6beff", "#46f0f0"
+  )
+
+  # Extract unique locations
+  unique_locations <- unique(df[[location_col]])
+  # Extend the color palette if needed
+  if (length(unique_locations) > length(base_colors)) {
+    extended_colors <- hcl.colors(length(unique_locations) - length(base_colors), "Set3")
+    base_colors <- c(base_colors, extended_colors)
+  }
+
+  # Assign colors to locations
+  location_colors <- setNames(base_colors[seq_along(unique_locations)], unique_locations)
+
+  return(location_colors)
+}

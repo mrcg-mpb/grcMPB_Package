@@ -22,13 +22,17 @@ library(readxl)
 
 ```
 
+```{r}
+#lint("C:/Users/bngwa/Documents/Brandon/MPB_grcMalaria/R/Mutation_Frequency_Plots.R", linters = default_linters)
+```
+
 
 ## Create your final GRC Data 
 ```{r }
 
 GRC_Data <-
-    Combine_GRC_Sheets(input_folder="C:/Users/bngwa/Documents/Brandon/GDA_Markdown/All_GRC_Reads_Gambia",
-                       Country = "Gambia", 
+    combine_grc_sheets(input_folder="C:/Users/bngwa/Documents/Brandon/GDA_Markdown/All_GRC_Reads_Gambia",
+                       country = "Gambia", 
                        save_output = TRUE)
 ```
 
@@ -37,8 +41,9 @@ GRC_Data <-
 ```{r, echo=FALSE}
 
 GRC_Data <-
-  Gene_Classifier(df = GRC_Data, 
-                  drug_column = "Chloroquine")
+  gene_classifier(df = GRC_Data, 
+                  drug_column = "Chloroquine",
+                  save_output = TRUE)
 ```
 
 
@@ -50,14 +55,12 @@ GMB <- st_read("C:/Users/bngwa/Documents/Brandon/GDA_Markdown/geoBoundaries-GMB-
 ## Read the logitude and latitude data
 LongLat <- read_excel("C:/Users/bngwa/Documents/Brandon/GDA_Markdown/LongLat_data.xlsx")
 
-mapping_data <- 
-MappingData(shapefile = GMB ,
-            LongLat_data = LongLat,
+geo_data <- 
+mapping_data(shapefile = GMB ,
+            long_lat_data = LongLat,
             location_col = "Location",
             long_col = "long",
             lat_col = "lat" )
-
-
 ```
 
 
@@ -66,17 +69,16 @@ MappingData(shapefile = GMB ,
 
 ## You can creat a single or range of years to filter buy before generating the plots
 Periods <-
-  list( list(name="2021", type ="year", start="2021"),
-        list(name="2017-19",  type= "period", start="2017",  end="2019"))
+  list(list(name="2021", type ="year", start="2021"),
+       list(name="2017-19",  type= "period", start="2017",  end="2019"))
 
-SampleCountMap(df = GRC_Data, 
-               drug_col = "Chloroquine",
-               mData = mapping_data,
-               time = NULL,
-               breaks = c(10, 100, 200, 300),
-               label_size = 2.5, 
-               scale_circle_size = 11,
-               save_output = TRUE)
+sample_count_map(df = GRC_Data, 
+                 map_data = geo_data,
+                 time = NULL,
+                 breaks = c(10, 100, 200, 300),
+                 label_size = 2.5, 
+                 scale_circle_size = 11,
+                 save_output = TRUE)
 
 ```
 
@@ -84,27 +86,27 @@ SampleCountMap(df = GRC_Data,
 ## Create Distrubution table and barchart 
 ```{r, echo=FALSE, out.width="100%}
 
-Drug_Distribution(df = GRC_Data, 
+drug_distribution(df = GRC_Data, 
                   drug_col = "Chloroquine",
-                  save_output = FALSE,
-                  time = Periods,
-                  colors = c("Resistant" = "#525CEB",
-                             "Mixed.Resistant" = "#808000",
-                             "Sensitive" = "#800000") )
+                  save_output = TRUE,
+                  time = NULL,
+                  colors = c("resistant" = "#525CEB",
+                             "mixed_resistant" = "#808000",
+                             "sensitive" = "#800000"))
 ```
 
 
 ## Drug Resistance Prevalence Proportion Maps
 ```{r, echo=FALSE, out.width="100%}
 
-Proportion_Map(df = GRC_Data, 
-               drug_col = "Chloroquine",
-               save_output = FALSE,
-               time = NULL,
-               mData = mapping_data,
-               label_size = 2.5,
-               circle_num_size = 3.1, 
-               scale_circle_size = 10)
+drug_distribution_pm(df = GRC_Data, 
+                     drug_col = "Chloroquine",
+                     save_output = TRUE,
+                     time = NULL,
+                     map_data = geo_data,
+                     label_size = 2.5,
+                     circle_num_size = 3.1, 
+                     scale_circle_size = 10)
                
 ```
 
@@ -116,9 +118,9 @@ Mutation_Frequency(df = GRC_Data,
                    gene = "pfcrt", 
                    gene_col = "PfCRT", 
                    drug_col = "Chloroquine",
-                   save_output = FALSE,
+                   save_output = TRUE,
                    time = NULL,
-                   mData = mapping_data,
+                   mData = geo_data,
                    label_size = 2.5,
                    circle_num_size = 3.1, 
                    scale_circle_size = 10,
@@ -130,110 +132,113 @@ Mutation_Frequency(df = GRC_Data,
 ## Haplotype Proportion plots
 ```{r, echo=FALSE, out.width="100%}
 
-Haplotype_Proportion(df = GRC_Data, 
+haplotype_proportion(df = GRC_Data, 
                      gene_col = "PfCRT", 
                      drug_col = "Chloroquine",
-                     save_output = FALSE,
+                     save_output = TRUE,
                      time = NULL,
-                     mData = mapping_data,
+                     map_data = geo_data,
                      label_size = 2.5,
-                     scale_circle_size = 0.035)
+                     sacle_piechart_size = 0.035)
 
 ```
 
 
 ## Filter SNPs and Smaples for missigness
 ```{r}
-
-Filter_SNPs_Samples(df = GRC_Data, 
-                    missingnessThreshold = 0.40)s
-
+barcode_data <- 
+filter_snp_x_samples(df = GRC_Data, 
+                     m_threshold = 0.40)
+head(barcode_data)
 ```
 
 
 ## Diversity Map
 ```{r, echo=FALSE, out.width="100%}
 
-DiversityMap(df = GRC_Data, 
-             drug_col = "Chloroquine",
-             SNP_Data = BarcodeData, 
-             mData = mapping_data,
-             label_size = 2.5,
-             circle_num_size = 3.1, 
-             scale_circle_size = 10,
-             time = NULL,
-             save_output = FALSE)
+diversity_map(df = GRC_Data, 
+              drug_col = "Chloroquine",
+              snp_data = barcode_data, 
+              map_data = geo_data,
+              label_size = 2.5,
+              circle_num_size = 3.1, 
+              scale_circle_size = 10,
+              time = NULL,
+              save_output = TRUE)
 ```
 
 
 ## Calculate the Identity By State (IBS) and save it as a dataframe.
 ```{r, echo=FALSE, out.width="100%}
 IBS_Data <- 
-GenerateIBS_Data(df = GRC_Data, 
-                 SNP_Data = BarcodeData)
+generate_ibs_data(df = GRC_Data, 
+                  snp_data = barcode_data,
+                  drug_col = "Chloroquine")
+
+IBS_Data$IBS_Histogram
 ```
 
 
-## Summarise IBS by the same location and draw the propoertion map
+## Summarise IBS by the same location and draw the proportion map
 ```{r}
 
-# Assuming MeltIbsData and LongLat_data are available:
-IBS_SummarisedData1 <-
-IBS_DataSummary(MeltIbsData = IBS_Data$IbsMeltedMatrix %>% filter(LS1 == LS2),
-                LongLat_data = LongLat,
-                IBS_Threshold = 0.75) 
-
-# select th columns you need 
-IBS_SummarisedData1 <- IBS_SummarisedData1 %>% select(LS1,median_IBS,,Lat1,Long1) %>% mutate(median_IBS = round(median_IBS * 100, 1))
-
-# Get th sample count information from the DiversityDataframe 
-IBS_SummarisedData1 <- IBS_SummarisedData1 %>% left_join(DData$Data %>% select(Location, Total), by = c("LS1" = "Location"))
-
-# create sf object 
-IBS_SummarisedData1_Sf <- st_as_sf(IBS_SummarisedData1, coords = c("Long1", "Lat1"), crs = st_crs(GMB))
-
-# use the proportion map fucntion to plot the summary data
-Proportion_Map(shapeFile = GMB,
-               summaryData = IBS_SummarisedData1,
-               summaryData_sf = IBS_SummarisedData1_Sf,
-               prop_column = "median_IBS",
-               location_col = "LS1",
-               long_col = "Long1",
-               lat_col = "Lat1",
-               saveLocation = savePath)
-
+ibs_data_sl(melted_ibs_matrix = IBS_Data$IBS_Melted_Matrix,
+            ibs_th = 0.75,
+            map_data = geo_data,
+            label_size = 2.5,
+            circle_num_size = 3.1, 
+            scale_circle_size = 10,
+            save_output = TRUE)
 ```
 
 
-## Summarise IBS by diffrent location and draw th propoertion map
+## Summarise IBS by diffrent location and draw the propoertion map
 ```{r}
 
-# Assuming MeltIbsData and LongLat_data are available:
-IBS_SummarisedData2 <-
-IBS_DataSummary(MeltIbsData = IBS_Data$IbsMeltedMatrix %>% filter(LS1 != LS2),
-                LongLat_data = LongLat,
-                IBS_Threshold = 0.75) 
-
-# For which ever perecentage column we want to plot let's filter th summary data for percentage 5 percent and above
-IBS_SummarisedData2a <- IBS_SummarisedData2 %>% filter(TotalPairCount.per >= 1)
-
-## create sf objects for your longitude and latitude data
-LongLat <- LongLat %>% filter(Location %in% unique(IBS_SummarisedData2a$LS1))
-LongLatSf <- st_as_sf(LongLat, coords = c("long", "lat"), crs = st_crs(GMB))
-
-
-colnames(IBS_SummarisedData2a)[grep("\\.per$", colnames(IBS_SummarisedData2a))]
-
-# Use the IBS_ConnectednessMap funcion to plot th summary data
-IBS_ConnectednesMaps( shapeFile = GMB,
-                      LongLatData_sf = LongLatSf,
-                      IbsData = IBS_SummarisedData2a ,
-                      LongLatData = LongLat,
-                      prop_column = "TotalPairCount.per",
-                      plotName = "IBS Connection plot for All pairs >= 0.75",
-                      breaks = seq(0,8,2),
-                      limits = c(0,8),
-                      saveName = "GroupConnectionLP")
+ibs_data_dl(melted_ibs_matrix = IBS_Data$IBS_Melted_Matrix,
+            ibs_threshold = 0.75,
+            map_data = geo_data,
+            label_size = 5,
+            breaks = seq(1,9,2),
+            curve_degree = 0.5,
+            save_output = TRUE)
 
 ```
+
+
+## Generate IBS_heatmap
+```{r}
+ 
+ibs_heat_map(df = GRC_Data,
+             snp_data = barcode_data,
+             ibs_matrix = IBS_Data$IBS_matrix,
+             map_data = geo_data,
+             save_output = TRUE,
+             drug_col = "Chloroquine")
+
+```
+
+
+## Generate the PCoA Plots
+```{r}
+
+pcoa_plots(ibs_matrix = IBS_Data$IBS_matrix,
+           df = GRC_Data,
+           circle_size = 4, 
+           save_output = TRUE,
+           drug_col = "Chloroquine")
+
+```
+
+
+```{r}
+nj_tree(ibs_matrix = IBS_Data$IBS_matrix,
+        df = GRC_Data,
+        tippoint_size = 4,
+        line_size = 0.6,
+        save_output = TRUE,
+        drug_col = "Chloroquine")
+
+```
+
 

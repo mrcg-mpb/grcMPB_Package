@@ -1,18 +1,15 @@
 #' @title Sample Count Map
 #'
-#' @description This function generates a map displaying the sample counts for each location based on the longitude and latitude coordinates.
-#' It creates a map with circle for each location whose sizes are determined by how many samples come from that location.
-#' The labels of the locations are also repelled from each circle with their sample counts in curly brackets.
+#' @description Creates a geographic map showing sample counts for each location based on longitude and latitude.
+#' The map uses circle sizes to represent sample counts, with location labels displaying the counts in parentheses.
 #'
-#'
-#' @param df Final GRC dataframe.
-#' @param drug_col The name of the column representing the drug conditions (e.g., "Chloroquine" with conditions, Resisatant, mixed resistant and sensitive).
-#' @param mData The metatdata list that contains your shapefile and Longitude Latitude data.
-#' @param save_uutput Logical. Whether to save the output plots to files (default is FALSE).
-#' @param breaks Used to set the breaks for the circle sizes
-#' @param label_size Used to set the size of th labels on the map
-#' @param scale_circle_size Used to scale the circle sizes.
-#' @param time Optional. A list defining time periods, where each list element contains:
+#' @param df Final GRC data frame.
+#' @param map_data A list containing the shape file and longitude-latitude data for mapping.
+#' @param breaks Numeric vector. Sets the breaks for circle sizes. Default: `c(10, 50, 100, 200, 300, 400, 500)`.
+#' @param save_output Logical. If `TRUE`, saves the plot as a JPEG file in the output directory (default: `FALSE`).
+#' @param label_size Numeric. Controls the size of location labels on the map. Default: `2.5`.
+#' @param scale_circle_size Numeric. Scales the maximum circle size. Default: `11`.
+#' @param time Optional. A list defining time periods for filtering the data. Each element contains:
 #'   \itemize{
 #'     \item \code{type}: Either "year" or "period" to define time scope.
 #'     \item \code{start}: The start year of the time period.
@@ -20,25 +17,31 @@
 #'     \item \code{name}: The label to use for the period.
 #'   }
 #'
-#' Example for generating time-period-based summary
+#' @return A list containing the generated map `Sample_Count_Map` and a summary table `Sample_Count_Table`.
+#'
+#' @examples
+#' sample_count_map(df = GRC_data,
+#'                  map_data = mapping_data)
+#'
+#' # Example with time periods
 #' time_periods <- list(list(type = "year", start = 2010, name = "2010"),
 #'                      list(type = "period", start = 2015, end = 2019, name = "2015-2019"))
 #'
-#' @examples
-#' # Ensure that df, shapeFile, and LongLat_data are properly prepared in your global environment
-#' SampleCountMap(GRC_data, drug_col = "Chlroquine",)
+#' sample_count_map(df = GRC_data,
+#'                  map_data = mapping_data,
+#'                  time = time_periods)
 #'
 #' @export
-SampleCountMap <- function(df, drug_col, mData, breaks = NULL, save_output = TRUE,
-                           period_name = "Full", label_size = 2.5, scale_circle_size = 11,
-                           time = NULL, ...) {
-
+#' @import ggplot2 ggrepel
+#'
+sample_count_map <- function(df, map_data, breaks = NULL, save_output = TRUE,
+                             period_name = "Full", label_size = 2.5, scale_circle_size = 11,
+                             time = NULL, ...) {
 
   if (is.null(time)) {
-    return(create_SC_map(
+    return(create_sc_map(
       df = df,
-      drug_col = drug_col,
-      mData = mData,
+      map_data = map_data,
       breaks = breaks,
       save_output = save_output,
       period_name = period_name,
@@ -47,12 +50,11 @@ SampleCountMap <- function(df, drug_col, mData, breaks = NULL, save_output = TRU
     ))
   }
 
-  return(TemporalData_List(
+  return(temporal_data_list(
     df = df,
-    func = create_SC_map,
-    drug_col = drug_col,
+    func = create_sc_map,
     time = time,
-    mData = mData,
+    map_data = map_data,
     save_output = save_output,
     label_size = label_size,
     scale_circle_size = scale_circle_size,
@@ -62,45 +64,38 @@ SampleCountMap <- function(df, drug_col, mData, breaks = NULL, save_output = TRU
 
 
 
-# Internal function to create plots for sample count map
-# Not exported; used within `SampleCountMap`.
-create_SC_map <- function(df, drug_col, mData, breaks = NULL, save_output = TRUE,
+#' @title Internal Function to Create Sample Count Map
+#'
+#' @inheritParams sample_count_map
+#'
+#' @keywords internal
+#'
+create_sc_map <- function(df, map_data, breaks = NULL, save_output = TRUE,
                           period_name = "Full", label_size = 2.5, scale_circle_size = 11, ...) {
-
-  # Input validation
-  if (!is.data.frame(df)) stop("`df` must be a data frame")
-  if (!drug_col %in% names(df)) stop("`drug_col` column not found in `df`")
-  if (!is.list(mData) || !all(c("shapefile", "LongLat_data") %in% names(mData))) {
-    stop("`mData` must be a list containing `shapefile` and `LongLat_data` elements")
-  }
 
   # Summarize sample counts by location
   sample_count_table <- df %>%
     dplyr::group_by(Location) %>%
-    dplyr::summarize(Sample_Count = dplyr::n())
+    dplyr::summarize(sample_count = dplyr::n())
 
-  # Join location data with longitude and latitude
-  sample_count_table <- dplyr::left_join(sample_count_table, mData$LongLat_data, by = "Location")
-
-  # Convert to sf object with longitude and latitude
-  sample_count_sf <- sf::st_as_sf(sample_count_table, coords = c("long", "lat"), crs = sf::st_crs(mData$shapefile))
+  sample_count_table <- dplyr::left_join(sample_count_table, map_data$long_lat_data, by = "Location")
+  sample_count_sf <- sf::st_as_sf(sample_count_table, coords = c("long", "lat"), crs = sf::st_crs(map_data$shapefile))
 
   # Set default breaks if none are provided
   if (is.null(breaks)) {
     breaks <- c(10, 50, 100, 200, 300, 400, 500)
   }
 
-  # Build the ggplot map
   p <- ggplot() +
-    geom_sf(data = mData$shapefile, fill = "white", color = "#023020", linewidth = 0.5) +
-    geom_sf(data = sample_count_sf, aes(size = Sample_Count), color = "#800000") +
-    ggrepel::geom_label_repel(
+    geom_sf(data = map_data$shapefile, fill = "white", color = "#023020", linewidth = 0.5) +
+    geom_sf(data = sample_count_sf, aes(size = sample_count), color = "#800000") +
+    geom_label_repel(
       data = sample_count_table,
-      aes(label = paste0(Location, " (", Sample_Count, ")"), x = long, y = lat, fontface = "bold"),
-      color = 'black',
+      aes(label = paste0(Location, " (", sample_count, ")"), x = long, y = lat, fontface = "bold"),
+      color = "black",
       size = label_size,
-      box.padding = grid::unit(1.3, "lines"),
-      segment.color = '#132B43',
+      box.padding = unit(1.3, "lines"),
+      segment.color = "#132B43",
       angle = 90,
       max.overlaps = 100
     ) +
@@ -111,16 +106,17 @@ create_SC_map <- function(df, drug_col, mData, breaks = NULL, save_output = TRUE
 
 
   if (save_output) {
-
-      save_path <- initialize_output_paths(dir1 = "Proportion_Maps")
-      ggsave(filename = paste0("SampleCountMap_", period_name, ".jpeg"), path = save_path, plot = p, dpi = 300, width = 11, height = 6)
+    save_path <- initialize_output_paths()
+    ggsave(filename = paste0("sample_count_map_", period_name, ".jpeg"),
+           path = save_path,
+           plot = p,
+           dpi = 300,
+           width = 11,
+           height = 6)
   }
 
-  # Return both the plot and the summary table as a list
   return(list(
-    Plots = list(SampleCount_Map = p),
-    Data = list(SampleCount_Table = sample_count_table)))
+    Sample_Count_Map = p,
+    Sample_Count_Table = sample_count_table
+  ))
 }
-
-
-

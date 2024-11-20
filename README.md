@@ -23,8 +23,8 @@ final dataset for analysis.
 
 ``` r
 GRC_Data <-
-    Combine_GRC_Sheets(input_folder="C:/Users/bngwa/Documents/Brandon/GDA_Markdown/All_GRC_Reads_Gambia",
-                       Country = "Gambia", 
+    combine_grc_sheets(input_folder="C:/Users/bngwa/Documents/Brandon/GDA_Markdown/All_GRC_Reads_Gambia",
+                       country = "Gambia", 
                        save_output = TRUE)
 ```
 
@@ -35,8 +35,9 @@ helping identify resistance and sensitivity profiles.
 
 ``` r
 GRC_Data <-
-  Gene_Classifier(df = GRC_Data, 
-                  drug_column = "Chloroquine")
+   gene_classifier(df = GRC_Data, 
+                  drug_column = "Chloroquine",
+                  save_output = TRUE)
 ```
 
 ### Preparing Metadata for Mapping
@@ -51,9 +52,9 @@ GMB <- st_read("C:/Users/bngwa/Documents/Brandon/GDA_Markdown/geoBoundaries-GMB-
 ## Read the logitude and latitude data
 LongLat <- read_excel("C:/Users/bngwa/Documents/Brandon/GDA_Markdown/LongLat_data.xlsx")
 
-mapping_data <- 
-MappingData(shapefile = GMB ,
-            LongLat_data = LongLat,
+geo_data <- 
+mapping_data(shapefile = GMB ,
+            long_lat_data = LongLat,
             location_col = "Location",
             long_col = "long",
             lat_col = "lat" )
@@ -77,12 +78,11 @@ Create a map displaying sample counts across different locations,
 adjusting parameters for circle size and map labels.
 
 ``` r
-SampleCountMap(df = GRC_Data, 
-               drug_col = "Chloroquine",
-               mData = mapping_data,
-               time = Periods,
-               breaks = c(10, 100, 200, 300),
-               label_size = 2.5, 
-               scale_circle_size = 11,
-               save_output = TRUE)
+sample_count_map(df = GRC_Data, 
+                 map_data = geo_data,
+                 time = NULL,
+                 breaks = c(10, 100, 200, 300),
+                 label_size = 2.5, 
+                 scale_circle_size = 11,
+                 save_output = TRUE)
 ```
