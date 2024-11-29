@@ -22,8 +22,6 @@
 #' @return A GRC data frame with new columns for drugs:
 #' Chloroquine, MultiDrug, Kelch13, Sulfadoxine, and Pyrimethamine.
 #'
-#' @examples
-#' gene_classifier(df = GRC_Data, drug_column = "Chloroquine")
 #'
 #' @export
 #'
@@ -140,7 +138,7 @@ gene_classifier <- function(df, drug_column = "Chloroquine", save_output = FALSE
     dplyr::filter(!(!!rlang::sym(drug_column) %in% c("undetermined", "missing")))
 
   if (save_output) {
-    save_path <- initialize_output_paths()
+    save_path <-  save_path <- get("Output_Dir", envir = .GlobalEnv)
     writexl::write_xlsx(df, file.path(save_path, paste0(drug_column, "_filtered_GRC_Sheet.xlsx")))
   }
 

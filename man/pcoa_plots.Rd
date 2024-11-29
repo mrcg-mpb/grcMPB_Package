@@ -36,10 +36,3 @@ The function calculates three PCoA axes and produces pairwise scatter plots for 
 PCoA1 vs PCoA3, and PCoA2 vs PCoA3). If \code{drug_col} is specified, the resulting plots are facet wrapped by
 the categories in the \code{drug_col}.
 }
-\examples{
-pcoa_plots(ibs_matrix = Ibs_Matrix,
-           df = GRC Data,
-           drug_col = "Chloroquine")
-
-
-}

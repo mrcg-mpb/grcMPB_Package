@@ -19,13 +19,6 @@
 #'   \item \code{Condition_Table2}: A summary table showing the percentage of each condition for the entire data set.
 #' }
 #'
-#' @examples
-#' drug_distribution(df = GRC_data,
-#'                   drug_col = "Chloroquine",
-#'                   colors = c("resistant" = "#525CEB",
-#'                              "mixed_resistant" = "#808000",
-#'                              "sensitive" = "#800000"))
-#'
 #' @export
 #'
 drug_distribution <- function(df, drug_col, save_output = TRUE, time = NULL,
@@ -58,6 +51,7 @@ drug_distribution <- function(df, drug_col, save_output = TRUE, time = NULL,
 #' @title Internal Function to Create Drug Distribution Plots
 #'
 #' @inheritParams drug_distribution
+#' @param period_name  The period name for the plot. Defualt: `FULL`
 #'
 #' @keywords internal
 #'
@@ -140,7 +134,9 @@ create_plots <- function(df, drug_col, period_name = "Full", save_output = TRUE,
     geom_text(aes(label = paste0(prob, "%")), hjust = -0.8, fontface = "bold")
 
   if (save_output) {
-    save_path <- initialize_output_paths(dir1 = "Drug_Resistant_Plots")
+
+    save_path <- file.path(get("Output_Dir", envir = .GlobalEnv), "Drug_Resistant_Plots")
+    dir.create(save_path, showWarnings = FALSE)
 
     ggsave(filename = paste0("DrugStatus_BarChart1_", period_name, ".jpeg"),
            plot = bar1, dpi = 300, width = 11, height = 7, path = save_path)
@@ -186,9 +182,6 @@ create_plots <- function(df, drug_col, period_name = "Full", save_output = TRUE,
 #'   \item \code{Drug_Condition_Table}: A data frame summarizing the drug resistance percentages and locations.
 #' }
 #'
-#' @examples
-#' drug_distribution_pm( GRC_Data, drug_col = "Chloroquine")
-#'
 #' @export
 #'
 drug_distribution_pm <- function(df, drug_col, save_output = TRUE, period_name = "Full", map_data,
@@ -225,6 +218,7 @@ drug_distribution_pm <- function(df, drug_col, save_output = TRUE, period_name =
 #' @title Internal function to create plots for drug distribution percentage maps
 #'
 #' @inheritParams drug_distribution_pm
+#' @param period_name  The period name for the plot. Defualt: `FULL`
 #'
 #' @keywords internal
 #'
@@ -299,7 +293,10 @@ create_p_map <- function(df, drug_col, save_output = TRUE, period_name = "Full",
 
 
     if (save_output) {
-      save_path <- initialize_output_paths(dir1 = "Drug_Resistant_Plots")
+
+      save_path <- file.path(get("Output_Dir", envir = .GlobalEnv), "Drug_Resistant_Plots")
+      dir.create(save_path, showWarnings = FALSE)
+
       ggsave(
         filename = paste0(p_column, "_", period_name, ".jpeg"),
         path = save_path,

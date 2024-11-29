@@ -1,0 +1,288 @@
+---
+title: "grcMPB Use Case"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{grcMPB_Use_Case}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This vignette showcases the functionality of the grcMPB package, designed for analyzing SpotMalaria Genetic Report Cards (GRC). The package provides a comprehensive toolkit for population genetics analysis, seamlessly integrating spatial data and visualization to facilitate the following:
+
+* **Prevalence and Diversity Analysis:** Gain insights into the prevalence and genetic diversity of malaria parasites across various locations.
+* **Drug Resistance Profiling:** Detect and characterize drug resistance patterns in malaria strains.
+* **Geographical Mapping:** Visualize the distribution and movement of malaria strains across different locations..
+* **Genetic Relationship Exploration:** Examine genetic relatedness among samples using IBS (Identity-By-State) matrices and associated plots.
+
+Below is workflow of how we use the package functions to perform this analyse and a brief explanation of what each function aims to achieve.
+To get more details about each function put a question mark before the function, e.g, **?combine_grc_sheets**.
+
+```{r setup}
+library(grcMPB)
+```
+
+## Create your final GRC Data 
+
+The combine_grc_sheets function consolidates multiple SpotMalaria Genetic Report Cards (GRC) into a single data set for downstream analysis. This function also allows you to filter the data by country.
+
+```{r eval=FALSE}
+grc_data <-
+  combine_grc_sheets(
+    input_folder = "C:/Users/bngwa/Documents/Brandon/GDA_Markdown/All_GRC_Reads_Gambia",
+    country = "Gambia",
+    save_output = TRUE,
+    output_dir = "C:/Users/bngwa/Videos"
+  )
+```
+
+
+## Create the drug condition columns
+
+Use the gene_classifier function to classify samples into categories such as **Resistant**, **Sensitive**, **Mixed_Resistance**, **Undetermined** and **Missing** based on the haplotypes of certain gene markers associated with specific drugs, e.g, PfCRT which is associated with Chloroquine. New columns are then created using the name of each drug. Users have to select which drug to work with for the downstream analyses my passing the name to the drug_column argument in th function. This then filters the data set deleting the undetermined and missing cases, 
+
+```{r eval=FALSE}
+grc_data <-
+  gene_classifier(
+    df = grc_data,
+    drug_column = "Chloroquine",
+    save_output = TRUE
+  )
+```
+
+
+## Create your meta data for the maps
+
+Integrate shapefile data and geographic coordinates to create a list using mapping_data. This is necessary for creating spatial visualizations subsequent analyses.
+
+```{r eval=FALSE}
+# import your geographical data for mapping
+gmb_shpfile <- st_read(system.file("extdata", "geoBoundaries-GMB-ADM3_simplified.shp", package = "grcMPB"))
+longitude_latitude <- read_excel(system.file("extdata", "LongLat_data.xlsx", package = "grcMPB"))
+
+geo_data <-
+  mapping_data(
+    shapefile = gmb_shpfile,
+    long_lat_data = longitude_latitude,
+    location_col = "Location",
+    long_col = "long",
+    lat_col = "lat"
+  )
+```
+
+
+## Create Sample Count Map
+
+Visualize sample counts across different locations. 
+
+```{r eval=FALSE}
+## You can create a single or range of years to filter buy before generating the plots
+periods <-
+  list(
+    list(name = "2021", type = "year", start = "2021"),
+    list(name = "2017-19", type = "period", start = "2017", end = "2019")
+  )
+
+sample_count_map(
+  df = grc_data,
+  map_data = geo_data,
+  time = NULL,
+  breaks = c(10, 100, 200, 300),
+  label_size = 2.5,
+  scale_circle_size = 11,
+  save_output = TRUE
+)
+```
+
+
+## Create Distrubution table and barchart 
+
+Generate distribution summaries for the drug categories and visualize them with bar charts. Users can specify specify custom colors for each category. 
+
+```{r eval=FALSE}
+drug_distribution(
+  df = grc_data,
+  drug_col = "Chloroquine",
+  save_output = TRUE,
+  time = NULL,
+  colors = c(
+    "resistant" = "#525CEB",
+    "mixed_resistant" = "#808000",
+    "sensitive" = "#800000"
+  )
+)
+```
+
+
+## Drug Resistance Prevalence Proportion Maps
+
+Create proportion maps showing the prevalence of drug resistance categories across regions.
+
+```{r eval=FALSE}
+drug_distribution_pm(
+  df = grc_data,
+  drug_col = "Chloroquine",
+  save_output = TRUE,
+  time = NULL,
+  map_data = geo_data,
+  label_size = 2.5,
+  circle_num_size = 3.1,
+  scale_circle_size = 10
+)
+```
+
+
+## Mutation Frequency table and plots 
+
+Calculate mutation frequencies for a specified gene and visualize the results using bar charts and maps.
+
+```{r eval=FALSE}
+mutation_frequency(
+  df = grc_data,
+  gene = "pfcrt",
+  gene_col = "PfCRT",
+  save_output = TRUE,
+  time = NULL,
+  map_data = geo_data,
+  label_size = 2.5,
+  circle_num_size = 3.1,
+  scale_circle_size = 10,
+  include_mixed = FALSE
+)
+```
+
+
+## Haplotype Proportion plots
+
+Visualize haplotype proportions for specific genes as pie charts over geographic locations on the map.
+
+```{r eval=FALSE}
+haplotype_proportion(
+  df = grc_data,
+  gene_col = "PfCRT",
+  drug_col = "Chloroquine",
+  save_output = TRUE,
+  time = NULL,
+  map_data = geo_data,
+  label_size = 2.5,
+  sacle_piechart_size = 0.035
+)
+```
+
+
+## Filter SNPs and Smaples for missigness
+
+Use the filter_snp_x_samples function to create the genetic bar code using th SNPs columns in your grc_data, then filter th samples and snps for missing less then or equals to specific threshold. 
+
+```{r eval=FALSE}
+barcode_data <-
+  filter_snp_x_samples(
+    df = grc_data,
+    m_threshold = 0.40
+  )
+
+head(barcode_data)
+```
+
+
+## Diversity Map
+
+Visualize genetic diversity across locations on the map using bar code data.
+
+```{r eval=FALSE}
+diversity_map(
+  df = grc_data,
+  snp_data = barcode_data,
+  map_data = geo_data,
+  label_size = 2.5,
+  circle_num_size = 3.1,
+  scale_circle_size = 10,
+  time = NULL,
+  save_output = TRUE
+)
+```
+
+
+## Calculate the Identity By State (IBS) and save it as a dataframe.
+```{r eval=FALSE}
+ibs_data_list <-
+  generate_ibs_data(
+    df = grc_data,
+    snp_data = barcode_data,
+    drug_col = "Chloroquine"
+  )
+
+ibs_data_list$IBS_Histogram
+```
+
+
+## Summarise IBS by the same location and draw the proportion map
+```{r eval=FALSE}
+ibs_data_sl(
+  melted_ibs_matrix = ibs_data_list$IBS_Melted_Matrix,
+  ibs_th = 0.75,
+  map_data = geo_data,
+  label_size = 2.5,
+  circle_num_size = 3.1,
+  scale_circle_size = 10,
+  save_output = TRUE
+)
+```
+
+
+## Summarise IBS by diffrent location and draw the propoertion map
+```{r eval=FALSE}
+ibs_data_dl(
+  melted_ibs_matrix = ibs_data_list$IBS_Melted_Matrix,
+  ibs_threshold = 0.75,
+  percentage_cutoff = 1,
+  map_data = geo_data,
+  label_size = 5,
+  breaks = seq(1, 9, 2),
+  curve_degree = 0.5,
+  save_output = TRUE
+)
+```
+
+
+## Generate IBS_heatmap
+```{r eval=FALSE}
+ibs_heat_map(
+  df = grc_data,
+  snp_data = barcode_data,
+  ibs_matrix = ibs_data_list$IBS_matrix,
+  map_data = geo_data,
+  save_output = TRUE,
+  drug_col = "Chloroquine"
+)
+```
+
+
+## Generate the PCoA Plots
+```{r eval=FALSE}
+pcoa_plots(
+  ibs_matrix = ibs_data_list$IBS_matrix,
+  df = grc_data,
+  circle_size = 4,
+  save_output = TRUE,
+  drug_col = "Chloroquine"
+)
+```
+
+## Generate the Neigbour Joining Trees
+```{r eval=FALSE}
+nj_tree(
+  ibs_matrix = ibs_data_list$IBS_matrix,
+  df = grc_data,
+  tippoint_size = 4,
+  line_size = 0.6,
+  save_output = TRUE,
+  drug_col = "Chloroquine"
+)
+```

@@ -9,14 +9,16 @@
 #' @param country A character string representing the country for which specific data cleaning rules should be applied (optional).
 #' If "Gambia", location names will be re coded and some locations will be filtered out.
 #' @param save_output Logical. Whether to save the output plots to the Outputs folder (default is FALSE).
+#' @param output_dir Output directory to store your results.
 #'
 #'
 #' @return A data frame containing multiple GRC excel sheets merged together.
 #'
 #' @export
+#' @import readxl
 #' @importFrom magrittr %>%
 #'
-combine_grc_sheets <- function(input_folder, country = NULL, save_output = TRUE) {
+combine_grc_sheets <- function(input_folder, country = NULL, save_output = TRUE, output_dir = NULL) {
   # Get list of all Excel files in the folder
   files <- list.files(input_folder, pattern = ".xlsx", full.names = TRUE)
 
@@ -70,7 +72,22 @@ combine_grc_sheets <- function(input_folder, country = NULL, save_output = TRUE)
 
   # Save output if specified
   if (save_output) {
-    save_path <- initialize_output_paths()
+
+    if (.Platform$OS.type == "windows") {
+      otpt_dir <- normalizePath(tempdir(), winslash = "/")
+    } else {
+      otpt_dir <- tempdir()
+    }
+
+    if (is.null(output_dir)) {
+      save_path <- file.path(otpt_dir, "Outputs")
+    } else {
+      save_path <- file.path(output_dir, "Outputs")
+    }
+
+    # Create the directory and assign it to the global environment
+    dir.create(save_path, showWarnings = FALSE, recursive = TRUE)
+    assign("Output_Dir", save_path, envir = .GlobalEnv)
     writexl::write_xlsx(combined_data, file.path(save_path, "GRC_Sheet.xlsx"))
   }
 

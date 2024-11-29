@@ -33,27 +33,19 @@ genetic locus (e.g., "Pf3D7_"). The row names should correspond to the "Sample I
 
 \item{scale_circle_size}{Numeric. Scales the maximum circle size. Default: \code{10}.}
 
-\item{save_output}{Logical. If \code{TRUE}, saves the plot as a JPEG file in the output directory (default: \code{FALSE}).}
+\item{save_output}{Logical. If \code{TRUE}, saves the plot as a JPEG file in the output directory (default: \code{TRUE}).}
 
-\item{drug_col}{The name of the column representing the drug conditions (e.g., "Chloroquine" with
-categories like Resistant, Mixed Resistant, and Sensitive).}
+\item{...}{Additional arguments passed to other functions.}
 }
 \value{
-A proportional map and a table of genetic diversity (mean heterozygosity) per location.
-
 A list containing:
 \itemize{
 \item \code{Diversity_Map}: A map with mean heterozygosity values for each location.
 \item \code{Diversity_Table}: A data set containing the diversity data.
 }
-\description{
-This function calculates the heterozygosity for each SNP locus across samples in a dataset, summarizes
-the genetic diversity (mean heterozygosity) for each location, and plots a proportional map of genetic
-diversity based on the mean heterozygosity per location.
 }
-\examples{
-diversity_map(df = GRC_Data,
-drug_col = "Chloroquine",
-snp_data = barcode_data)
-
+\description{
+Calculate the heterozygosity for each SNP locus across samples in a data set, summarize
+the genetic diversity (mean heterozygosity) for each location, and plot a proportional map of genetic
+diversity based on the mean heterozygosity per location.
 }

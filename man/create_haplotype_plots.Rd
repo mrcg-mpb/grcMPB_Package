@@ -7,7 +7,6 @@
 create_haplotype_plots(
   df,
   gene_col,
-  drug_col,
   save_output = TRUE,
   period_name = "Full",
   label_size = 2.5,
@@ -21,10 +20,9 @@ create_haplotype_plots(
 
 \item{gene_col}{The column containing haplotype data (e.g., "PfCRT")}
 
-\item{drug_col}{The name of the column representing the drug conditions (e.g., "Chloroquine" with
-categories like Resistant, Mixed Resistant, and Sensitive).}
-
 \item{save_output}{Logical. If \code{TRUE}, saves the plot as a JPEG file in the output directory (default: \code{FALSE}).}
+
+\item{period_name}{The period name for the plot. Defualt: \code{FULL}}
 
 \item{label_size}{Numeric. Controls the size of location labels on the map. Default: \code{2.5}.}
 

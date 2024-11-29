@@ -76,63 +76,6 @@ temporal_data_list <- function(df, func, time, ...) {
 
 
 
-
-#' @title Initialize Output Paths
-#'
-#' @description A helper function to create output directories and nested directories based on the user's specifications.
-#' This function is internal and should not be called directly by the user.
-#'
-#' @param dir1 (Optional) Name for the first sub directory within Outputs.
-#' @param dir2 (Optional) Name for the nested sub directory within dir1.
-#'
-#' @return The path to the directory where outputs can be saved.
-#'
-initialize_output_paths <- function(dir1 = NULL, dir2 = NULL) {
-  # Check if Outputs directory exists in the working directory or as a global variable
-  if (!dir.exists("Outputs") || !exists("outputs", envir = .GlobalEnv)) {
-    # Create Outputs directory in the working directory
-    dir.create(file.path(getwd(), "Outputs"), showWarnings = FALSE)
-
-    # Assign main path to Outputs in the global environment
-    outputs <- list(mainPath = file.path(getwd(), "Outputs"))
-    assign("Outputs", outputs, envir = .GlobalEnv)
-  }
-
-  # Retrieve the main path from the Outputs list
-  main_path <- outputs$mainPath
-
-  # Initialize path for dir1 if provided
-  if (!is.null(dir1)) {
-    dir1_path <- file.path(main_path, dir1)
-
-    if (!dir.exists(dir1_path)) {
-      dir.create(dir1_path, showWarnings = FALSE)
-    }
-  } else {
-    dir1_path <- main_path
-  }
-
-  # Initialize path for dir2 if provided, nested within dir1
-  if (!is.null(dir2) && !is.null(dir1)) {
-    dir2_path <- file.path(dir1_path, dir2)
-
-    if (!dir.exists(dir2_path)) {
-      dir.create(dir2_path, showWarnings = FALSE)
-    }
-  } else {
-    dir2_path <- dir1_path
-  }
-
-  # Update Outputs with the additional paths if dir1 or dir2 are specified
-  outputs$subDir1 <- if (!is.null(dir1)) dir1_path else NULL
-  outputs$subDir2 <- if (!is.null(dir2)) dir2_path else NULL
-
-  # Return the final path for saving outputs (either Outputs, dir1, or dir2)
-  return(dir2_path)
-}
-
-
-
 #' @title Split Haplotype
 #'
 #' @description A helper function to split th haplotypes combination into a vector if strings

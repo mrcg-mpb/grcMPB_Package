@@ -26,11 +26,6 @@
 #'
 #' @export
 #'
-#' @examples
-#' # Example usage:
-#' generate_ibs_data(df = GRC_Data, snp_data = BarcodeData, drug_col = "Chloroquine")
-#' head(IBS_Data)
-
 generate_ibs_data <- function(df, snp_data, drug_col) {
 
   # Inner function to calculate IBS scores between sample pairs

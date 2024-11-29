@@ -15,12 +15,6 @@
 #'
 #' @return A list containing the heat maps.
 #'
-#' @examples
-#' IBS_Heat_Map(df = GRC_Data,
-#'              snp_data = barcode_data,
-#'              map_data = geo_data,
-#'              ibs_matrix = Ibs_matrix)
-#'
 #' @export
 #'
 ibs_heat_map <- function(df, snp_data, ibs_matrix, map_data, save_output = FALSE, drug_col = NULL) {
@@ -94,7 +88,10 @@ ibs_heat_map <- function(df, snp_data, ibs_matrix, map_data, save_output = FALSE
     heatmap_list[[condition]] <- p
 
     if (save_output) {
-      save_path <- initialize_output_paths(dir1 = "IBS_Plots", dir2 = "Heat_Maps")
+
+      save_path <- file.path(get("Output_Dir", envir = .GlobalEnv), "IBS_Heat_Maps")
+      dir.create(save_path, showWarnings = FALSE)
+
       ggsave(
         path = save_path,
         filename = paste0("IBS_Heatmap_", condition, ".jpeg"),

@@ -7,7 +7,6 @@
 haplotype_proportion(
   df,
   gene_col,
-  drug_col,
   save_output = TRUE,
   period_name = "Full",
   label_size = 2.5,
@@ -21,9 +20,6 @@ haplotype_proportion(
 \item{df}{Final GRC data frame}
 
 \item{gene_col}{The column containing haplotype data (e.g., "PfCRT")}
-
-\item{drug_col}{The name of the column representing the drug conditions (e.g., "Chloroquine" with
-categories like Resistant, Mixed Resistant, and Sensitive).}
 
 \item{save_output}{Logical. If \code{TRUE}, saves the plot as a JPEG file in the output directory (default: \code{FALSE}).}
 
@@ -46,10 +42,4 @@ including an "Others" category for low-frequency haplotypes.
 }
 \description{
 This function generates the proportion of unique haplotypes for a specific gene (e.g, PfCRT)
-}
-\examples{
-haplotype_proportion(df = GRC_data,
-                     drug_col = "Chloroquine",
-                     gene_col = "PfCRT")
-
 }

@@ -15,6 +15,8 @@ ibs_data_sl(
 )
 }
 \arguments{
+\item{melted_ibs_matrix}{A data frame containing the melted IBS matrix}
+
 \item{ibs_threshold}{A numeric value between 0 and 1 representing the IBS threshold for pair counts. Default is 0.75.}
 
 \item{map_data}{A list containing the shape file and longitude-latitude data for mapping.}
@@ -26,10 +28,6 @@ ibs_data_sl(
 \item{scale_circle_size}{Numeric. Scales the maximum circle size. Default: \code{10}.}
 
 \item{save_output}{Logical. If \code{TRUE}, saves the plot as a JPEG file in the output directory (default: \code{FALSE}).}
-
-\item{melted_ibs_data}{A data frame containing the melted IBS data.
-This data frame should include the columns \code{LS1}, \code{LS2}, and \code{value},
-where value represents the IBS score between two locations.}
 }
 \value{
 A data data frame and map showing the the median Ibs score for each location.

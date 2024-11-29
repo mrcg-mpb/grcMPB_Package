@@ -24,6 +24,8 @@ categories like Resistant, Mixed Resistant, and Sensitive).}
 
 \item{save_output}{Logical. If \code{TRUE}, saves the plot as a JPEG file in the output directory (default: \code{FALSE}).}
 
+\item{period_name}{The period name for the plot. Defualt: \code{FULL}}
+
 \item{map_data}{A list containing the shape file and longitude-latitude data for mapping.}
 
 \item{label_size}{Numeric. Controls the size of location labels on the map. Default: \code{2.5}.}

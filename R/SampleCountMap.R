@@ -20,9 +20,6 @@
 #' @return A list containing the generated map `Sample_Count_Map` and a summary table `Sample_Count_Table`.
 #'
 #' @examples
-#' sample_count_map(df = GRC_data,
-#'                  map_data = mapping_data)
-#'
 #' # Example with time periods
 #' time_periods <- list(list(type = "year", start = 2010, name = "2010"),
 #'                      list(type = "period", start = 2015, end = 2019, name = "2015-2019"))
@@ -32,7 +29,7 @@
 #'                  time = time_periods)
 #'
 #' @export
-#' @import ggplot2 ggrepel
+#' @import ggplot2 ggrepel sf
 #'
 sample_count_map <- function(df, map_data, breaks = NULL, save_output = TRUE,
                              period_name = "Full", label_size = 2.5, scale_circle_size = 11,
@@ -67,6 +64,7 @@ sample_count_map <- function(df, map_data, breaks = NULL, save_output = TRUE,
 #' @title Internal Function to Create Sample Count Map
 #'
 #' @inheritParams sample_count_map
+#' @param period_name  The period name for the plot. Defualt: `FULL`
 #'
 #' @keywords internal
 #'
@@ -106,7 +104,8 @@ create_sc_map <- function(df, map_data, breaks = NULL, save_output = TRUE,
 
 
   if (save_output) {
-    save_path <- initialize_output_paths()
+
+    save_path <- get("Output_Dir", envir = .GlobalEnv)
     ggsave(filename = paste0("sample_count_map_", period_name, ".jpeg"),
            path = save_path,
            plot = p,

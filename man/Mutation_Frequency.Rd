@@ -8,7 +8,6 @@ mutation_frequency(
   df,
   gene,
   gene_col,
-  drug_col,
   save_output = TRUE,
   period_name = "Full",
   time = NULL,
@@ -21,25 +20,23 @@ mutation_frequency(
 )
 }
 \arguments{
-\item{df}{Final GRC dataframe}
+\item{df}{Final GRC data frame}
 
 \item{gene}{The gene to analyze ("pfcrt", "pfdhps", "pfdhfr", "pfmdr1")}
 
-\item{gene_col}{The column in the df that contains haplotype data (e.g., "PfCRT").}
+\item{gene_col}{The column containing haplotype data (e.g., "PfCRT")}
 
-\item{drug_col}{The name of the column representing the drug conditions (e.g., "Chloroquine" with conditions, Resistant, mixed resistant and sensitive).}
-
-\item{save_output}{Logical. Whether to save the output plots to files (default is FALSE).}
+\item{save_output}{Logical. If \code{TRUE}, saves the plot as a JPEG file in the output directory (default: \code{FALSE}).}
 
 \item{time}{Optional. A list defining time periods.}
 
-\item{map_data}{The metatdata list that contains your shapefile and Longitude Latitude data.}
+\item{map_data}{A list containing the shape file and longitude-latitude data for mapping.}
 
-\item{label_size}{Used to set the size of the labels on the map.}
+\item{label_size}{Numeric. Controls the size of location labels on the map. Default: \code{2.5}.}
 
-\item{circle_num_size}{Used to set th sizes of the numbers in th circles.}
+\item{circle_num_size}{Numeric. Controls the numbers inside the circles. Default: \code{3.1}.}
 
-\item{scale_circle_size}{Used to scale the size of th circles.}
+\item{scale_circle_size}{Numeric. Scales the maximum circle size. Default: \code{10}.}
 
 \item{include_mixed}{Boolean, whether to include mixed haplotypes in counts}
 }
@@ -48,9 +45,5 @@ This function calculates the frequency of wild, mutated, mixed, and missing hapl
 It also generates two tables: one for mutation types by position and another for mutations by location.
 The function provides the option to include mixed haplotypes in the counts for both tables.
 The first plot is a bar chart with the percentages of, wild, mutated, mixed and missing for the haplotype.
-The second plots are maps which show these percentages in circles and the circle representing a location.
-}
-\examples{
-mutation_frequency( GRC_Data, gene = pfcrt, gene_col = "PfCRT", drug_col = "Chloroquine")
-
+The second plots are maps which show these percentages in circles for all available locations.
 }

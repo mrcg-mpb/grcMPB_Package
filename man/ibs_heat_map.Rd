@@ -36,10 +36,3 @@ This function generates a heat map representing Identity-by-State (IBS) scores b
 with colors assigned to each location dynamically. If \code{drug_col} is specified, heat maps are generated each containing
 sample pairs associated with the category in the drug column.
 }
-\examples{
-IBS_Heat_Map(df = GRC_Data,
-             snp_data = barcode_data,
-             map_data = geo_data,
-             ibs_matrix = Ibs_matrix)
-
-}

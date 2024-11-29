@@ -36,8 +36,3 @@ This function calculates identity-by-state (IBS) scores between samples based on
 up of the SNPs columns in th GRC Data. It reshapes the IBS matrix into a long format and annotates the data with metadata,
 including sample locations, drug conditions, location of the samples pairing, etc.
 }
-\examples{
-# Example usage:
-generate_ibs_data(df = GRC_Data, snp_data = BarcodeData, drug_col = "Chloroquine")
-head(IBS_Data)
-}

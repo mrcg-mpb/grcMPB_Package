@@ -18,13 +18,6 @@
 #' from the BioManager package to visualize our tree.
 #' If `drug_col` is specified, the tree is generated for each category in th drug column.
 #'
-#'
-#' @examples
-#' nj_tree(ibs_matrix = Ibs_Matrix,
-#'         df = GRC Data,
-#'         drug_col = "Chloroquine")
-#'
-#'
 #' @export
 #' @importFrom ggtree %<+%
 #'
@@ -81,7 +74,10 @@ nj_tree <- function(ibs_matrix, df, tippoint_size = 4, line_size = 0.6, save_out
       labs(color = "Location", shape = "Drug Status", title = paste("Neighbor_Joining Tree:", condition))
 
     if (save_output) {
-      save_path <- initialize_output_paths(dir1 = "IBS_Plots", dir2 = "NJ_Trees")
+
+      save_path <- file.path(get("Output_Dir", envir = .GlobalEnv), "IBS_NJ_Trees")
+      dir.create(save_path, showWarnings = FALSE)
+
       ggsave(path = save_path,
              filename = paste0("NJ_Tree_", condition, ".jpeg"),
              plot = p,

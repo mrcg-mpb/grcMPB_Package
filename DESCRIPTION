@@ -5,13 +5,13 @@ Authors@R:
     person("Brandon", "Ngwa", email = "ngwabrandon10@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
 Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Imports: 
     dplyr,
+    tidyr,
     readxl,
     writexl,
     magrittr,
@@ -22,7 +22,12 @@ Imports:
     stringr,
     purrr,
     pheatmap,
+    forcats,
     glue,
     BiocManager,
     ggtree,
     lintr
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

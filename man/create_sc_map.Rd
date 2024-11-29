@@ -24,6 +24,8 @@ create_sc_map(
 
 \item{save_output}{Logical. If \code{TRUE}, saves the plot as a JPEG file in the output directory (default: \code{FALSE}).}
 
+\item{period_name}{The period name for the plot. Defualt: \code{FULL}}
+
 \item{label_size}{Numeric. Controls the size of location labels on the map. Default: \code{2.5}.}
 
 \item{scale_circle_size}{Numeric. Scales the maximum circle size. Default: \code{11}.}

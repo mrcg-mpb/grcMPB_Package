@@ -19,6 +19,8 @@ create_plots(
 \item{drug_col}{The name of the column representing the drug conditions (e.g., "Chloroquine" with
 categories like Resistant, Mixed Resistant, and Sensitive).}
 
+\item{period_name}{The period name for the plot. Defualt: \code{FULL}}
+
 \item{save_output}{Logical. If \code{TRUE}, saves the plot as a JPEG file in the output directory (default: \code{FALSE}).}
 
 \item{colors}{A named vector of colors for the categories in \code{drug_col}}

@@ -4,7 +4,12 @@
 \alias{combine_grc_sheets}
 \title{Combine GRC Sheets}
 \usage{
-combine_grc_sheets(input_folder, country = NULL, save_output = TRUE)
+combine_grc_sheets(
+  input_folder,
+  country = NULL,
+  save_output = TRUE,
+  output_dir = NULL
+)
 }
 \arguments{
 \item{input_folder}{Path to the folder containing the GRC Excel files.}
@@ -13,6 +18,8 @@ combine_grc_sheets(input_folder, country = NULL, save_output = TRUE)
 If "Gambia", location names will be re coded and some locations will be filtered out.}
 
 \item{save_output}{Logical. Whether to save the output plots to the Outputs folder (default is FALSE).}
+
+\item{output_dir}{Output directory to store your results.}
 }
 \value{
 A data frame containing multiple GRC excel sheets merged together.

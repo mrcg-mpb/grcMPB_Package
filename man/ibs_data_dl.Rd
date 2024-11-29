@@ -11,7 +11,8 @@ ibs_data_dl(
   label_size = 2.5,
   breaks = seq(0, 8, 2),
   curve_degree = 0.5,
-  save_output = TRUE
+  save_output = TRUE,
+  percentage_cutoff = 1
 )
 }
 \arguments{
@@ -23,7 +24,11 @@ ibs_data_dl(
 
 \item{breaks}{Used to set the breaks for the thickness and color of the lines. Default: \code{seq(0, 8, 2)}.}
 
+\item{curve_degree}{How curved you want the connection lines to be. Default: \code{0.5}}
+
 \item{save_output}{Logical. If \code{TRUE}, saves the plot as a JPEG file in the output directory (default: \code{FALSE}).}
+
+\item{percentage_cutoff}{The minimum percentage to use for the proportion columns. Default: \code{1}.}
 
 \item{melted_ibs_data}{A data frame containing the melted IBS data.
 This data frame should include the columns \code{LS1}, \code{LS2}, and \code{value},
@@ -45,11 +50,4 @@ A data frame and connectivity maps showing the proportion of samples pairing bet
 }
 \description{
 Summarize the IBS score by different location pairs.
-}
-\examples{
-Example usage:
-ibs_data_dl(melted_ibs_matrix = IBS_Melted_Matrix,
-            map_data = geo_data,
-            ibs_threshold = 0.75)
-
 }

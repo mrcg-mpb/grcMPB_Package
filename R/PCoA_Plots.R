@@ -16,12 +16,6 @@
 #' The function calculates three PCoA axes and produces pairwise scatter plots for these axes (PCoA1 vs PCoA2,
 #' PCoA1 vs PCoA3, and PCoA2 vs PCoA3). If `drug_col` is specified, the resulting plots are facet wrapped by
 #' the categories in the `drug_col`.
-#
-#'
-#' @examples
-#' pcoa_plots(ibs_matrix = Ibs_Matrix,
-#'            df = GRC Data,
-#'            drug_col = "Chloroquine")
 #'
 #'
 #' @export
@@ -91,7 +85,10 @@ pcoa_plots <- function(ibs_matrix, df, circle_size = 4, save_output = FALSE, dru
 
 
     if (save_output) {
-      save_path <- initialize_output_paths(dir1 = "IBS_Plots", dir2 = "PCoA_Plots")
+
+      save_path <- file.path(get("Output_Dir", envir = .GlobalEnv), "IBS_PCoA_Plots")
+      dir.create(save_path, showWarnings = FALSE)
+
       ggsave(path = save_path,
              filename = paste(x_var, y_var, ".jpeg", sep = "_"),
              plot = p,

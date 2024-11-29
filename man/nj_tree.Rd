@@ -39,10 +39,3 @@ It then using the the function nj() from the ape package to build the tree. Afte
 from the BioManager package to visualize our tree.
 If \code{drug_col} is specified, the tree is generated for each category in th drug column.
 }
-\examples{
-nj_tree(ibs_matrix = Ibs_Matrix,
-        df = GRC Data,
-        drug_col = "Chloroquine")
-
-
-}

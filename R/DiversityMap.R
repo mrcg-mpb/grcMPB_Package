@@ -1,34 +1,28 @@
 #' @title Create Diversity Map
 #'
-#' @description This function calculates the heterozygosity for each SNP locus across samples in a dataset, summarizes
-#' the genetic diversity (mean heterozygosity) for each location, and plots a proportional map of genetic
+#' @description Calculate the heterozygosity for each SNP locus across samples in a data set, summarize
+#' the genetic diversity (mean heterozygosity) for each location, and plot a proportional map of genetic
 #' diversity based on the mean heterozygosity per location.
 #'
 #' @param df Final GRC data frame
-#' @param drug_col The name of the column representing the drug conditions (e.g., "Chloroquine" with
-#' categories like Resistant, Mixed Resistant, and Sensitive).
 #' @param snp_data A data frame of SNP data, where each row represents a sample and each column corresponds to a
 #' genetic locus (e.g., "Pf3D7_"). The row names should correspond to the "Sample Internal ID".
 #' @param label_size Numeric. Controls the size of location labels on the map. Default: `2.5`.
+#' @param time Optional. A list defining time periods for filtering the data.
 #' @param map_data A list containing the shape file and longitude-latitude data for mapping.
 #' @param circle_num_size Numeric. Controls the numbers inside the circles. Default: `3.1`.
 #' @param scale_circle_size Numeric. Scales the maximum circle size. Default: `10`.
-#' @param save_output Logical. If `TRUE`, saves the plot as a JPEG file in the output directory (default: `FALSE`).
-#' @param time Optional. A list defining time periods for filtering the data.
+#' @param save_output Logical. If `TRUE`, saves the plot as a JPEG file in the output directory (default: `TRUE`).
+#' @param ... Additional arguments passed to other functions.
 #'
-#' @return A proportional map and a table of genetic diversity (mean heterozygosity) per location.
 #' @return A list containing:
 #' \itemize{
-#'   \item \code{Diversity_Map}: A map with mean heterozygosity values for each location.
-#'   \item \code{Diversity_Table}: A data set containing the diversity data.
+#'   \item `Diversity_Map`: A map with mean heterozygosity values for each location.
+#'   \item `Diversity_Table`: A data set containing the diversity data.
+#' }
 #'
-#' @examples
-#' diversity_map(df = GRC_Data,
-#' drug_col = "Chloroquine",
-#' snp_data = barcode_data)
 #'
 #' @export
-#'
 diversity_map <- function(df, snp_data, period_name = "Full", label_size = 2.5, time = NULL, map_data,
                           circle_num_size = 3.1, scale_circle_size = 10, save_output = TRUE, ...) {
 
@@ -63,7 +57,8 @@ diversity_map <- function(df, snp_data, period_name = "Full", label_size = 2.5, 
 
 #' @title Internal function to create the diversity map
 #'
-#' @inheritParams haplotype_proportion
+#' @inheritParams diversity_map
+#' @param period_name  The period name for the plot. Defualt: `FULL`
 #'
 #' @keywords internal
 #'
@@ -130,7 +125,7 @@ create_dm <- function(df, snp_data, period_name = "Full", label_size = 2.5, map_
     scale_size_continuous(range = c(1, as.numeric(scale_circle_size)))
 
   if (save_output) {
-    save_path <- initialize_output_paths()
+    save_path <- get("Output_Dir", envir = .GlobalEnv)
     ggsave(
       filename = paste0("mean_Snp_Het_", period_name, ".jpeg"),
       path = save_path, plot = p, dpi = 300, width = 11, height = 6

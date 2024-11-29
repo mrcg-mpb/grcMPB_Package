@@ -32,7 +32,3 @@ E.g
 }
 After this it then filters out missing and undetermined cases for a specific drug determined on which the user wants to work with.
 }
-\examples{
-gene_classifier(df = GRC_Data, drug_column = "Chloroquine")
-
-}

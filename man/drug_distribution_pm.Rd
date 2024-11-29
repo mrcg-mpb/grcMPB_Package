@@ -48,7 +48,3 @@ This function generates maps displaying the percentages of conditions
 for the selected drug column. Each circle houses the percentage of the condition for that particular location
 and is labeled using the name and sample count for that location.
 }
-\examples{
-drug_distribution_pm( GRC_Data, drug_col = "Chloroquine")
-
-}

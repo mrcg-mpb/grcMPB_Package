@@ -20,7 +20,3 @@ filtered based on the specified missingness threshold.
 This function filters out SNPs and samples based on a missingness threshold.
 SNPs and samples with a proportion of missing data greater than the specified threshold will be removed.
 }
-\examples{
-filter_snp_x_samples(df = GRC_Data, m_threshold = 0.40)
-
-}

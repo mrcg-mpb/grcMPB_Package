@@ -4,8 +4,6 @@
 #'
 #' @param df Final GRC data frame
 #' @param gene_col The column containing haplotype data (e.g., "PfCRT")
-#' @param drug_col The name of the column representing the drug conditions (e.g., "Chloroquine" with
-#' categories like Resistant, Mixed Resistant, and Sensitive).
 #' @param save_output Logical. If `TRUE`, saves the plot as a JPEG file in the output directory (default: `FALSE`).
 #' @param label_size Numeric. Controls the size of location labels on the map. Default: `2.5`.
 #' @param map_data A list containing the shape file and longitude-latitude data for mapping.
@@ -20,15 +18,10 @@
 #'                                         including an "Others" category for low-frequency haplotypes.
 #' }
 #'
-#' @examples
-#' haplotype_proportion(df = GRC_data,
-#'                      drug_col = "Chloroquine",
-#'                      gene_col = "PfCRT")
-#'
 #' @export
 #' @import scatterpie
 #'
-haplotype_proportion <- function(df, gene_col, drug_col, save_output = TRUE,
+haplotype_proportion <- function(df, gene_col, save_output = TRUE,
                                  period_name = "Full", label_size = 2.5, map_data,
                                  sacle_piechart_size = 0.035, time = NULL, ...) {
 
@@ -36,7 +29,6 @@ haplotype_proportion <- function(df, gene_col, drug_col, save_output = TRUE,
     return(create_haplotype_plots(
       df = df,
       gene_col = gene_col,
-      drug_col = drug_col,
       save_output = save_output,
       period_name = period_name,
       label_size = label_size,
@@ -50,7 +42,6 @@ haplotype_proportion <- function(df, gene_col, drug_col, save_output = TRUE,
     func = create_haplotype_plots,
     time = time,
     gene_col = gene_col,
-    drug_col = drug_col,
     save_output = save_output,
     label_size = label_size,
     map_data = map_data,
@@ -64,10 +55,11 @@ haplotype_proportion <- function(df, gene_col, drug_col, save_output = TRUE,
 #' @title Internal function to create the haplotype plots
 #'
 #' @inheritParams haplotype_proportion
+#' @param period_name  The period name for the plot. Defualt: `FULL`
 #'
 #' @keywords internal
 #'
-create_haplotype_plots <- function(df, gene_col, drug_col, save_output = TRUE,
+create_haplotype_plots <- function(df, gene_col, save_output = TRUE,
                                    period_name = "Full", label_size = 2.5, map_data,
                                    sacle_piechart_size = 0.035, ...) {
 
@@ -175,7 +167,8 @@ create_haplotype_plots <- function(df, gene_col, drug_col, save_output = TRUE,
     )
 
   if (save_output) {
-    save_path <- initialize_output_paths()
+
+    save_path <- get("Output_Dir", envir = .GlobalEnv)
     ggsave(
       filename = paste0("Haplotype_bar_chart_", period_name, ".jpeg"),
       path = save_path, plot = bar_chart, dpi = 300, width = 11, height = 6

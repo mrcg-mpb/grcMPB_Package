@@ -19,11 +19,22 @@ create_dm(
 \arguments{
 \item{df}{Final GRC data frame}
 
+\item{snp_data}{A data frame of SNP data, where each row represents a sample and each column corresponds to a
+genetic locus (e.g., "Pf3D7_"). The row names should correspond to the "Sample Internal ID".}
+
+\item{period_name}{The period name for the plot. Defualt: \code{FULL}}
+
 \item{label_size}{Numeric. Controls the size of location labels on the map. Default: \code{2.5}.}
 
 \item{map_data}{A list containing the shape file and longitude-latitude data for mapping.}
 
-\item{save_output}{Logical. If \code{TRUE}, saves the plot as a JPEG file in the output directory (default: \code{FALSE}).}
+\item{circle_num_size}{Numeric. Controls the numbers inside the circles. Default: \code{3.1}.}
+
+\item{scale_circle_size}{Numeric. Scales the maximum circle size. Default: \code{10}.}
+
+\item{save_output}{Logical. If \code{TRUE}, saves the plot as a JPEG file in the output directory (default: \code{TRUE}).}
+
+\item{...}{Additional arguments passed to other functions.}
 }
 \description{
 Internal function to create the diversity map

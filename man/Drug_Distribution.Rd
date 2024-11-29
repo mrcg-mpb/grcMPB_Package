@@ -39,11 +39,3 @@ A list containing:
 This function generates bar charts and summary data of drug conditions for a specific drug,(e.g, Chloroquine)
 in the data set and another showing the distribution for each location.
 }
-\examples{
-drug_distribution(df = GRC_data,
-                  drug_col = "Chloroquine",
-                  colors = c("resistant" = "#525CEB",
-                             "mixed_resistant" = "#808000",
-                             "sensitive" = "#800000"))
-
-}

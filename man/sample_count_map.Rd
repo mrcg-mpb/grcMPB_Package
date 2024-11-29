@@ -45,9 +45,6 @@ Creates a geographic map showing sample counts for each location based on longit
 The map uses circle sizes to represent sample counts, with location labels displaying the counts in parentheses.
 }
 \examples{
-sample_count_map(df = GRC_data,
-                 map_data = mapping_data)
-
 # Example with time periods
 time_periods <- list(list(type = "year", start = 2010, name = "2010"),
                      list(type = "period", start = 2015, end = 2019, name = "2015-2019"))

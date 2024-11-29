@@ -74,9 +74,7 @@ ibs_data_summary <-
 #'
 #' @description Summarize the IBS score by the same location pair. Getting the Median IBS per for each location.
 #'
-#' @param melted_ibs_data A data frame containing the melted IBS data.
-#' This data frame should include the columns `LS1`, `LS2`, and `value`,
-#' where value represents the IBS score between two locations.
+#' @param melted_ibs_matrix A data frame containing the melted IBS matrix
 #' @param ibs_threshold A numeric value between 0 and 1 representing the IBS threshold for pair counts. Default is 0.75.
 #' @param map_data A list containing the shape file and longitude-latitude data for mapping.
 #' @param label_size Numeric. Controls the size of location labels on the map. Default: `2.5`.
@@ -143,7 +141,8 @@ ibs_data_sl <- function(melted_ibs_matrix, ibs_threshold = 0.75, map_data, label
     scale_size_continuous(range = c(1, as.numeric(scale_circle_size)))
 
   if (save_output) {
-    save_path <- initialize_output_paths(dir1 = "IBS_Plots")
+
+    save_path <- get("Output_Dir", envir = .GlobalEnv)
     ggsave(
       filename = "median_IBS.jpeg",
       path = save_path, plot = p, dpi = 300, width = 11, height = 6
@@ -172,6 +171,8 @@ ibs_data_sl <- function(melted_ibs_matrix, ibs_threshold = 0.75, map_data, label
 #' @param label_size Numeric. Controls the size of location labels on the map. Default: `2.5`.
 #' @param breaks Used to set the breaks for the thickness and color of the lines. Default: `seq(0, 8, 2)`.
 #' @param save_output Logical. If `TRUE`, saves the plot as a JPEG file in the output directory (default: `FALSE`).
+#' @param curve_degree How curved you want the connection lines to be. Default: `0.5`
+#' @param percentage_cutoff The minimum percentage to use for the proportion columns. Default: `1`.
 #'
 #' @return A data frame and connectivity maps showing the proportion of samples pairing between different locations.
 #' \itemize{
@@ -186,16 +187,11 @@ ibs_data_sl <- function(melted_ibs_matrix, ibs_threshold = 0.75, map_data, label
 #'   \item \code{Lat1, Long1, Lat2, Long2}: The latitude and longitude for both locations in each pair.
 #' }
 #'
-#' @examples
-#' Example usage:
-#' ibs_data_dl(melted_ibs_matrix = IBS_Melted_Matrix,
-#'             map_data = geo_data,
-#'             ibs_threshold = 0.75)
 #'
 #' @export
 #'
 ibs_data_dl <- function(melted_ibs_matrix, ibs_threshold = 0.75, map_data, label_size = 2.5,
-                        breaks = seq(0, 8, 2), curve_degree = 0.5,  save_output = TRUE) {
+                        breaks = seq(0, 8, 2), curve_degree = 0.5,  save_output = TRUE, percentage_cutoff = 1) {
 
   data <- melted_ibs_matrix %>% dplyr::filter(LS1 != LS2)
 
@@ -210,13 +206,13 @@ ibs_data_dl <- function(melted_ibs_matrix, ibs_threshold = 0.75, map_data, label
   long_lat <- map_data$long_lat_data %>%
     dplyr::filter(Location %in% unique(data$LS1))
 
-  long_lat_sf <- sf::st_as_sf(map_data$long_lat_data, coords = c("long", "lat"), crs = sf::st_crs(GMB))
+  long_lat_sf <- sf::st_as_sf(map_data$long_lat_data, coords = c("long", "lat"), crs = sf::st_crs(map_data$shapefile))
 
   connectivity_maps <- list()
 
   for (p_column in colnames(data)[grep("\\.per$", colnames(data))]) {
 
-    plot_data <- data %>% dplyr::filter(.[[p_column]]  >= 1)
+    plot_data <- data %>% dplyr::filter(.[[p_column]]  >= percentage_cutoff)
 
     p <-
       ggplot() +
@@ -263,7 +259,10 @@ ibs_data_dl <- function(melted_ibs_matrix, ibs_threshold = 0.75, map_data, label
     connectivity_maps[[p_column]] <- p
 
     if (save_output) {
-      save_path <- initialize_output_paths(dir1 = "IBS_Plots", dir2 = "Connectivity_Maps")
+
+      save_path <- file.path(get("Output_Dir", envir = .GlobalEnv), "IBS_Connectivity_Plots")
+      dir.create(save_path, showWarnings = FALSE)
+
       ggsave(filename = paste0("Ibs_CMap_", p_column, ".jpeg"),
              path = save_path,
              plot = p, dpi = 300, width = 17, height = 10)

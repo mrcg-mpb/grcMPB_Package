@@ -10,9 +10,6 @@
 #' @return The data frame with SNPs as column names and samples as row names,
 #' filtered based on the specified missingness threshold.
 #'
-#' @examples
-#' filter_snp_x_samples(df = GRC_Data, m_threshold = 0.40)
-#'
 #' @export
 #'
 filter_snp_x_samples <- function(df, m_threshold) {
