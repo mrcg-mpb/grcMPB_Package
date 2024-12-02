@@ -5,9 +5,9 @@
 #'
 #' @param df Final GRC data frame.
 #' @param map_data A list containing the shape file and longitude-latitude data for mapping.
-#' @param breaks Numeric vector. Sets the breaks for circle sizes. Default: `c(10, 50, 100, 200, 300, 400, 500)`.
 #' @param save_output Logical. If `TRUE`, saves the plot as a JPEG file in the output directory (default: `FALSE`).
 #' @param label_size Numeric. Controls the size of location labels on the map. Default: `2.5`.
+#' @param circle_num_size Numeric. Controls the numbers inside the circles. Default: `3.1`
 #' @param scale_circle_size Numeric. Scales the maximum circle size. Default: `11`.
 #' @param time Optional. A list defining time periods for filtering the data. Each element contains:
 #'   \itemize{
@@ -31,7 +31,7 @@
 #' @export
 #' @import ggplot2 ggrepel sf
 #'
-sample_count_map <- function(df, map_data, breaks = NULL, save_output = TRUE,
+sample_count_map <- function(df, map_data, circle_num_size = 3.1, save_output = TRUE,
                              period_name = "Full", label_size = 2.5, scale_circle_size = 11,
                              time = NULL, ...) {
 
@@ -39,7 +39,7 @@ sample_count_map <- function(df, map_data, breaks = NULL, save_output = TRUE,
     return(create_sc_map(
       df = df,
       map_data = map_data,
-      breaks = breaks,
+      circle_num_size = circle_num_size,
       save_output = save_output,
       period_name = period_name,
       label_size = label_size,
@@ -68,7 +68,7 @@ sample_count_map <- function(df, map_data, breaks = NULL, save_output = TRUE,
 #'
 #' @keywords internal
 #'
-create_sc_map <- function(df, map_data, breaks = NULL, save_output = TRUE,
+create_sc_map <- function(df, map_data, save_output = TRUE, circle_num_size = 3.1,
                           period_name = "Full", label_size = 2.5, scale_circle_size = 11, ...) {
 
   # Summarize sample counts by location
@@ -79,17 +79,12 @@ create_sc_map <- function(df, map_data, breaks = NULL, save_output = TRUE,
   sample_count_table <- dplyr::left_join(sample_count_table, map_data$long_lat_data, by = "Location")
   sample_count_sf <- sf::st_as_sf(sample_count_table, coords = c("long", "lat"), crs = sf::st_crs(map_data$shapefile))
 
-  # Set default breaks if none are provided
-  if (is.null(breaks)) {
-    breaks <- c(10, 50, 100, 200, 300, 400, 500)
-  }
-
   p <- ggplot() +
     geom_sf(data = map_data$shapefile, fill = "white", color = "#023020", linewidth = 0.5) +
-    geom_sf(data = sample_count_sf, aes(size = sample_count), color = "#800000") +
+    geom_sf(data = sample_count_sf, aes(size = 50), color = "#800000") +
     geom_label_repel(
       data = sample_count_table,
-      aes(label = paste0(Location, " (", sample_count, ")"), x = long, y = lat, fontface = "bold"),
+      aes(label = Location, x = long, y = lat, fontface = "bold"),
       color = "black",
       size = label_size,
       box.padding = unit(1.3, "lines"),
@@ -97,10 +92,18 @@ create_sc_map <- function(df, map_data, breaks = NULL, save_output = TRUE,
       angle = 90,
       max.overlaps = 100
     ) +
+    geom_text(
+      data = sample_count_table,
+      aes(label = sample_count, x = long, y = lat),
+      size = as.numeric(circle_num_size),
+      color = "white",
+      fontface = "bold"
+    ) +
+    guides(size = "none") +
     ggtitle(paste0("Sample Count Map", " (", period_name, ")")) +
     theme_void() +
     theme(legend.position = "bottom", plot.title = element_text(hjust = 0.1, size = 20)) +
-    scale_size_continuous(range = c(1, scale_circle_size), breaks = breaks, name = "Sample Counts")
+    scale_size_continuous(range = c(1, scale_circle_size), name = "Sample Counts")
 
 
   if (save_output) {

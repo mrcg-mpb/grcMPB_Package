@@ -266,7 +266,7 @@ create_p_map <- function(df, drug_col, save_output = TRUE, period_name = "Full",
         box.padding = unit(1.2, "lines"),
         segment.color = "#132B43",
         angle = 45,
-        max.overlaps = 20
+        max.overlaps = 100
       ) +
       geom_text(
         data = summary_table,

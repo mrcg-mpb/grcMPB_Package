@@ -3,9 +3,11 @@
 library(shiny)
 library(bslib)
 library(shinyjs)
-library(plotly)
-library(slickR)
-library(colourpicker)
+
+# Source the modules
+source("sample_count_map_module.R")
+source("drug_distribution_plots_module.R")
+source("drug_distribution_maps_module.R")
 
 # Define the theme
 # my_theme <- bslib::bs_theme(
@@ -48,8 +50,9 @@ library(colourpicker)
 
         /* Keep the green background when 'GRC Sheet' is active */
       .nav-item a[data-value='GRC Sheet'].active,
-      .nav-item a[data-value='Drug Condition plots'].active,
-      .nav-item a[data-value='Sample Count Map'].active {
+      .nav-item a[data-value='Drug Condition Bar Charts'].active,
+      .nav-item a[data-value='Sample Count Map'].active,
+      .nav-item a[data-value='Drug Condition Proportion Maps'].active {
         background-color: #56CC9D !important;
         color: white !important;
       }
@@ -153,62 +156,32 @@ library(colourpicker)
             )
           #)
         ),
-        bslib::navset_tab(
-          id = "nav",
-          nav_panel(
-            title = "GRC Sheet", icon = icon("table"),
-            br(),
-            fluidRow(
-              column(12,
-                     DT::dataTableOutput("grcSheetTable"))
-            )
-          ),
-          nav_panel(
-            title = "Drug Condition plots",
-            icon = icon("chart-column"),
-            br(),
-            fluidRow( h4("Color Settings"),
-              column(3,class = "input-custom2",colourpicker::colourInput("resistant_color", label = tags$span(class = "input-label", "Resistant"), value = "#525CEB")),
-              column(1),
-              column(3,class = "input-custom2",colourpicker::colourInput("mixed_resistant_color", label = tags$span(class = "input-label","Mixed Resistant"), value = "#808000")),
-              column(1),
-              column(3,class = "input-custom2",colourpicker::colourInput("sensitive_color", label = tags$span(class = "input-label", "Sensitive"), value = "#800000"))
-                     ),
-            fluidRow(column(4,actionButton("reset_colors", "Reset Colors", class = "btn-secondary"))),
-            fluidRow(#class = "custom-column",
-              #h4("Distribution by Location",class = "custom-column"),
-              column(12, br(),
-                     plotlyOutput("bar1_plot", height = "500px"))
-            ),
-            fluidRow(#class = "custom-column",
-              #h4("Proportion Distribution",class = "custom-column"),
-              column(12, br(),
-                     plotlyOutput("bar2_plot", height = "500px"))
-            ),br(),
-            # fluidRow(
-            #   column(12,
-            #          actionButton("toggle_plot", "Switch Plot View"),
-            #          br(), br(),
-            #          uiOutput("current_plot")
-            #   )
-            # )
-          ),
-          nav_panel(
-            title = "Sample Count Map", icon = icon("map-location-dot"),br(),
-            fluidRow(h4("Plot Controls"),
-              column(3, class = "input-custom2", numericInput("labelSize", label = tags$span(class = "input-label","Label Size:"), 2.5, min = 1, max = 100)),
-              column(1),
-              column(3, class = "input-custom2", numericInput("scaleCircleSize", label = tags$span(class = "input-label", "Circle  Size:"), 11, min = 11, max = 100)),
-              column(1),
-              column(3, class = "input-custom2", textInput("breaksInput", label = tags$span(class = "input-label","Enter breaks (comma-separated):"), value = "10,100,200,300"))
-
-            ),
-            fluidRow(column(4, downloadButton("downloadSCMap", "Download Map", class = "btn-secondary"))),
-            fluidRow(
-              column(12,
-                     plotOutput("sampleCountMapPlot", height = "500px")), br()
-            )
-          )
+    bslib::navset_tab(
+      id = "nav",
+      nav_panel(
+        title = "GRC Sheet", icon = icon("table"),
+        br(),
+        fluidRow(
+          column(12, DT::dataTableOutput("grcSheetTable"))
         )
+      ),
+      nav_panel(
+        title = "Sample Count Map",
+        icon = icon("map-location-dot"),
+        br(),
+        sample_count_map_ui("sample_count_map")
+      ),
+      nav_panel(
+        title = "Drug Condition Bar Charts",
+        icon = icon("chart-column"),
+        br(),
+        drug_distribution_ui("drug_distribution")
+      ),
+      nav_panel(
+        title = "Drug Condition Proportion Maps",
+        icon = icon("chart-column"),
+        br(),
+        drug_distribution_maps_ui("drug_distribution_pm")
       )
-
+    )
+  )

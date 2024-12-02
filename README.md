@@ -40,7 +40,7 @@ grc_data <-
   )
 ```
 
-### Create the drug status columns
+### Create the drug condition columns
 
 Use the gene_classifier function to classify samples into categories
 such as **Resistant**, **Sensitive**, **Mixed_Resistance**,

@@ -11,20 +11,20 @@ library(shiny)
 library(grcMPB)
 library(DT)
 library(bslib)
-library(plotly)
-library(sf)
-library(colourpicker)
+
+source("sample_count_map_module.R")
+source("drug_distribution_plots_module.R")
+source("drug_distribution_maps_module.R")
 
 # Define server logic required to draw a histogram
 function(input, output, session) {
 
   #bs_themer()
 
-
-  # Initialize combined_data with default dataset
+  # Initialize combined_data with default data set
   combined_data <- reactiveVal({
     tryCatch({
-      readxl::read_excel("~/Brandon/MPB_grcMalaria/Outputs/GRC_Sheet.xlsx")
+      readxl::read_excel("C:/Users/bngwa/Videos/Outputs/GRC_Sheet.xlsx")
     }, error = function(e) {
       showNotification("Error loading default dataset. Please check the file path.", type = "error")
       NULL
@@ -50,7 +50,7 @@ function(input, output, session) {
 
             if (dir.exists(unzipped_folder)) {
               incProgress(0.6, detail = "Combining sheets")
-              result <- grcMPB::Combine_GRC_Sheets(input_folder = unzipped_folder, Country = "Gambia", saveOutput = FALSE)
+              result <- grcMPB::combine_grc_sheets(input_folder = unzipped_folder, country = "Gambia", save_output = FALSE)
             } else {
               showNotification("Error: The unzipped folder could not be found.", type = "error")
               result <- NULL
@@ -73,7 +73,7 @@ function(input, output, session) {
 
     # Render the DataTable with the desired options
     datatable(
-      combined_data(),
+      head(combined_data()),
       options = list(
         pageLength = 10,
         scrollX = TRUE,
@@ -101,31 +101,16 @@ function(input, output, session) {
   observeEvent(combined_data(), {
     req(combined_data())  # Ensure data is available
     # Call the Gene_Classifier function
-    gene_classifier_result(Gene_Classifier(df = combined_data(), drug_column = "Chloroquine"))  # Store result reactively
+    gene_classifier_result(
+      gene_classifier(df = combined_data(),
+                      drug_column = "Chloroquine",
+                      save_output = FALSE))  # Store result reactively
   })
 
 
+####### Temporal analyses tools
 
-
-  ########################################################################################### Drug distibution plot section
-
-  # In the server function
-
-  # # Monitor active tab and show notifications based on the file inputs
-  # observeEvent(input$nav, {
-  #   if (input$nav == "GRC Sheet") {
-  #     # Show warning for the "GRC Sheet" tab if no zipfile is uploaded
-  #     if (is.null(input$zipFile)) {
-  #       showNotification(
-  #         "Please upload a single GRC Excel file or a zipPED folder with multiple GRC Excel files.",
-  #         type = "warning", duration = 10  # Show for 10 seconds
-  #       )
-  #     }
-  #   }
-  # })
-
-
- # Get available years from the data
+  # Get available years from the data
   available_years <- reactive({
     req(gene_classifier_result())
     sort(unique(gene_classifier_result()$Year))
@@ -155,6 +140,7 @@ function(input, output, session) {
     )
   })
 
+  ### end of temporal analyse tools
 
   # Create reactive expression for period structure
   period_structure <- reactive({
@@ -183,128 +169,14 @@ function(input, output, session) {
 
 
 
-
-  # Initialize default colors
-  default_colors <- list(
-    Resistant = "#525CEB",
-    Mixed.Resistant = "#808000",
-    Sensitive = "#800000"
-  )
-
-  # Reactive value for colors
-  plot_colors <- reactiveVal(default_colors)
-
-  # Reset colors when button is clicked
-  observeEvent(input$reset_colors, {
-    updateColourInput(session, "resistant_color", value = default_colors$Resistant)
-    updateColourInput(session, "mixed_resistant_color", value = default_colors$`Mixed.Resistant`)
-    updateColourInput(session, "sensitive_color", value = default_colors$Sensitive)
-  })
-
-  # Update plot_colors when any color input changes
-  observe({
-    plot_colors(list(
-      Resistant = input$resistant_color,
-      Mixed.Resistant = input$mixed_resistant_color,
-      Sensitive = input$sensitive_color
-    ))
-  })
-
-
-
-  # MappingData(shapefile = GMB ,
-  #             LongLat_data = LongLat,
-  #             location_col = "Location",
-  #             long_col = "long",
-  #             lat_col = "lat" )
-
-
-  # Reactive value to store drug distribution results
-  drug_distribution_results <- reactiveVal(NULL)
-
-
-  #  # Observer to update drug distribution results
-  observe({
-    req(gene_classifier_result())
-
-    results <- Drug_Distribution(
-      df = gene_classifier_result(),
-      drug_col = "Chloroquine",
-      saveOutput = FALSE,
-      time = period_structure(),
-      colors = plot_colors()  # Add this line to use the custom colors
-    )
-
-    drug_distribution_results(results)
-  })
-
-  # Render bar1 plot (Distribution by Location)
-  output$bar1_plot <- renderPlotly({
-    req(drug_distribution_results())
-
-    # Get the appropriate results based on period selection
-    results <- if (input$period_type_main == "Full") {
-      drug_distribution_results()
-    } else {
-      req(input$period_name)
-      drug_distribution_results()[[input$period_name]]
-    }
-
-    # Convert ggplot to plotly
-    ggplotly(results$Plots$Bar1, tooltip = "text") %>%
-      layout(
-        hoverlabel = list(bgcolor = "white"),
-        showlegend = TRUE,
-        paper_bgcolor = rgb(0, 0, 0, 0),
-        plot_bgcolor = rgb(0, 0, 0, 0)
-      )
-  })
-
-  # Render bar2 plot (Proportion Distribution)
-  output$bar2_plot <- renderPlotly({
-    req(drug_distribution_results())
-
-    # Get the appropriate results based on period selection
-    results <- if (input$period_type_main == "Full") {
-      drug_distribution_results()
-    } else {
-      req(input$period_name)
-      drug_distribution_results()[[input$period_name]]
-    }
-
-    # Convert ggplot to plotly
-    ggplotly(results$Plots$Bar2, tooltip = "text") %>%
-      layout(
-        hoverlabel = list(bgcolor = "white"),
-        showlegend = FALSE,
-        paper_bgcolor = rgb(0, 0, 0, 0),
-        plot_bgcolor = rgb(0, 0, 0, 0)
-      )
-  })
-
-
-  # # Add a reactive value to track which plot to show
-  # current_plot <- reactiveVal(1)
-  #
-  # # Toggle between plots when button is clicked
-  # observeEvent(input$toggle_plot, {
-  #   current_plot(ifelse(current_plot() == 1, 2, 1))
-  # })
-  #
-  # # Render the current plot
-  # output$current_plot <- renderUI({
-  #   if(current_plot() == 1) {
-  #     plotlyOutput("bar1_plot", height = "500px")
-  #   } else {
-  #     plotlyOutput("bar2_plot", height = "500px")
-  #   }
-  # })
-
-################################################################################ Sample Count Map Section ###
-
+####### geographical data files handling.
 
   # Create a temporary directory to store uploaded files
   temp_dir <- normalizePath(tempdir(), winslash = "/")
+
+  # Default geographical data from package
+  default_shapefile <- sf::st_read(system.file("extdata", "geoBoundaries-GMB-ADM3_simplified.shp", package = "grcMPB"))
+  default_long_lat <- readxl::read_excel(system.file("extdata", "LongLat_data.xlsx", package = "grcMPB"))
 
   # Reactive values to store uploaded file paths
   shapefile_shp <- reactiveVal(NULL)
@@ -371,138 +243,66 @@ function(input, output, session) {
     updateStatusMessage()
   })
 
-  # Process mapping data as soon as all files are uploaded and valid
-  mapping_data <- reactive({
-    req(shapefile_shp(), shapefile_shx(), LongLat_data())  # Wait for all files to be uploaded
+  # Process mapping data
+  geo_data <- reactive({
+    # Check if user has uploaded files
+    if (!is.null(shapefile_shp()) && !is.null(shapefile_shx()) && !is.null(LongLat_data())) {
+      # Load the user-uploaded shapefile
+      tryCatch({
+        shape_file <- sf::st_read(shapefile_shp())  # .shx is used automatically if in the same directory
 
-    # Load the shapefile
-    tryCatch({
-      shapefile <- sf::st_read(shapefile_shp())  # .shx is used automatically if in the same directory
-    }, error = function(e) {
-      output$statusMessage <- renderText(paste("Error loading shapefile:", e$message))
-      return(NULL)
-    })
-
-    # Process and return mapping data
-    MappingData(
-      shapefile = shapefile,
-      LongLat_data = LongLat_data(),
-      location_col = "Location",
-      long_col = "long",
-      lat_col = "lat"
-    )
-  })
-
-  # Reactive expression to parse the breaks input
-  breaks <- reactive({
-    # Split the input string by commas, trim whitespace, and convert to numeric
-    as.numeric(unlist(strsplit(input$breaksInput, ",")))
-  })
-
-  # Reactive value to store drug distribution results
-  sample_count_plot <- reactiveVal(NULL)
-
-  # Observer to update drug distribution results
-  observe({
-    req(gene_classifier_result())
-    req(mapping_data())
-    req(input$labelSize)
-    req(input$scaleCircleSize)
-
-    results <- SampleCountMap(
-      df = gene_classifier_result(),
-      drug_col = "Chloroquine",
-      mData = mapping_data(),
-      time = period_structure(),
-      breaks = breaks(),,
-      labelSize = input$labelSize,
-      scaleCircleSize = input$scaleCircleSize,
-      saveOutput = FALSE
-    )
-
-    sample_count_plot(results)
-  })
-
-
-  output$sampleCountMapPlot <- renderPlot({
-    req(sample_count_plot())  # Ensure that sample count data is available
-
-    # Get the appropriate results based on period selection
-    results <- if (input$period_type_main == "Full") {
-      sample_count_plot()
+        # Process and return mapping data with user files
+        return(mapping_data(
+          shapefile = shape_file,
+          long_lat_data = LongLat_data(),
+          location_col = "Location",
+          long_col = "long",
+          lat_col = "lat"
+        ))
+      }, error = function(e) {
+        output$statusMessage <- renderText(paste("Error loading user shapefile:", e$message))
+        return(NULL)
+      })
     } else {
-      req(input$period_name)
-      sample_count_plot()[[input$period_name]]
+      # Use default files if no user files are uploaded
+      return(mapping_data(
+        shapefile = default_shapefile,
+        long_lat_data = default_long_lat,
+        location_col = "Location",
+        long_col = "long",
+        lat_col = "lat"
+      ))
     }
-    # call th plot
-    print(
-      results$Plots$SampleCount_Map +
-        coord_sf() #+
-        # theme(
-        #   panel.background = element_rect(fill = "#f1f3f2", color = "#f1f3f2"), # Remove panel background
-        #   plot.background = element_rect(fill = "#f1f3f2", color = "#f1f3f2"),  # Remove plot background
-        # )
-        )
   })
 
-  # Download Handler for Sample Count Map
-  output$downloadSCMap <- downloadHandler(
-    filename = function() {
-      paste("SampleCount_Map", Sys.Date(), ".jpeg", sep = "")
-    },
-    content = function(file) {
-      results <- sample_count_plot()$Plots$SampleCount_Map
-      ggsave(file, results, dpi = 300, width = 11, height = 6)
-    }
+  # Call the sample count map server module
+  sample_count_map_server(
+    "sample_count_map",
+    gene_classifier_result,
+    geo_data,
+    reactive(input$period_type_main),
+    reactive(input$period_name),
+    period_structure
   )
 
-  # output$sampleCountMapPlot <- renderPlotly({
-  #   req(sample_count_plot())
-  #
-  #   # Get the appropriate results based on period selection
-  #   results <- if (input$period_type_main == "Full") {
-  #     sample_count_plot()
-  #   } else {
-  #     req(input$period_name)
-  #     sample_count_plot()[[input$period_name]]
-  #   }
-  #
-  #   # Retrieve latitude, longitude, and location
-  #   annotation_data <- sample_count_plot()$Data$SampleCount_Table
-  #
-  #   # Check if the plot is a valid ggplot object
-  #   gg_plot <- results$Plots$SampleCount_Map
-  #   req(gg_plot)  # Ensure it's not NULL
-  #
-  #   # Convert ggplot to plotly
-  #   plotly_plot <- ggplotly(gg_plot)
-  #
-  #   # Add annotations for each location
-  #   plotly_plot %>%
-  #     layout(
-  #       annotations = lapply(1:nrow(annotation_data), function(i) {
-  #         list(
-  #           x = annotation_data$long[i],
-  #           y = annotation_data$lat[i],
-  #           text = annotation_data$Location[i],
-  #           xref = "x",
-  #           yref = "y",
-  #           showarrow = TRUE,
-  #           arrowhead = 7,
-  #           arrowsize = .8,
-  #           ax = 20,
-  #           ay = -40,
-  #           font = list(color = "black", size = 15),
-  #           bgcolor = "rgba(255, 255, 255, 0.6)"  # Semi-transparent background for readability
-  #         )
-  #       }),
-  #       paper_bgcolor = rgb(0, 0, 0, 0),
-  #       plot_bgcolor = rgb(0, 0, 0, 0)
-  #     )
-  #
-  # })
+  # Call the drug distribution server module
+  drug_distribution_server(
+    "drug_distribution",
+    gene_classifier_result,
+    reactive(input$period_type_main),
+    reactive(input$period_name),
+    period_structure
+  )
 
-
+  # Call the sample count map server module
+  drug_distribution_maps_server(
+    "drug_distribution_pm",
+    gene_classifier_result,
+    geo_data,
+    reactive(input$period_type_main),
+    reactive(input$period_name),
+    period_structure
+  )
 
 
 }

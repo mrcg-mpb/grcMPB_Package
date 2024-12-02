@@ -33,7 +33,7 @@ grc_data <-
 ```
 
 
-### Create the drug status columns
+### Create the drug condition columns
 
 Use the gene_classifier function to classify samples into categories such as **Resistant**, **Sensitive**, **Mixed_Resistance**, **Undetermined** and **Missing** based on the haplotypes of certain gene markers associated with specific drugs, e.g, PfCRT which is associated with Chloroquine. New columns are then created using the name of each drug.
 
