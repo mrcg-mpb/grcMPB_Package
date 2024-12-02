@@ -76,7 +76,6 @@ sample_count_map_server <- function(id,
         sample_count_plot()[[period_name()]]
       }
 
-      # Call the plot
       print(
         results$Sample_Count_Map +
           coord_sf()
