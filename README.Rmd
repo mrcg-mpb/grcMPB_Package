@@ -89,10 +89,10 @@ sample_count_map(
   df = grc_data,
   map_data = geo_data,
   time = NULL,
-  breaks = c(10, 100, 200, 300),
+  circle_num_size = 3.1,
   label_size = 2.5,
   scale_circle_size = 11,
-  save_output = TRUE
+  save_output = FALSE
 )
 ```
 
