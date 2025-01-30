@@ -10,6 +10,7 @@ create_p_map(
   save_output = TRUE,
   period_name = "Full",
   map_data,
+  label_repel = 1.3,
   label_size = 2.5,
   circle_num_size = 3.1,
   scale_circle_size = 10,
@@ -28,11 +29,15 @@ categories like Resistant, Mixed Resistant, and Sensitive).}
 
 \item{map_data}{A list containing the shape file and longitude-latitude data for mapping.}
 
+\item{label_repel}{Numeric. Controls the distance of the label from the points on the map. Default: \code{1.3}}
+
 \item{label_size}{Numeric. Controls the size of location labels on the map. Default: \code{2.5}.}
 
 \item{circle_num_size}{Numeric. Controls the numbers inside the circles. Default: \code{3.1}}
 
 \item{scale_circle_size}{Numeric. Scales the maximum circle size. Default: \code{10}.}
+
+\item{...}{Additional arguments passed to other functions.}
 }
 \description{
 Internal function to create plots for drug distribution percentage maps

@@ -2,6 +2,7 @@
 #'
 #' @description This function filters out SNPs and samples based on a missingness threshold.
 #' SNPs and samples with a proportion of missing data greater than the specified threshold will be removed.
+#' Columns with any NA values are also excluded.
 #'
 #' @param df Final GRC data frame
 #' @param m_threshold A numeric value between 0 and 1, representing the maximum proportion of missing data
@@ -14,9 +15,20 @@
 #'
 filter_snp_x_samples <- function(df, m_threshold) {
 
+  checkmate::assert_numeric(m_threshold, lower = 0.1, upper = 1, any.missing = FALSE, .var.name = "m_threshold")
+
+  if (m_threshold > 0.50) {
+    warning("The threshold is greater than 0.50, which may result in losing too much data.")
+  }
+
   # Extract the variant (SNP) columns
   barcode_data <- df %>%
-    dplyr::select(grep("Pf3D7_", colnames(df)))
+    dplyr::ungroup() %>%
+    dplyr::select(grep("Pf3D7_", colnames(df))) %>%
+    as.data.frame()
+
+  # Remove columns with any NA values
+  barcode_data <- barcode_data[, colSums(is.na(barcode_data)) == 0]
 
   # Set the row names to the sample identifiers
   rownames(barcode_data) <- df$`Sample Internal ID`

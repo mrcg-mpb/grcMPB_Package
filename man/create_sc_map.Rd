@@ -7,8 +7,9 @@
 create_sc_map(
   df,
   map_data,
-  breaks = NULL,
   save_output = TRUE,
+  circle_num_size = 3.1,
+  label_repel = 1.3,
   period_name = "Full",
   label_size = 2.5,
   scale_circle_size = 11,
@@ -20,15 +21,19 @@ create_sc_map(
 
 \item{map_data}{A list containing the shape file and longitude-latitude data for mapping.}
 
-\item{breaks}{Numeric vector. Sets the breaks for circle sizes. Default: \code{c(10, 50, 100, 200, 300, 400, 500)}.}
-
 \item{save_output}{Logical. If \code{TRUE}, saves the plot as a JPEG file in the output directory (default: \code{FALSE}).}
 
-\item{period_name}{The period name for the plot. Defualt: \code{FULL}}
+\item{circle_num_size}{Numeric. Controls the numbers inside the circles. Default: \code{3.1}}
+
+\item{label_repel}{Numeric. Controls the distance of the label from the points on the map. Default: \code{1.3}}
+
+\item{period_name}{The period name for the plot. Default: \code{FULL}}
 
 \item{label_size}{Numeric. Controls the size of location labels on the map. Default: \code{2.5}.}
 
 \item{scale_circle_size}{Numeric. Scales the maximum circle size. Default: \code{11}.}
+
+\item{...}{Additional arguments passed to other functions.}
 }
 \description{
 Internal Function to Create Sample Count Map

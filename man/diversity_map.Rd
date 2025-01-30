@@ -7,10 +7,9 @@
 diversity_map(
   df,
   snp_data,
-  period_name = "Full",
   label_size = 2.5,
-  time = NULL,
   map_data,
+  label_repel = 1.3,
   circle_num_size = 3.1,
   scale_circle_size = 10,
   save_output = TRUE,
@@ -25,9 +24,9 @@ genetic locus (e.g., "Pf3D7_"). The row names should correspond to the "Sample I
 
 \item{label_size}{Numeric. Controls the size of location labels on the map. Default: \code{2.5}.}
 
-\item{time}{Optional. A list defining time periods for filtering the data.}
-
 \item{map_data}{A list containing the shape file and longitude-latitude data for mapping.}
+
+\item{label_repel}{Numeric. Controls the distance of the label from the points on the map. Default: \code{1.3}.}
 
 \item{circle_num_size}{Numeric. Controls the numbers inside the circles. Default: \code{3.1}.}
 

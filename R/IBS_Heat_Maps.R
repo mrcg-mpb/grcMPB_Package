@@ -19,6 +19,14 @@
 #'
 ibs_heat_map <- function(df, snp_data, ibs_matrix, map_data, save_output = FALSE, drug_col = NULL) {
 
+  if (!is.null(drug_col)) {
+    checkmate::assert_names(names(df), must.include = drug_col)
+  }
+  checkmate::assert_matrix(ibs_matrix, mode = "numeric", any.missing = FALSE, .var.name = "ibs_matrix")
+  checkmate::assert_list(map_data, len = 2, names = "named")
+  checkmate::assert_class(map_data$shapefile, "sf")
+  checkmate::assert_data_frame(map_data$long_lat_data)
+
   # Prepare metadata by joining snp_data with sample location information
   meta_data <- snp_data
   meta_data$`Sample Internal ID` <- rownames(meta_data)
@@ -27,7 +35,7 @@ ibs_heat_map <- function(df, snp_data, ibs_matrix, map_data, save_output = FALSE
     dplyr::select(`Sample Internal ID`) %>%
     dplyr::left_join(df %>%
                        dplyr::select(`Sample Internal ID`, Location), by = "Sample Internal ID") %>%
-    dplyr::left_join(map_data$long_lat_data %>%
+    dplyr::inner_join(map_data$long_lat_data %>%
                        dplyr::select(Location), by = "Location") %>%
     as.data.frame()
   rownames(meta_data) <- meta_data$`Sample Internal ID`
@@ -46,7 +54,7 @@ ibs_heat_map <- function(df, snp_data, ibs_matrix, map_data, save_output = FALSE
     unique_conditions <- unique(meta_data$Condition)
   } else {
     unique_conditions <- "All"
-    meta_data$Condition <- "All"  # Create a single dummy condition if drug_col is NULL
+    meta_data$Condition <- "All" # Create a single dummy condition if drug_col is NULL
   }
 
   rownames(meta_data) <- meta_data$`Sample Internal ID`
@@ -59,7 +67,6 @@ ibs_heat_map <- function(df, snp_data, ibs_matrix, map_data, save_output = FALSE
   heatmap_list <- list()
 
   for (condition in unique_conditions) {
-
     print(paste("Generating Heat Map for condition:", condition))
 
     # Filter meta_data and Ibs_matrix for the current condition
@@ -88,7 +95,6 @@ ibs_heat_map <- function(df, snp_data, ibs_matrix, map_data, save_output = FALSE
     heatmap_list[[condition]] <- p
 
     if (save_output) {
-
       save_path <- file.path(get("Output_Dir", envir = .GlobalEnv), "IBS_Heat_Maps")
       dir.create(save_path, showWarnings = FALSE)
 

@@ -37,7 +37,7 @@ ibs_data_summary <-
     pairs_data <- melted_ibs_data %>%
       dplyr::group_by(LS1, LS2) %>%
       dplyr::summarise(mean_IBS = round(mean(value), 2),
-                       median_IBS = round(median(value), 2),
+                       median_IBS = round(stats::median(value), 2),
                        TotalPairCount = dplyr::n(),
                        !!threshold_col := sum(value >= ibs_th)) %>%
       dplyr::mutate(pair_location = ifelse(LS1 < LS2,
@@ -75,34 +75,32 @@ ibs_data_summary <-
 #' @description Summarize the IBS score by the same location pair. Getting the Median IBS per for each location.
 #'
 #' @param melted_ibs_matrix A data frame containing the melted IBS matrix
-#' @param ibs_threshold A numeric value between 0 and 1 representing the IBS threshold for pair counts. Default is 0.75.
 #' @param map_data A list containing the shape file and longitude-latitude data for mapping.
 #' @param label_size Numeric. Controls the size of location labels on the map. Default: `2.5`.
+#' @param label_repel Numeric. Controls the distance of the label from the points on the map. Default: `1.2`.
 #' @param circle_num_size Numeric. Controls the numbers inside the circles. Default: `3.1`.
 #' @param scale_circle_size Numeric. Scales the maximum circle size. Default: `10`.
 #' @param save_output Logical. If `TRUE`, saves the plot as a JPEG file in the output directory (default: `FALSE`).
 #'
 #' @return A data data frame and map showing the the median Ibs score for each location.
 #'
-#' @examples
-#' Example usage:
-#' ibs_data_sl(melted_ibs_matrix = IBS_Melted_Matrix,
-#'             map_data = geo_data,
-#'             ibs_threshold = 0.75)
-#'
 #' @export
 #'
-ibs_data_sl <- function(melted_ibs_matrix, ibs_threshold = 0.75, map_data, label_size = 2.5,
+ibs_data_sl <- function(melted_ibs_matrix, map_data, label_size = 2.5, label_repel = 1.2,
                         circle_num_size = 3.1, scale_circle_size = 10, save_output = TRUE) {
+
+  checkmate::assert_list(map_data, len = 2, names = "named")
+  checkmate::assert_class(map_data$shapefile, "sf")
+  checkmate::assert_data_frame(map_data$long_lat_data)
 
   data <- melted_ibs_matrix %>% dplyr::filter(LS1 == LS2)
 
-  data <- ibs_data_summary(melted_ibs_data = data, ibs_th = ibs_threshold)
+  data <- ibs_data_summary(melted_ibs_data = data)
 
   data <- data %>%
-    dplyr::left_join(map_data$long_lat_data %>%
+    dplyr::inner_join(map_data$long_lat_data %>%
                        dplyr::select(Location, Lat1 = lat, Long1 = long), by = c("LS1" = "Location")) %>%
-    dplyr::left_join(map_data$long_lat_data %>%
+    dplyr::inner_join(map_data$long_lat_data %>%
                        dplyr::select(Location, Lat2 = lat, Long2 = long), by = c("LS2" = "Location"))
 
   data <- data %>%
@@ -120,7 +118,7 @@ ibs_data_sl <- function(melted_ibs_matrix, ibs_threshold = 0.75, map_data, label
       aes(label = LS1, x = Long1, y = Lat1, fontface = "bold"),
       color = "black",
       size = as.numeric(label_size),
-      box.padding = unit(1.2, "lines"),
+      box.padding = unit(label_repel, "lines"),
       segment.color = "#132B43",
       angle = 45,
       max.overlaps = 20
@@ -163,12 +161,11 @@ ibs_data_sl <- function(melted_ibs_matrix, ibs_threshold = 0.75, map_data, label
 #'
 #' @description Summarize the IBS score by different location pairs.
 #'
-#' @param melted_ibs_data A data frame containing the melted IBS data.
-#' This data frame should include the columns `LS1`, `LS2`, and `value`,
-#' where value represents the IBS score between two locations.
+#' @param melted_ibs_matrix A data frame containing the melted IBS matrix
 #' @param ibs_threshold A numeric value between 0 and 1 representing the IBS threshold for pair counts. Default is 0.75.
 #' @param map_data A list containing the shape file and longitude-latitude data for mapping.
 #' @param label_size Numeric. Controls the size of location labels on the map. Default: `2.5`.
+#' @param label_repel Numeric. Controls the distance of the label from the points on the map. Default: `1`.
 #' @param breaks Used to set the breaks for the thickness and color of the lines. Default: `seq(0, 8, 2)`.
 #' @param save_output Logical. If `TRUE`, saves the plot as a JPEG file in the output directory (default: `FALSE`).
 #' @param curve_degree How curved you want the connection lines to be. Default: `0.5`
@@ -190,17 +187,21 @@ ibs_data_sl <- function(melted_ibs_matrix, ibs_threshold = 0.75, map_data, label
 #'
 #' @export
 #'
-ibs_data_dl <- function(melted_ibs_matrix, ibs_threshold = 0.75, map_data, label_size = 2.5,
+ibs_data_dl <- function(melted_ibs_matrix, ibs_threshold = 0.75, map_data, label_size = 2.5, label_repel = 1,
                         breaks = seq(0, 8, 2), curve_degree = 0.5,  save_output = TRUE, percentage_cutoff = 1) {
+
+  checkmate::assert_list(map_data, len = 2, names = "named")
+  checkmate::assert_class(map_data$shapefile, "sf")
+  checkmate::assert_data_frame(map_data$long_lat_data)
 
   data <- melted_ibs_matrix %>% dplyr::filter(LS1 != LS2)
 
   data <- ibs_data_summary(melted_ibs_data = data, ibs_th = ibs_threshold)
 
   data <- data %>%
-    dplyr::left_join(map_data$long_lat_data %>%
+    dplyr::inner_join(map_data$long_lat_data %>%
                        dplyr::select(Location, Lat1 = lat, Long1 = long), by = c("LS1" = "Location")) %>%
-    dplyr::left_join(map_data$long_lat_data %>%
+    dplyr::inner_join(map_data$long_lat_data %>%
                        dplyr::select(Location, Lat2 = lat, Long2 = long), by = c("LS2" = "Location"))
 
   long_lat <- map_data$long_lat_data %>%
@@ -213,11 +214,13 @@ ibs_data_dl <- function(melted_ibs_matrix, ibs_threshold = 0.75, map_data, label
   for (p_column in colnames(data)[grep("\\.per$", colnames(data))]) {
 
     plot_data <- data %>% dplyr::filter(.[[p_column]]  >= percentage_cutoff)
+    long_lat_sf_filtered <- long_lat_sf %>% dplyr::filter(Location %in% unique(c(plot_data$LS1, plot_data$LS2)))
+    long_lat_filtered <- long_lat %>% dplyr::filter(Location %in% unique(c(plot_data$LS1, plot_data$LS2)))
 
     p <-
       ggplot() +
       geom_sf(data = map_data$shapefile,  fill = "white", color = "#023020", linewidth = 0.7) +
-      geom_sf(data = long_lat_sf, color = "red", aes(size = 3)) +
+      geom_sf(data = long_lat_sf_filtered, color = "red", aes(size = 3)) +
       ggnewscale::new_scale_color() +
       geom_curve(
         data = plot_data,
@@ -230,11 +233,11 @@ ibs_data_dl <- function(melted_ibs_matrix, ibs_threshold = 0.75, map_data, label
         curvature = -curve_degree
       ) +
       geom_label_repel(
-        data = long_lat,
+        data = long_lat_filtered,
         aes(label =  Location, x = long, y = lat, fontface = "bold"),
         color = "black",
         size = as.numeric(label_size),
-        box.padding = unit(1, "lines"),
+        box.padding = unit(label_repel, "lines"),
         segment.color = "red",
         angle = 45,
         max.overlaps = 100
@@ -252,7 +255,6 @@ ibs_data_dl <- function(melted_ibs_matrix, ibs_threshold = 0.75, map_data, label
         legend.text = element_text(size = 20),
         legend.margin =  margin(11, 0, 0, 0, unit = "pt")
       ) +
-      coord_sf(xlim = c(-17, -13.5), ylim = c(12.5, 14.2)) +
       guides(size = "none", linewidth = guide_legend(order = 2, barheight = unit(1, "cm")),
              color = guide_colorbar(order = 1, reverse = TRUE, barheight = unit(5, "cm")))
 

@@ -7,11 +7,11 @@
 split_haplotype(haplotype)
 }
 \arguments{
-\item{haploype}{haplotype to string to split (e.g, "CVIE\link{M/T}" )}
+\item{haplotype}{haplotype to string to split  (e.g., "CVIE\[M/T\]" )}
 }
 \value{
 a vector with of each element in the splitted string.
 }
 \description{
-A helper function to split th haplotypes combination into a vector if strings
+A helper function to split the haplotypes combination into a vector if strings
 }

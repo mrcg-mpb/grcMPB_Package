@@ -8,6 +8,7 @@ haplotype_proportion(
   df,
   gene_col,
   save_output = TRUE,
+  label_repel = 1.3,
   period_name = "Full",
   label_size = 2.5,
   map_data,
@@ -23,6 +24,10 @@ haplotype_proportion(
 
 \item{save_output}{Logical. If \code{TRUE}, saves the plot as a JPEG file in the output directory (default: \code{FALSE}).}
 
+\item{label_repel}{Numeric. Controls the distance of the label from the points on the map. Default: \code{1.3}.}
+
+\item{period_name}{The period name for the plot. Defualt: \code{FULL}}
+
 \item{label_size}{Numeric. Controls the size of location labels on the map. Default: \code{2.5}.}
 
 \item{map_data}{A list containing the shape file and longitude-latitude data for mapping.}
@@ -30,6 +35,8 @@ haplotype_proportion(
 \item{sacle_piechart_size}{Numeric. Scales the maximum pie chart size. Default: \code{0.035}}
 
 \item{time}{Optional. A list defining time periods for filtering the data.}
+
+\item{...}{Additional arguments passed to other functions.}
 }
 \value{
 A list containing:

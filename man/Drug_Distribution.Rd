@@ -10,7 +10,6 @@ drug_distribution(
   save_output = TRUE,
   time = NULL,
   period_name = "Full",
-  colors = c(resistant = "#525CEB", mixed_resistant = "#808000", sensitive = "#800000"),
   ...
 )
 }
@@ -24,7 +23,9 @@ categories like Resistant, Mixed Resistant, and Sensitive).}
 
 \item{time}{Optional. A list defining time periods for filtering the data.}
 
-\item{colors}{A named vector of colors for the categories in \code{drug_col}}
+\item{period_name}{The period name for the plot. Defualt: \code{FULL}}
+
+\item{...}{Additional arguments passed to other functions.}
 }
 \value{
 A list containing:

@@ -11,12 +11,16 @@
 #' @export
 #'
 mapping_data <- function(shapefile, long_lat_data, location_col, long_col, lat_col) {
+
+  checkmate::assert_class(shapefile, "sf")
+  checkmate::assert_names(names(long_lat_data), must.include = c(location_col, long_col, lat_col))
+
   # Standardize column names
   long_lat_data <- long_lat_data %>%
     dplyr::rename(
-      Location = {{location_col}},
-      long = {{long_col}},
-      lat = {{lat_col}}
+      Location = {{ location_col }},
+      long = {{ long_col }},
+      lat = {{ lat_col }}
     )
 
 
@@ -78,16 +82,18 @@ temporal_data_list <- function(df, func, time, ...) {
 
 #' @title Split Haplotype
 #'
-#' @description A helper function to split th haplotypes combination into a vector if strings
+#' @description A helper function to split the haplotypes combination into a vector if strings
 #'
-#' @param haploype haplotype to string to split (e.g, "CVIE[M/T]" )
+#' @param haplotype haplotype to string to split  (e.g., "CVIE\\[M/T\\]" )
 #'
 #' @return a vector with of each element in the splitted string.
+#' @import stringr
 #'
 split_haplotype <- function(haplotype) {
   unlist(strsplit(haplotype,
-                  "(?<=\\])(?=\\[)|(?<=\\])(?=\\w)|(?<=\\w)(?=\\[)|(?<=\\w)(?=\\w)|(?<=\\w)(?=-)|(?<=-)(?=\\[)|(?<=-)(?=\\w)|(?<=-)(?=-)|(?<=\\])(?=-)",
-                  perl = TRUE))
+    "(?<=\\])(?=\\[)|(?<=\\])(?=\\w)|(?<=\\w)(?=\\[)|(?<=\\w)(?=\\w)|(?<=\\w)(?=-)|(?<=-)(?=\\[)|(?<=-)(?=\\w)|(?<=-)(?=-)|(?<=\\])(?=-)",
+    perl = TRUE
+  ))
 }
 
 
@@ -114,7 +120,7 @@ generate_location_colors <- function(df, location_col = "Location") {
   unique_locations <- unique(df[[location_col]])
   # Extend the color palette if needed
   if (length(unique_locations) > length(base_colors)) {
-    extended_colors <- hcl.colors(length(unique_locations) - length(base_colors), "Set3")
+    extended_colors <- grDevices::hcl.colors(length(unique_locations) - length(base_colors), "Set3")
     base_colors <- c(base_colors, extended_colors)
   }
 

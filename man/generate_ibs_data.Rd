@@ -4,7 +4,7 @@
 \alias{generate_ibs_data}
 \title{Generate IBS data frame}
 \usage{
-generate_ibs_data(df, snp_data, drug_col)
+generate_ibs_data(df, snp_data, drug_col = NULL)
 }
 \arguments{
 \item{df}{Final GRC data frame}
@@ -13,7 +13,7 @@ generate_ibs_data(df, snp_data, drug_col)
 genetic locus (e.g., "Pf3D7_"). The row names should correspond to the "Sample Internal ID".}
 
 \item{drug_col}{The name of the column representing the drug conditions (e.g., "Chloroquine" with
-categories like Resistant, Mixed Resistant, and Sensitive).}
+categories like Resistant, Mixed Resistant, and Sensitive). Default: \code{NULL}}
 }
 \value{
 A list containing a histogram of IBS scores and data frame containing the IBS scores between sample pairs along with associated metadata.

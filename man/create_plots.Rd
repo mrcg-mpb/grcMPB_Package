@@ -4,14 +4,7 @@
 \alias{create_plots}
 \title{Internal Function to Create Drug Distribution Plots}
 \usage{
-create_plots(
-  df,
-  drug_col,
-  period_name = "Full",
-  save_output = TRUE,
-  colors = c(resistant = "#525CEB", mixed_resistant = "#808000", sensitive = "#800000"),
-  ...
-)
+create_plots(df, drug_col, period_name = "Full", save_output = TRUE, ...)
 }
 \arguments{
 \item{df}{Final GRC data frame.}
@@ -23,7 +16,7 @@ categories like Resistant, Mixed Resistant, and Sensitive).}
 
 \item{save_output}{Logical. If \code{TRUE}, saves the plot as a JPEG file in the output directory (default: \code{FALSE}).}
 
-\item{colors}{A named vector of colors for the categories in \code{drug_col}}
+\item{...}{Additional arguments passed to other functions.}
 }
 \description{
 Internal Function to Create Drug Distribution Plots

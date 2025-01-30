@@ -9,6 +9,9 @@
 #' @param map_data A list containing the shape file and longitude-latitude data for mapping.
 #' @param sacle_piechart_size Numeric. Scales the maximum pie chart size. Default: `0.035`
 #' @param time Optional. A list defining time periods for filtering the data.
+#' @param period_name  The period name for the plot. Defualt: `FULL`
+#' @param label_repel Numeric. Controls the distance of the label from the points on the map. Default: `1.3`.
+#' @param ... Additional arguments passed to other functions.
 #'
 #' @return A list containing:
 #' \itemize{
@@ -21,9 +24,15 @@
 #' @export
 #' @import scatterpie
 #'
-haplotype_proportion <- function(df, gene_col, save_output = TRUE,
+haplotype_proportion <- function(df, gene_col, save_output = TRUE, label_repel = 1.3,
                                  period_name = "Full", label_size = 2.5, map_data,
                                  sacle_piechart_size = 0.035, time = NULL, ...) {
+
+  checkmate::assert_names(names(df), must.include = gene_col)
+  checkmate::assert_list(map_data, len = 2, names = "named")
+  checkmate::assert_class(map_data$shapefile, "sf")
+  checkmate::assert_data_frame(map_data$long_lat_data)
+  checkmate::assert_list(time, null.ok = TRUE)
 
   if (is.null(time)) {
     return(create_haplotype_plots(
@@ -31,6 +40,7 @@ haplotype_proportion <- function(df, gene_col, save_output = TRUE,
       gene_col = gene_col,
       save_output = save_output,
       period_name = period_name,
+      label_repel = label_repel,
       label_size = label_size,
       map_data = map_data,
       sacle_piechart_size = sacle_piechart_size
@@ -43,6 +53,7 @@ haplotype_proportion <- function(df, gene_col, save_output = TRUE,
     time = time,
     gene_col = gene_col,
     save_output = save_output,
+    label_repel = label_repel,
     label_size = label_size,
     map_data = map_data,
     sacle_piechart_size = sacle_piechart_size,
@@ -55,18 +66,17 @@ haplotype_proportion <- function(df, gene_col, save_output = TRUE,
 #' @title Internal function to create the haplotype plots
 #'
 #' @inheritParams haplotype_proportion
-#' @param period_name  The period name for the plot. Defualt: `FULL`
 #'
 #' @keywords internal
 #'
-create_haplotype_plots <- function(df, gene_col, save_output = TRUE,
+create_haplotype_plots <- function(df, gene_col, save_output = TRUE, label_repel = 1.3,
                                    period_name = "Full", label_size = 2.5, map_data,
                                    sacle_piechart_size = 0.035, ...) {
-
   # Group the data frame by the gene_col and count occurrences
   haplotype_table1 <- df %>%
     dplyr::group_by(!!rlang::sym(gene_col)) %>%
-    dplyr::summarise(Count = dplyr::n())
+    dplyr::summarise(Count = dplyr::n()) %>%
+    dplyr::ungroup()
 
   # Create a percentage column using the total number of samples as the denominator
   haplotype_table1 <- haplotype_table1 %>%
@@ -91,10 +101,12 @@ create_haplotype_plots <- function(df, gene_col, save_output = TRUE,
   }
 
   # Build the Bar Chart
-  bar_chart <- ggplot(haplotype_table1, aes(x = reorder(!!rlang::sym(gene_col), +Per), y = Per)) +
+  bar_chart <- ggplot(haplotype_table1, aes(x = stats::reorder(!!rlang::sym(gene_col), +Per), y = Per)) +
     geom_bar(stat = "identity", fill = "#008080") +
-    labs(x = "Haplotype", y = "Percentage",
-         title = paste("Haplotype Frequency Bar Chart", "(", period_name, ")")) +
+    labs(
+      x = "Haplotype", y = "Percentage",
+      title = paste("Haplotype Frequency Bar Chart", "(", period_name, ")")
+    ) +
     theme_classic() +
     theme(
       axis.text.x = element_text(size = 12, angle = 45, hjust = 1, face = "bold"),
@@ -102,7 +114,8 @@ create_haplotype_plots <- function(df, gene_col, save_output = TRUE,
       axis.title = element_text(size = 13)
     ) +
     geom_text(aes(y = Per + 1, label = paste0(Per, "%")),
-              fontface = "bold", color = "black")
+      fontface = "bold", color = "black"
+    )
 
   ##### Generate Haplotype proportion pie chart map #####
 
@@ -123,18 +136,22 @@ create_haplotype_plots <- function(df, gene_col, save_output = TRUE,
       dplyr::select(gene_values, Others)
   }
 
+  piechart_columns <- colnames(haplotype_table2)
+
   # Create a Location column using the rownames, then delete them
   haplotype_table2$Total <- rowSums(haplotype_table2)
   haplotype_table2$Location <- rownames(haplotype_table2)
   rownames(haplotype_table2) <- NULL
 
-  haplotype_table2 <- dplyr::left_join(haplotype_table2, map_data$long_lat_data, by = "Location")
+  haplotype_table2 <- dplyr::inner_join(haplotype_table2, map_data$long_lat_data, by = "Location")
 
   # Color palette
-  colors2 <- c("#e6194b", "#3cb44b", "#ffe119", "#4363d8", "#f58231", "#911eb4", "#46f0f0",
-               "#fabebe", "#008080", "#e6beff", "#9a6324", "#fffac8", "#800000", "#aaffc3",
-               "#808000", "#ffd8b1", "#000075", "#808080", "#ffffff", "#000000", "#023020",
-               "#6495ED", "#B8860B", "#2F4F4F", "#bcf60c")
+  colors2 <- c(
+    "#e6194b", "#3cb44b", "#ffe119", "#4363d8", "#f58231", "#911eb4", "#46f0f0",
+    "#fabebe", "#008080", "#e6beff", "#9a6324", "#fffac8", "#800000", "#aaffc3",
+    "#808000", "#ffd8b1", "#000075", "#808080", "#ffffff", "#000000", "#023020",
+    "#6495ED", "#B8860B", "#2F4F4F", "#bcf60c"
+  )
 
   # Build the Pie Chart Map
   pie_chart <- ggplot() +
@@ -144,15 +161,15 @@ create_haplotype_plots <- function(df, gene_col, save_output = TRUE,
       aes(label = paste(Location, " (", Total, ")", sep = ""), x = long, y = lat, fontface = "bold"),
       color = "black",
       size = label_size,
-      box.padding = unit(1.5, "lines"),
+      box.padding = unit(label_repel, "lines"),
       segment.color = "#132B43",
       angle = 90,
-      max.overlaps = 40
+      max.overlaps = 100
     ) +
     geom_scatterpie(
       data = haplotype_table2,
       aes(x = long, y = lat, r = sacle_piechart_size),
-      cols = colnames(haplotype_table2 %>% dplyr::select(gene_values, Others)),
+      cols = colnames(haplotype_table2 %>% dplyr::select(all_of(piechart_columns))),
       color = NA
     ) +
     scale_fill_manual(values = colors2) +
@@ -167,7 +184,6 @@ create_haplotype_plots <- function(df, gene_col, save_output = TRUE,
     )
 
   if (save_output) {
-
     save_path <- get("Output_Dir", envir = .GlobalEnv)
     ggsave(
       filename = paste0("Haplotype_bar_chart_", period_name, ".jpeg"),
@@ -182,6 +198,6 @@ create_haplotype_plots <- function(df, gene_col, save_output = TRUE,
   return(list(
     Bar_Chart = bar_chart,
     Pie_Chart = pie_chart,
-    Haplotype_Summary_Table = haplotype_table1
+    Haplotype_Summary_Table = list(haplotype_table1, haplotype_table2)
   ))
 }

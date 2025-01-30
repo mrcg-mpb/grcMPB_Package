@@ -4,29 +4,29 @@
 \alias{gene_classifier}
 \title{Classify Haplotypes for Drug Resistance}
 \usage{
-gene_classifier(df, drug_column = "Chloroquine", save_output = FALSE)
+gene_classifier(df, drug_column = NULL, save_output = FALSE)
 }
 \arguments{
 \item{df}{Final GRC data frame}
 
-\item{drug_column}{A character string representing the drug column to filter by (default is "Chloroquine").
+\item{drug_column}{A character string representing the drug column to filter by (default is Null).
 Filtering will exclude samples marked as "Undetermined" or "Missing" in the selected column.}
 
 \item{save_output}{Logical. Whether to save the outputs to the Outputs folder (default is FALSE).}
 }
 \value{
 A GRC data frame with new columns for drugs:
-Chloroquine, MultiDrug, Kelch13, Sulfadoxine, and Pyrimethamine.
+Chloroquine, Multidrug, Artemisinin, Sulfadoxine, and Pyrimethamine.
 }
 \description{
-This function uses the haplotypes in the gene columns, (PfCRT, PfMDR1, Kelch, PfDHPS and PfDHFR ) and classifies them as
+This function uses the haplotypes in the gene columns, (PfCRT, PfMDR1, Kelch13, PfDHPS and PfDHFR ) and classifies them as
 Resistant, Mixed Resistant, Sensitive, missing and undetermined for their specific associated drugs.
 It creates new columns containing this categories and names them with the drugs they are associate with.
 E.g
 \itemize{
 \item \code{Chloroquine}: for PfCRT.
-\item \code{MultiDrug}: for PfMDR1.
-\item \code{Kelch13}: for Kelch.
+\item \code{Multidrug}: for PfMDR1.
+\item \code{Artemisinin}: for Kelch13.
 \item \code{Sulfadoxine}: for PfDHPS.
 \item \code{Pyrimethamine}: for PfDHFR.
 }

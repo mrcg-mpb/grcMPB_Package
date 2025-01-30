@@ -9,6 +9,7 @@ ibs_data_dl(
   ibs_threshold = 0.75,
   map_data,
   label_size = 2.5,
+  label_repel = 1,
   breaks = seq(0, 8, 2),
   curve_degree = 0.5,
   save_output = TRUE,
@@ -16,11 +17,15 @@ ibs_data_dl(
 )
 }
 \arguments{
+\item{melted_ibs_matrix}{A data frame containing the melted IBS matrix}
+
 \item{ibs_threshold}{A numeric value between 0 and 1 representing the IBS threshold for pair counts. Default is 0.75.}
 
 \item{map_data}{A list containing the shape file and longitude-latitude data for mapping.}
 
 \item{label_size}{Numeric. Controls the size of location labels on the map. Default: \code{2.5}.}
+
+\item{label_repel}{Numeric. Controls the distance of the label from the points on the map. Default: \code{1}.}
 
 \item{breaks}{Used to set the breaks for the thickness and color of the lines. Default: \code{seq(0, 8, 2)}.}
 
@@ -29,10 +34,6 @@ ibs_data_dl(
 \item{save_output}{Logical. If \code{TRUE}, saves the plot as a JPEG file in the output directory (default: \code{FALSE}).}
 
 \item{percentage_cutoff}{The minimum percentage to use for the proportion columns. Default: \code{1}.}
-
-\item{melted_ibs_data}{A data frame containing the melted IBS data.
-This data frame should include the columns \code{LS1}, \code{LS2}, and \code{value},
-where value represents the IBS score between two locations.}
 }
 \value{
 A data frame and connectivity maps showing the proportion of samples pairing between different locations.

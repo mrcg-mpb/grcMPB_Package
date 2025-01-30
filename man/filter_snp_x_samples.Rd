@@ -19,4 +19,5 @@ filtered based on the specified missingness threshold.
 \description{
 This function filters out SNPs and samples based on a missingness threshold.
 SNPs and samples with a proportion of missing data greater than the specified threshold will be removed.
+Columns with any NA values are also excluded.
 }

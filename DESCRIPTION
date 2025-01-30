@@ -20,14 +20,20 @@ Imports:
     scatterpie,
     ggrepel,
     stringr,
-    purrr,
     pheatmap,
     forcats,
     glue,
-    BiocManager,
     ggtree,
-    lintr
+    ape,
+    ggnewscale,
+    reshape2,
+    rlang,
+    checkmate,
+    data.table
 Suggests: 
+    BiocManager,
     knitr,
-    rmarkdown
+    rmarkdown,
+    testthat (>= 3.0.0)
 VignetteBuilder: knitr
+Config/testthat/edition: 3

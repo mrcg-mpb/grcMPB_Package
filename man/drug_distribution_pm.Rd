@@ -13,6 +13,7 @@ drug_distribution_pm(
   time = NULL,
   label_size = 2.5,
   circle_num_size = 3.1,
+  label_repel = 1.3,
   scale_circle_size = 10,
   ...
 )
@@ -25,6 +26,8 @@ categories like Resistant, Mixed Resistant, and Sensitive).}
 
 \item{save_output}{Logical. If \code{TRUE}, saves the plot as a JPEG file in the output directory (default: \code{FALSE}).}
 
+\item{period_name}{The period name for the plot. Defualt: \code{FULL}}
+
 \item{map_data}{A list containing the shape file and longitude-latitude data for mapping.}
 
 \item{time}{Optional. A list defining time periods for filtering the data.}
@@ -33,7 +36,11 @@ categories like Resistant, Mixed Resistant, and Sensitive).}
 
 \item{circle_num_size}{Numeric. Controls the numbers inside the circles. Default: \code{3.1}}
 
+\item{label_repel}{Numeric. Controls the distance of the label from the points on the map. Default: \code{1.3}}
+
 \item{scale_circle_size}{Numeric. Scales the maximum circle size. Default: \code{10}.}
+
+\item{...}{Additional arguments passed to other functions.}
 }
 \value{
 A list containing:

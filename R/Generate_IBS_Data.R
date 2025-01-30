@@ -8,7 +8,7 @@
 #' @param snp_data A data frame of SNP data, where each row represents a sample and each column corresponds to a
 #' genetic locus (e.g., "Pf3D7_"). The row names should correspond to the "Sample Internal ID".
 #' @param drug_col The name of the column representing the drug conditions (e.g., "Chloroquine" with
-#' categories like Resistant, Mixed Resistant, and Sensitive).
+#' categories like Resistant, Mixed Resistant, and Sensitive). Default: `NULL`
 #' @return A list containing a histogram of IBS scores and data frame containing the IBS scores between sample pairs along with associated metadata.
 #'         The data frame will include the following columns:
 #' \itemize{
@@ -26,7 +26,9 @@
 #'
 #' @export
 #'
-generate_ibs_data <- function(df, snp_data, drug_col) {
+generate_ibs_data <- function(df, snp_data, drug_col = NULL) {
+
+  checkmate::assert_names(names(df), must.include = drug_col)
 
   # Inner function to calculate IBS scores between sample pairs
   calculate_ibs <- function(input) {
@@ -56,8 +58,9 @@ generate_ibs_data <- function(df, snp_data, drug_col) {
         s1_vs_s2 <- ifelse(
           (sample1 == sample2 & !is.na(sample1) & !is.na(sample2) & sample1 != "X" & sample2 != "X"), 1,
           ifelse(
-                 (sample1 == "N" & sample2 %in% c("A", "C", "G", "T")) |
-                   (sample2 == "N" & sample1 %in% c("A", "C", "G", "T")), 0.5, 0)
+            (sample1 == "N" & sample2 %in% c("A", "C", "G", "T")) |
+              (sample2 == "N" & sample1 %in% c("A", "C", "G", "T")), 0.5, 0
+          )
         )
 
         # Calculate the IBS value
@@ -79,13 +82,19 @@ generate_ibs_data <- function(df, snp_data, drug_col) {
 
   # Add metadata (locations, drug conditions, regions) for both samples
   ibs_data_frame <- ibs_data_frame %>%
-    dplyr::left_join(df %>% dplyr::select(`Sample Internal ID`, LS1 = Location), by = c("S1" = "Sample Internal ID")
-    ) %>%
-    dplyr::left_join(df %>% dplyr::select(`Sample Internal ID`, LS2 = Location), by = c("S2" = "Sample Internal ID")
-    ) %>%
-    dplyr::left_join(df %>% dplyr::select(`Sample Internal ID`, DCS1 = drug_col), by = c("S1" = "Sample Internal ID")
-    ) %>%
-    dplyr::left_join(df %>% dplyr::select(`Sample Internal ID`, DCS2 = drug_col), by = c("S2" = "Sample Internal ID"))
+    dplyr::left_join(df %>%
+                       dplyr::select(`Sample Internal ID`, LS1 = Location), by = c("S1" = "Sample Internal ID")) %>%
+    dplyr::left_join(df %>%
+                       dplyr::select(`Sample Internal ID`, LS2 = Location), by = c("S2" = "Sample Internal ID"))
+
+  # Add th drug col if it exist in the data set
+  if (!is.null(drug_col)) {
+    ibs_data_frame <- ibs_data_frame %>%
+      dplyr::left_join(df %>%
+                         dplyr::select(`Sample Internal ID`, DCS1 = drug_col), by = c("S1" = "Sample Internal ID")) %>%
+      dplyr::left_join(df %>%
+                         dplyr::select(`Sample Internal ID`, DCS2 = drug_col), by = c("S2" = "Sample Internal ID"))
+  }
 
   # plot the IBS scores on a histogram
   p <-

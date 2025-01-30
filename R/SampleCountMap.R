@@ -7,8 +7,10 @@
 #' @param map_data A list containing the shape file and longitude-latitude data for mapping.
 #' @param save_output Logical. If `TRUE`, saves the plot as a JPEG file in the output directory (default: `FALSE`).
 #' @param label_size Numeric. Controls the size of location labels on the map. Default: `2.5`.
+#' @param label_repel Numeric. Controls the distance of the label from the points on the map. Default: `1.3`
 #' @param circle_num_size Numeric. Controls the numbers inside the circles. Default: `3.1`
 #' @param scale_circle_size Numeric. Scales the maximum circle size. Default: `11`.
+#' @param period_name  The period name for the plot. Default: `FULL`
 #' @param time Optional. A list defining time periods for filtering the data. Each element contains:
 #'   \itemize{
 #'     \item \code{type}: Either "year" or "period" to define time scope.
@@ -16,24 +18,21 @@
 #'     \item \code{end}: The end year of the time period (for periods only).
 #'     \item \code{name}: The label to use for the period.
 #'   }
+#' @param ... Additional arguments passed to other functions.
 #'
 #' @return A list containing the generated map `Sample_Count_Map` and a summary table `Sample_Count_Table`.
-#'
-#' @examples
-#' # Example with time periods
-#' time_periods <- list(list(type = "year", start = 2010, name = "2010"),
-#'                      list(type = "period", start = 2015, end = 2019, name = "2015-2019"))
-#'
-#' sample_count_map(df = GRC_data,
-#'                  map_data = mapping_data,
-#'                  time = time_periods)
 #'
 #' @export
 #' @import ggplot2 ggrepel sf
 #'
-sample_count_map <- function(df, map_data, circle_num_size = 3.1, save_output = TRUE,
+sample_count_map <- function(df, map_data, circle_num_size = 3.1, save_output = TRUE, label_repel = 1.3,
                              period_name = "Full", label_size = 2.5, scale_circle_size = 11,
                              time = NULL, ...) {
+
+  checkmate::assert_list(map_data, len = 2, names = "named")
+  checkmate::assert_class(map_data$shapefile, "sf")
+  checkmate::assert_data_frame(map_data$long_lat_data)
+  checkmate::assert_list(time, null.ok = TRUE)
 
   if (is.null(time)) {
     return(create_sc_map(
@@ -42,6 +41,7 @@ sample_count_map <- function(df, map_data, circle_num_size = 3.1, save_output = 
       circle_num_size = circle_num_size,
       save_output = save_output,
       period_name = period_name,
+      label_repel = label_repel,
       label_size = label_size,
       scale_circle_size = scale_circle_size,
     ))
@@ -53,6 +53,8 @@ sample_count_map <- function(df, map_data, circle_num_size = 3.1, save_output = 
     time = time,
     map_data = map_data,
     save_output = save_output,
+    label_repel = label_repel,
+    circle_num_size = circle_num_size,
     label_size = label_size,
     scale_circle_size = scale_circle_size,
     ...
@@ -64,19 +66,17 @@ sample_count_map <- function(df, map_data, circle_num_size = 3.1, save_output = 
 #' @title Internal Function to Create Sample Count Map
 #'
 #' @inheritParams sample_count_map
-#' @param period_name  The period name for the plot. Defualt: `FULL`
 #'
 #' @keywords internal
 #'
-create_sc_map <- function(df, map_data, save_output = TRUE, circle_num_size = 3.1,
+create_sc_map <- function(df, map_data, save_output = TRUE, circle_num_size = 3.1, label_repel = 1.3,
                           period_name = "Full", label_size = 2.5, scale_circle_size = 11, ...) {
-
   # Summarize sample counts by location
   sample_count_table <- df %>%
     dplyr::group_by(Location) %>%
     dplyr::summarize(sample_count = dplyr::n())
 
-  sample_count_table <- dplyr::left_join(sample_count_table, map_data$long_lat_data, by = "Location")
+  sample_count_table <- dplyr::inner_join(sample_count_table, map_data$long_lat_data, by = "Location")
   sample_count_sf <- sf::st_as_sf(sample_count_table, coords = c("long", "lat"), crs = sf::st_crs(map_data$shapefile))
 
   p <- ggplot() +
@@ -87,7 +87,7 @@ create_sc_map <- function(df, map_data, save_output = TRUE, circle_num_size = 3.
       aes(label = Location, x = long, y = lat, fontface = "bold"),
       color = "black",
       size = label_size,
-      box.padding = unit(1.3, "lines"),
+      box.padding = unit(label_repel, "lines"),
       segment.color = "#132B43",
       angle = 90,
       max.overlaps = 100
@@ -107,14 +107,15 @@ create_sc_map <- function(df, map_data, save_output = TRUE, circle_num_size = 3.
 
 
   if (save_output) {
-
     save_path <- get("Output_Dir", envir = .GlobalEnv)
-    ggsave(filename = paste0("sample_count_map_", period_name, ".jpeg"),
-           path = save_path,
-           plot = p,
-           dpi = 300,
-           width = 11,
-           height = 6)
+    ggsave(
+      filename = paste0("sample_count_map_", period_name, ".jpeg"),
+      path = save_path,
+      plot = p,
+      dpi = 300,
+      width = 11,
+      height = 6
+    )
   }
 
   return(list(

@@ -22,8 +22,13 @@
 #'
 pcoa_plots <- function(ibs_matrix, df, circle_size = 4, save_output = FALSE, drug_col = NULL) {
 
+  if (!is.null(drug_col)) {
+    checkmate::assert_names(names(df), must.include = drug_col)
+  }
+  checkmate::assert_matrix(ibs_matrix, mode = "numeric", any.missing = FALSE, .var.name = "ibs_matrix")
+
   ### Calculate PCoA
-  pcoa_results <- cmdscale(1 - ibs_matrix, k = 3, eig = TRUE)
+  pcoa_results <- stats::cmdscale(1 - ibs_matrix, k = 3, eig = TRUE)
   pcoa_data <- as.data.frame(pcoa_results$points)
   colnames(pcoa_data) <- c("PCoA1", "PCoA2", "PCoA3")
   pcoa_percent <- round(100 * pcoa_results$eig / sum(pcoa_results$eig), 1)
@@ -40,13 +45,13 @@ pcoa_plots <- function(ibs_matrix, df, circle_size = 4, save_output = FALSE, dru
     unique_conditions <- unique(pcoa_data$condition)
   } else {
     unique_conditions <- "All"
-    pcoa_data$condition <- "All"  # Create a single dummy condition if drug_col is NULL
+    pcoa_data$condition <- "All" # Create a single dummy condition if drug_col is NULL
   }
   rownames(pcoa_data) <- pcoa_data$`Sample Internal ID`
   pcoa_data$`Sample Internal ID` <- NULL
 
   # Calculate limits and the breakd for the plots
-  overall_range <-  range(pcoa_data[, c("PCoA1", "PCoA2", "PCoA3")], na.rm = TRUE)
+  overall_range <- range(pcoa_data[, c("PCoA1", "PCoA2", "PCoA3")], na.rm = TRUE)
   overall_breaks <- round(seq(from = overall_range[1], to = overall_range[2], by = 0.1), 1)
 
   # Define colors for unique locations
@@ -60,41 +65,45 @@ pcoa_plots <- function(ibs_matrix, df, circle_size = 4, save_output = FALSE, dru
 
   # Generate plots for each combination
   for (pair in pairs_list) {
-
     x_var <- paste0("PCoA", pair[1])
     y_var <- paste0("PCoA", pair[2])
 
     p <- ggplot(pcoa_data, aes_string(x = x_var, y = y_var, fill = "Location")) +
       geom_point(size = circle_size, shape = 21, stroke = 1, color = "black", alpha = 0.7) +
-      labs(x = glue::glue("{x_var} ({pcoa_percent[pair[1]]}%)"),
-           y = glue::glue("{y_var} ({pcoa_percent[pair[2]]}%)"),
-           title = paste("PCoA Plot")) +
+      labs(
+        x = glue::glue("{x_var} ({pcoa_percent[pair[1]]}%)"),
+        y = glue::glue("{y_var} ({pcoa_percent[pair[2]]}%)"),
+        title = paste("PCoA Plot")
+      ) +
       scale_fill_manual(name = "Location", values = location_colors, labels = names(location_colors)) +
       scale_x_continuous(limits = overall_range, breaks = overall_breaks) +
       theme_classic() +
-      theme(axis.text.x = element_text(size = 13),
-            axis.text.y = element_text(size = 13),
-            axis.title.x = element_text(size = 16),
-            axis.title.y = element_text(size = 16),
-            legend.title = element_text(size = 14),
-            legend.text = element_text(size = 12),
-            legend.key.size = unit(0.8, "cm"),
-            strip.text = element_text(face = "bold", size = 13),
-            panel.border = element_rect(color = "black", fill = NA, size = 0.5)) +
+      theme(
+        axis.text.x = element_text(size = 13),
+        axis.text.y = element_text(size = 13),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        legend.title = element_text(size = 14),
+        legend.text = element_text(size = 12),
+        legend.key.size = unit(0.8, "cm"),
+        strip.text = element_text(face = "bold", size = 13),
+        panel.border = element_rect(color = "black", fill = NA, size = 0.5)
+      ) +
       facet_wrap(~condition)
 
 
     if (save_output) {
-
       save_path <- file.path(get("Output_Dir", envir = .GlobalEnv), "IBS_PCoA_Plots")
       dir.create(save_path, showWarnings = FALSE)
 
-      ggsave(path = save_path,
-             filename = paste(x_var, y_var, ".jpeg", sep = "_"),
-             plot = p,
-             dpi = 300,
-             width = 18,
-             height = 10)
+      ggsave(
+        path = save_path,
+        filename = paste(x_var, y_var, ".jpeg", sep = "_"),
+        plot = p,
+        dpi = 300,
+        width = 18,
+        height = 10
+      )
     }
 
     plot_list[[paste(x_var, y_var, sep = "_")]] <- p

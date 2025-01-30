@@ -7,8 +7,9 @@
 sample_count_map(
   df,
   map_data,
-  breaks = NULL,
+  circle_num_size = 3.1,
   save_output = TRUE,
+  label_repel = 1.3,
   period_name = "Full",
   label_size = 2.5,
   scale_circle_size = 11,
@@ -21,9 +22,13 @@ sample_count_map(
 
 \item{map_data}{A list containing the shape file and longitude-latitude data for mapping.}
 
-\item{breaks}{Numeric vector. Sets the breaks for circle sizes. Default: \code{c(10, 50, 100, 200, 300, 400, 500)}.}
+\item{circle_num_size}{Numeric. Controls the numbers inside the circles. Default: \code{3.1}}
 
 \item{save_output}{Logical. If \code{TRUE}, saves the plot as a JPEG file in the output directory (default: \code{FALSE}).}
+
+\item{label_repel}{Numeric. Controls the distance of the label from the points on the map. Default: \code{1.3}}
+
+\item{period_name}{The period name for the plot. Default: \code{FULL}}
 
 \item{label_size}{Numeric. Controls the size of location labels on the map. Default: \code{2.5}.}
 
@@ -36,6 +41,8 @@ sample_count_map(
 \item \code{end}: The end year of the time period (for periods only).
 \item \code{name}: The label to use for the period.
 }}
+
+\item{...}{Additional arguments passed to other functions.}
 }
 \value{
 A list containing the generated map \code{Sample_Count_Map} and a summary table \code{Sample_Count_Table}.
@@ -43,14 +50,4 @@ A list containing the generated map \code{Sample_Count_Map} and a summary table 
 \description{
 Creates a geographic map showing sample counts for each location based on longitude and latitude.
 The map uses circle sizes to represent sample counts, with location labels displaying the counts in parentheses.
-}
-\examples{
-# Example with time periods
-time_periods <- list(list(type = "year", start = 2010, name = "2010"),
-                     list(type = "period", start = 2015, end = 2019, name = "2015-2019"))
-
-sample_count_map(df = GRC_data,
-                 map_data = mapping_data,
-                 time = time_periods)
-
 }

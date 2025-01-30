@@ -6,9 +6,9 @@
 \usage{
 ibs_data_sl(
   melted_ibs_matrix,
-  ibs_threshold = 0.75,
   map_data,
   label_size = 2.5,
+  label_repel = 1.2,
   circle_num_size = 3.1,
   scale_circle_size = 10,
   save_output = TRUE
@@ -17,11 +17,11 @@ ibs_data_sl(
 \arguments{
 \item{melted_ibs_matrix}{A data frame containing the melted IBS matrix}
 
-\item{ibs_threshold}{A numeric value between 0 and 1 representing the IBS threshold for pair counts. Default is 0.75.}
-
 \item{map_data}{A list containing the shape file and longitude-latitude data for mapping.}
 
 \item{label_size}{Numeric. Controls the size of location labels on the map. Default: \code{2.5}.}
+
+\item{label_repel}{Numeric. Controls the distance of the label from the points on the map. Default: \code{1.2}.}
 
 \item{circle_num_size}{Numeric. Controls the numbers inside the circles. Default: \code{3.1}.}
 
@@ -34,11 +34,4 @@ A data data frame and map showing the the median Ibs score for each location.
 }
 \description{
 Summarize the IBS score by the same location pair. Getting the Median IBS per for each location.
-}
-\examples{
-Example usage:
-ibs_data_sl(melted_ibs_matrix = IBS_Melted_Matrix,
-            map_data = geo_data,
-            ibs_threshold = 0.75)
-
 }
