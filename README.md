@@ -47,12 +47,25 @@ such as **Resistant**, **Sensitive**, **Mixed_Resistance**,
 **Undetermined** and **Missing** based on the haplotypes of certain gene
 markers associated with specific drugs, e.g, PfCRT which is associated
 with Chloroquine. New columns are then created using the name of each
-drug.
+drug. Users can select which drug to work with for the downstream
+analyses my passing the name to the drug_column argument in the
+function. This then filters the data set deleting the undetermined and
+missing cases. The new drug column created are (**Chloroquine**,
+**Multidrug**, **Artemisinin**, **Sulfadoxine** and **Pyrimethamine**).
 
 ``` r
-grc_data <-
+# create drug columns without filtering for any drug
+grc_data1 <-
   gene_classifier(
     df = grc_data,
+    drug_column = NULL,
+    save_output = TRUE
+  )
+
+# create drug columns and filter for one of th drugs, in this case chloroquine
+grc_data2 <-
+  gene_classifier(
+    df = grc_data1,
     drug_column = "Chloroquine",
     save_output = TRUE
   )
@@ -65,8 +78,14 @@ using mapping_data. This is necessary for creating spatial
 visualizations subsequent analyses.
 
 ``` r
+# load the necessary libraries 
+library(sf)
+library(readxl)
+
 # import your geographical data for mapping
+# shapefile
 gmb_shpfile <- st_read(system.file("extdata", "geoBoundaries-GMB-ADM3_simplified.shp", package = "grcMPB"))
+# excel sheet containing the location and their coordinates, longitude and latitude.  
 longitude_latitude <- read_excel(system.file("extdata", "LongLat_data.xlsx", package = "grcMPB"))
 
 geo_data <-
