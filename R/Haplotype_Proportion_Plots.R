@@ -211,11 +211,11 @@ create_haplotype_plots <- function(df, gene_col, save_output = TRUE, label_repel
     save_path <- get("Output_Dir", envir = .GlobalEnv)
     ggsave(
       filename = paste0("Haplotype_bar_chart_", period_name, ".jpeg"),
-      path = save_path, plot = bar_chart, dpi = 300, width = 11, height = 6
+      path = save_path, plot = bar_chart, dpi = 600, width = 11, height = 6
     )
     ggsave(
       filename = paste0("Haplotype_pie_chart_", period_name, ".jpeg"),
-      path = save_path, plot = pie_chart, dpi = 300, width = 11, height = 8
+      path = save_path, plot = pie_chart, dpi = 600, width = 11, height = 8
     )
   }
 

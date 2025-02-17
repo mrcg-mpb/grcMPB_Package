@@ -147,7 +147,7 @@ ibs_data_sl <- function(melted_ibs_matrix, map_data, label_size = 2.5, label_rep
     save_path <- get("Output_Dir", envir = .GlobalEnv)
     ggsave(
       filename = "median_IBS.jpeg",
-      path = save_path, plot = p, dpi = 300, width = 11, height = 6
+      path = save_path, plot = p, dpi = 600, width = 11, height = 6
     )
   }
 
@@ -272,7 +272,7 @@ ibs_data_dl <- function(melted_ibs_matrix, ibs_threshold = 0.75, map_data, label
       ggsave(
         filename = paste0("Ibs_CMap_", p_column, ".jpeg"),
         path = save_path,
-        plot = p, dpi = 300, width = 17, height = 10
+        plot = p, dpi = 600, width = 17, height = 10
       )
     }
   }

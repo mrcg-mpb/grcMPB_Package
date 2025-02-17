@@ -188,11 +188,11 @@ create_plots <- function(df, drug_col, period_name = "Full", save_output = TRUE,
     dir.create(save_path, showWarnings = FALSE)
     ggsave(
       filename = paste0("DrugStatus_BarChart1_", period_name, ".jpeg"),
-      plot = bar1, dpi = 300, width = 11, height = 7, path = save_path
+      plot = bar1, dpi = 600, width = 11, height = 7, path = save_path
     )
     ggsave(
       filename = paste0("DrugStatus_BarChart2_", period_name, ".jpeg"),
-      plot = bar2, dpi = 300, width = 15, height = 7, path = save_path
+      plot = bar2, dpi = 600, width = 15, height = 7, path = save_path
     )
   }
 
@@ -383,7 +383,7 @@ create_p_map <- function(df, drug_col, save_output = TRUE, period_name = "Full",
       ggsave(
         filename = paste0(p_column, "_", period_name, ".jpeg"),
         path = save_path,
-        plot = p, dpi = 300, width = 11, height = 6
+        plot = p, dpi = 600, width = 11, height = 6
       )
     }
   }

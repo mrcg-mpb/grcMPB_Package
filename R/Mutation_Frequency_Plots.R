@@ -278,14 +278,14 @@ create_m_plots <- function(df, gene_col, save_output = TRUE, period_name = "Full
     ggsave(
       filename = paste0("Mutation_BarChart_", period_name, ".jpeg"),
       plot = m_plots$BarChart,
-      path = save_path, dpi = 300, width = 11, height = 6
+      path = save_path, dpi = 600, width = 11, height = 6
     )
 
     for (plot_name in names(m_plots$M_Maps)) {
       ggsave(
         filename = paste0(plot_name, "_", period_name, ".jpeg"),
         plot = m_plots$M_Maps[[plot_name]],
-        path = save_path, dpi = 300, width = 11, height = 6
+        path = save_path, dpi = 600, width = 11, height = 6
       )
     }
   }

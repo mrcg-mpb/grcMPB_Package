@@ -118,7 +118,7 @@ ibs_heat_map <- function(df, snp_data, ibs_matrix, map_data, save_output = FALSE
       dir.create(save_path, showWarnings = FALSE)
 
       png_path <- file.path(save_path, paste0("IBS_Heatmap_", condition, ".png"))
-      png(png_path, width = 15000, height = 9000, res = 500)
+      png(png_path, width = 8000, height = 9000, res = 600)
       ComplexHeatmap::draw(p)
       dev.off()
     }

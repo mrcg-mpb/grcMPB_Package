@@ -111,7 +111,7 @@ create_sc_map <- function(df, map_data, save_output = TRUE, circle_num_size = 3.
       filename = paste0("sample_count_map_", period_name, ".jpeg"),
       path = save_path,
       plot = p,
-      dpi = 300,
+      dpi = 600,
       width = 11,
       height = 6
     )

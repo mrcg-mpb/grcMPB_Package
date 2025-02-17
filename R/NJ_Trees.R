@@ -84,7 +84,7 @@ nj_tree <- function(ibs_matrix, df, tippoint_size = 4, line_size = 0.6, save_out
         path = save_path,
         filename = paste0("NJ_Tree_", condition, ".jpeg"),
         plot = p,
-        dpi = 300,
+        dpi = 600,
         width = 25,
         height = 18
       )

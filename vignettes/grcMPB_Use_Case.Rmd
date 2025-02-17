@@ -39,7 +39,7 @@ grc_data <-
   combine_grc_sheets(
     input_folder = system.file("extdata", "example_GRC_sheets", package = "grcMPB"),
     country = "Gambia",
-    save_output = FALSE,
+    save_output = TRUE,
     output_dir = "C:/Users/bngwa/Videos"
   )
 ```
@@ -107,14 +107,14 @@ periods <-
   )
 
 sample_count_map(
-  df = grc_data1,
+  df = grc_data,
   map_data = geo_data,
   time = NULL,
   circle_num_size = 3.1,
   label_size = 2.5,
   label_repel = 1.3,
   scale_circle_size = 11,
-  save_output = FALSE
+  save_output = TRUE
 )
 ```
 

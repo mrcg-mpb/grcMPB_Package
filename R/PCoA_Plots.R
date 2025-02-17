@@ -99,7 +99,7 @@ pcoa_plots <- function(ibs_matrix, df, circle_size = 4, save_output = FALSE, dru
         path = save_path,
         filename = paste(x_var, y_var, ".jpeg", sep = "_"),
         plot = p,
-        dpi = 300,
+        dpi = 600,
         width = 18,
         height = 10
       )

@@ -100,7 +100,7 @@ diversity_map <- function(df, snp_data, label_size = 2.5, map_data, label_repel 
     save_path <- get("Output_Dir", envir = .GlobalEnv)
     ggsave(
       filename = paste0("mean_Snp_Het_", ".jpeg"),
-      path = save_path, plot = p, dpi = 300, width = 11, height = 6
+      path = save_path, plot = p, dpi = 600, width = 11, height = 6
     )
   }
 
