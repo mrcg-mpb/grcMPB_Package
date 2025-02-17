@@ -19,7 +19,6 @@
 #' @import data.table
 #'
 combine_grc_sheets <- function(input_folder, country = NULL, save_output = TRUE, output_dir = NULL) {
-
   checkmate::assert_directory_exists(input_folder, access = "r")
   if (!is.null(output_dir)) {
     checkmate::assert_directory(output_dir)
@@ -55,21 +54,23 @@ combine_grc_sheets <- function(input_folder, country = NULL, save_output = TRUE,
     dup_cols <- grep("\\.(x|y)($|\\.[0-9]+$)", names(result), value = TRUE)
 
     # For each duplicate column, find its base name and coalesce
-    if(length(dup_cols) > 0) {
+    if (length(dup_cols) > 0) {
       # Get base names by removing suffixes
       base_names <- unique(gsub("\\.(x|y)($|\\.[0-9]+$)", "", dup_cols))
 
-      for(base in base_names) {
+      for (base in base_names) {
         # Find all columns for this base name (including base column)
         related_cols <- grep(paste0("^", base, "(\\.(x|y)($|\\.[0-9]+$))?$"),
-                             names(result), value = TRUE)
+          names(result),
+          value = TRUE
+        )
 
         # Coalesce all related columns
         result[, (base) := do.call(fcoalesce, .SD), .SDcols = related_cols]
 
         # Remove the .x and .y columns, keeping only the base column
         cols_to_drop <- setdiff(related_cols, base)
-        if(length(cols_to_drop) > 0) {
+        if (length(cols_to_drop) > 0) {
           result[, (cols_to_drop) := NULL]
         }
       }
@@ -124,9 +125,9 @@ combine_grc_sheets <- function(input_folder, country = NULL, save_output = TRUE,
     if (country == "Gambia") {
       combined_data <- combined_data %>%
         dplyr::mutate(Location = dplyr::recode(Location,
-                                               "Sotuma" = "Sotuma Sere",
-                                               "EFSTH_Ndemban" = "Banjul",
-                                               "Gambisara" = "Gambissara"
+          "Sotuma" = "Sotuma Sere",
+          "EFSTH_Ndemban" = "Banjul",
+          "Gambisara" = "Gambissara"
         )) %>%
         dplyr::filter(!Location %in% c("Ijede", "Asabanka", "Nkakat Eyamba", "Ngayen Sanjal"))
     }

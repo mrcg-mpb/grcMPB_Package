@@ -1,8 +1,12 @@
 # Load sample data from package
 gmb_shpfile <- sf::st_read(system.file("extdata",
-                                       "geoBoundaries-GMB-ADM3_simplified.shp", package = "grcMPB"))
+  "geoBoundaries-GMB-ADM3_simplified.shp",
+  package = "grcMPB"
+))
 longitude_latitude <- readxl::read_excel(system.file("extdata",
-                                                     "LongLat_data.xlsx", package = "grcMPB"))
+  "LongLat_data.xlsx",
+  package = "grcMPB"
+))
 # Setup test data
 grc_file <- readxl::read_excel(system.file("extdata", "GRC_Sheet.xlsx", package = "grcMPB"))
 
@@ -44,7 +48,7 @@ test_that("mutation_frequency handles basic input correctly", {
   expect_type(result$Mutation_Freq_Tables, "list")
   expect_named(result$Mutation_Freq_Tables, c("Table1", "Table2"))
 
-  #Test plot names
+  # Test plot names
   expect_named(result$Mutation_Plots$M_Maps, c("C72S", "V73S", "M74I", "N75E", "K76T"))
 })
 
@@ -111,5 +115,3 @@ test_that("mutation_frequency handles time filtering correctly", {
   expect_length(result, 1)
   expect_named(result, "2021")
 })
-
-

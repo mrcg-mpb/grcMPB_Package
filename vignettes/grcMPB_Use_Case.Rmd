@@ -9,7 +9,7 @@ vignette: >
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
+  collapse = FALSE,
   comment = "#>"
 )
 ```
@@ -32,14 +32,14 @@ library(grcMPB)
 
 The combine_grc_sheets() function simplifies the process of merging multiple SpotMalaria Genetic Report Cards (GRCs) into a single dataset for downstream analysis. It also provides the flexibility to filter data by country, ensuring that users can focus on specific geographic regions of interest.
 
-All Genetic Report Cards should be stored in a single folder. The path to this folder is passed to the input_folder argument.The user can also specify an output_dir to save analysis results. If save_output = TRUE, the consolidated data set and related results are saved to this location.
+All Genetic Report Cards should be stored in a single folder. The path to this folder is passed to the input_folder argument.The user can also specify an output_dir to save analysis results. If save_output = FALSE, the consolidated data set and related results are saved to this location.
 
 ```{r eval=FALSE}
 grc_data <-
   combine_grc_sheets(
     input_folder = system.file("extdata", "example_GRC_sheets", package = "grcMPB"),
     country = "Gambia",
-    save_output = TRUE,
+    save_output = FALSE,
     output_dir = "C:/Users/bngwa/Videos"
   )
 ```
@@ -55,15 +55,15 @@ grc_data1 <-
   gene_classifier(
     df = grc_data,
     drug_column = NULL,
-    save_output = TRUE
+    save_output = FALSE
   )
 
-# create drug columns and filter for one of th drugs, in this case chloroquine
+# create drug columns and filter for one of the drugs, in this case chloroquine
 grc_data2 <-
   gene_classifier(
     df = grc_data1,
     drug_column = "Chloroquine",
-    save_output = TRUE
+    save_output = FALSE
   )
 ```
 
@@ -73,14 +73,14 @@ grc_data2 <-
 Integrate shapefile data and geographic coordinates to create a list using mapping_data. This is necessary for creating spatial visualizations in the subsequent analyses.
 
 ```{r eval=FALSE}
-# load the necessary libraries 
+# load the necessary libraries
 library(sf)
 library(readxl)
 
 # import your geographical data for mapping
 # shapefile
 gmb_shpfile <- st_read(system.file("extdata", "geoBoundaries-GMB-ADM3_simplified.shp", package = "grcMPB"))
-# excel sheet containing the location and their coordinates, longitude and latitude.  
+# excel sheet containing the location and their coordinates, longitude and latitude.
 longitude_latitude <- read_excel(system.file("extdata", "LongLat_data.xlsx", package = "grcMPB"))
 
 geo_data <-
@@ -107,14 +107,14 @@ periods <-
   )
 
 sample_count_map(
-  df = grc_data,
+  df = grc_data1,
   map_data = geo_data,
   time = NULL,
   circle_num_size = 3.1,
   label_size = 2.5,
   label_repel = 1.3,
   scale_circle_size = 11,
-  save_output = TRUE
+  save_output = FALSE
 )
 ```
 
@@ -128,7 +128,7 @@ Two plots are then generated, one showing the distrubition across different loca
 drug_distribution(
   df = grc_data1,
   drug_col = "Chloroquine",
-  save_output = TRUE,
+  save_output = FALSE,
   time = NULL
 )
 ```
@@ -142,7 +142,7 @@ Create proportion maps showing the prevalence of drug resistant categories acros
 drug_distribution_pm(
   df = grc_data1,
   drug_col = "Chloroquine",
-  save_output = TRUE,
+  save_output = FALSE,
   time = NULL,
   map_data = geo_data,
   label_size = 2.5,
@@ -159,9 +159,9 @@ Calculate mutation frequencies at specific positions within a genetic marker of 
 
 ```{r eval=FALSE}
 mutation_frequency(
-  df = grc_data,
+  df = grc_data1,
   gene_col = "PfCRT",
-  save_output = TRUE,
+  save_output = FALSE,
   time = NULL,
   map_data = geo_data,
   label_size = 2.5,
@@ -179,9 +179,9 @@ Visualize haplotype proportions for specific genes as pie charts over geographic
 
 ```{r eval=FALSE}
 haplotype_proportion(
-  df = grc_data,
+  df = grc_data1,
   gene_col = "PfCRT",
-  save_output = TRUE,
+  save_output = FALSE,
   time = NULL,
   map_data = geo_data,
   label_size = 2.5,
@@ -198,7 +198,7 @@ Use the filter_snp_x_samples function to create the genetic bar code using the S
 ```{r eval=FALSE}
 barcode_data <-
   filter_snp_x_samples(
-    df = grc_data,
+    df = grc_data1,
     m_threshold = 0.20
   )
 
@@ -214,14 +214,14 @@ This map helps to identify areas with varying levels of genetic diversity in the
 
 ```{r eval=FALSE}
 diversity_map(
-  df = grc_data,
+  df = grc_data1,
   snp_data = barcode_data,
   map_data = geo_data,
   label_size = 2.5,
   label_repel = 1.2,
   circle_num_size = 3.1,
   scale_circle_size = 10,
-  save_output = TRUE
+  save_output = FALSE
 )
 ```
 
@@ -233,7 +233,7 @@ This function generates the IBS matrix using barcode data, which is a sequence c
 ```{r eval=FALSE}
 ibs_data_list <-
   generate_ibs_data(
-    df = grc_data,
+    df = grc_data2,
     snp_data = barcode_data,
     drug_col = "Chloroquine"
   )
@@ -254,7 +254,7 @@ ibs_data_sl(
   label_repel = 1,
   circle_num_size = 3.1,
   scale_circle_size = 10,
-  save_output = TRUE
+  save_output = FALSE
 )
 ```
 
@@ -277,17 +277,17 @@ The number of highly related pairs between locations is used to calculate two di
 After calculating these proportions, they are filtered to only include values above **1%** by default. Users can modify this threshold using the percentage_cutoff argument. This flexibility ensures that the maps effectively highlight significant patterns while removing less relevant connections.
 
 ```{r eval=FALSE}
-  ibs_data_dl(
-    melted_ibs_matrix = ibs_data_list$IBS_Melted_Matrix,
-    ibs_threshold = 0.75,
-    percentage_cutoff = 1,
-    map_data = geo_data,
-    label_size = 5,
-    label_repel = 1.23,
-    breaks = seq(0, 18, 3),
-    curve_degree = 0.3,
-    save_output = TRUE
-  )
+ibs_data_dl(
+  melted_ibs_matrix = ibs_data_list$IBS_Melted_Matrix,
+  ibs_threshold = 0.75,
+  percentage_cutoff = 1,
+  map_data = geo_data,
+  label_size = 5,
+  label_repel = 1.23,
+  breaks = seq(0, 18, 3),
+  curve_degree = 0.3,
+  save_output = FALSE
+)
 ```
 
 
@@ -301,7 +301,7 @@ ibs_heat_map(
   snp_data = barcode_data,
   ibs_matrix = ibs_data_list$IBS_matrix,
   map_data = geo_data,
-  save_output = TRUE,
+  save_output = FALSE,
   drug_col = "Chloroquine"
 )
 ```
@@ -316,7 +316,7 @@ pcoa_plots(
   ibs_matrix = ibs_data_list1$IBS_matrix,
   df = grc_data1,
   circle_size = 4,
-  save_output = TRUE,
+  save_output = FALSE,
   drug_col = "Chloroquine"
 )
 ```
@@ -332,7 +332,7 @@ nj_tree(
   df = grc_data,
   tippoint_size = 5,
   line_size = 0.7,
-  save_output = TRUE,
-  drug_col = "Chloroquine"
+  save_output = FALSE,
+  drug_col = NULL
 )
 ```

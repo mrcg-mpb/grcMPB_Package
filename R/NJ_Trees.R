@@ -22,7 +22,6 @@
 #' @importFrom ggtree %<+%
 #'
 nj_tree <- function(ibs_matrix, df, tippoint_size = 4, line_size = 0.6, save_output = FALSE, drug_col = NULL) {
-
   if (!is.null(drug_col)) {
     checkmate::assert_names(names(df), must.include = drug_col)
   }

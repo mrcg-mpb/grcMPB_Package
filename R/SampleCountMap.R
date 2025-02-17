@@ -28,7 +28,6 @@
 sample_count_map <- function(df, map_data, circle_num_size = 3.1, save_output = TRUE, label_repel = 1.3,
                              period_name = "Full", label_size = 2.5, scale_circle_size = 11,
                              time = NULL, ...) {
-
   checkmate::assert_list(map_data, len = 2, names = "named")
   checkmate::assert_class(map_data$shapefile, "sf")
   checkmate::assert_data_frame(map_data$long_lat_data)

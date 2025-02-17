@@ -18,7 +18,6 @@
 #' @export
 #'
 ibs_heat_map <- function(df, snp_data, ibs_matrix, map_data, save_output = FALSE, drug_col = NULL) {
-
   if (!is.null(drug_col)) {
     checkmate::assert_names(names(df), must.include = drug_col)
   }
@@ -34,9 +33,9 @@ ibs_heat_map <- function(df, snp_data, ibs_matrix, map_data, save_output = FALSE
   meta_data <- meta_data %>%
     dplyr::select(`Sample Internal ID`) %>%
     dplyr::left_join(df %>%
-                       dplyr::select(`Sample Internal ID`, Location), by = "Sample Internal ID") %>%
+      dplyr::select(`Sample Internal ID`, Location), by = "Sample Internal ID") %>%
     dplyr::inner_join(map_data$long_lat_data %>%
-                       dplyr::select(Location), by = "Location") %>%
+      dplyr::select(Location), by = "Location") %>%
     as.data.frame()
   rownames(meta_data) <- meta_data$`Sample Internal ID`
 
@@ -44,7 +43,7 @@ ibs_heat_map <- function(df, snp_data, ibs_matrix, map_data, save_output = FALSE
   if (!is.null(drug_col)) {
     meta_data <- meta_data %>%
       dplyr::left_join(df %>%
-                         dplyr::select(`Sample Internal ID`, !!rlang::sym(drug_col)), by = "Sample Internal ID") %>%
+        dplyr::select(`Sample Internal ID`, !!rlang::sym(drug_col)), by = "Sample Internal ID") %>%
       as.data.frame()
 
     # Rename the joined column to "Condition" for consistency
@@ -75,21 +74,41 @@ ibs_heat_map <- function(df, snp_data, ibs_matrix, map_data, save_output = FALSE
     condition_ibs_matrix <- ibs_matrix[condition_sample_ids, condition_sample_ids, drop = FALSE]
     condition_meta_data <- condition_meta_data %>% dplyr::select(-c(Condition))
 
-    # Set colors for this subset
-    my_colour <- list(Location = location_colors)
+    # Create top annotation
+    top_annotation <- ComplexHeatmap::HeatmapAnnotation(
+      Location = condition_meta_data$Location,
+      col = list(Location = location_colors),
+      annotation_name_gp = grid::gpar(fontsize = 25),
+      show_legend = TRUE,
+      annotation_legend_param = list(
+        Location = list(
+          title_gp = grid::gpar(fontsize = 25),
+          labels_gp = grid::gpar(fontsize = 25),
+          legend_height = unit(4, "cm"),
+          legend_width = unit(2, "cm")
+        )
+      )
+    )
 
     # Generate heat map for the current condition
-    p <- pheatmap::pheatmap(
-      condition_ibs_matrix,
-      annotation_col = condition_meta_data,
-      annotation_colors = my_colour,
-      color = hcl.colors(50, "BluYl"),
-      border_color = NA,
-      show_colnames = FALSE,
-      show_rownames = FALSE,
-      drop_levels = TRUE,
-      fontsize = 20,
-      main = paste("IBS Heatmap :", condition)
+    p <- ComplexHeatmap::Heatmap(
+      as.matrix(condition_ibs_matrix),
+      name = "IBS Scores",
+      col = colorRampPalette(c("blue", "yellow", "red"))(50),
+      cluster_rows = TRUE,
+      cluster_columns = TRUE,
+      show_column_names = FALSE,
+      show_row_names = FALSE,
+      top_annotation = top_annotation,
+      column_title = paste("IBS Heatmap :", condition),
+      column_title_gp = grid::gpar(fontsize = 25),
+      heatmap_legend_param = list(
+        title = "IBS Scores",
+        title_gp = grid::gpar(fontsize = 25),
+        labels_gp = grid::gpar(fontsize = 25),
+        legend_height = unit(4, "cm"),
+        legend_width = unit(2, "cm")
+      )
     )
 
     heatmap_list[[condition]] <- p
@@ -98,14 +117,10 @@ ibs_heat_map <- function(df, snp_data, ibs_matrix, map_data, save_output = FALSE
       save_path <- file.path(get("Output_Dir", envir = .GlobalEnv), "IBS_Heat_Maps")
       dir.create(save_path, showWarnings = FALSE)
 
-      ggsave(
-        path = save_path,
-        filename = paste0("IBS_Heatmap_", condition, ".jpeg"),
-        plot = p,
-        dpi = 500,
-        width = 30,
-        height = 18
-      )
+      png_path <- file.path(save_path, paste0("IBS_Heatmap_", condition, ".png"))
+      png(png_path, width = 15000, height = 9000, res = 500)
+      ComplexHeatmap::draw(p)
+      dev.off()
     }
   }
 

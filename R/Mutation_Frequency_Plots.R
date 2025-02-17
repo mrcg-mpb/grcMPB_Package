@@ -27,7 +27,6 @@
 
 mutation_frequency <- function(df, gene_col, save_output = TRUE, period_name = "Full", time = NULL, map_data, label_repel = 1.3,
                                label_size = 2.5, circle_num_size = 3.1, scale_circle_size = 10, include_mixed = FALSE, ...) {
-
   checkmate::assert_names(names(df), must.include = gene_col)
   checkmate::assert_list(map_data, len = 2, names = "named")
   checkmate::assert_class(map_data$shapefile, "sf")
@@ -75,7 +74,6 @@ mutation_frequency <- function(df, gene_col, save_output = TRUE, period_name = "
 #'
 create_m_plots <- function(df, gene_col, save_output = TRUE, period_name = "Full", map_data, label_repel = 1.3,
                            label_size = 2.5, circle_num_size = 3.1, scale_circle_size = 10, include_mixed = FALSE, ...) {
-
   gene_info <- list(
     PfCRT = list(
       ref = c("C", "V", "M", "N", "K"),
@@ -131,7 +129,7 @@ create_m_plots <- function(df, gene_col, save_output = TRUE, period_name = "Full
   if (include_mixed) {
     result_table1 <- result_table1 %>%
       dplyr::mutate(Mutation = Mutation + Mixed) %>%
-      dplyr::select(-Mixed) %>%  # Remove the Mixed column
+      dplyr::select(-Mixed) %>% # Remove the Mixed column
       dplyr::mutate(
         Wild = paste0(Wild, " (", round((Wild / Total) * 100, 1), "%)"),
         Mutation = paste0(Mutation, " (", round((Mutation / Total) * 100, 1), "%)"),

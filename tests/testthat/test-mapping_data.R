@@ -1,12 +1,14 @@
-
 # Load sample data from package
 shapefile <- sf::st_read(system.file("extdata",
-                                     "geoBoundaries-GMB-ADM3_simplified.shp", package = "grcMPB"))
+  "geoBoundaries-GMB-ADM3_simplified.shp",
+  package = "grcMPB"
+))
 long_lat_data <- readxl::read_excel(system.file("extdata",
-                                                "LongLat_data.xlsx", package = "grcMPB"))
+  "LongLat_data.xlsx",
+  package = "grcMPB"
+))
 
 test_that("mapping_data processes inputs correctly", {
-
   result <- mapping_data(
     shapefile = shapefile,
     long_lat_data = long_lat_data,
@@ -24,11 +26,10 @@ test_that("mapping_data processes inputs correctly", {
 
   # Check if long_lat_data has required columns
   expect_true(all(c("Location", "long", "lat") %in%
-                    names(result$long_lat_data)))
+    names(result$long_lat_data)))
 })
 
 test_that("mapping_data validates inputs correctly", {
-
   # Test invalid shapefile
   expect_error(
     mapping_data(
@@ -56,7 +57,6 @@ test_that("mapping_data validates inputs correctly", {
 })
 
 test_that("mapping_data handles column renaming correctly", {
-
   # Rename columns to test standardization
   names(long_lat_data)[names(long_lat_data) == "Location"] <- "site"
   names(long_lat_data)[names(long_lat_data) == "long"] <- "longitude"
@@ -72,5 +72,5 @@ test_that("mapping_data handles column renaming correctly", {
 
   # Check if columns were standardized
   expect_true(all(c("Location", "long", "lat") %in%
-                    names(result$long_lat_data)))
+    names(result$long_lat_data)))
 })

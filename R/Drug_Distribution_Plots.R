@@ -24,7 +24,6 @@
 #'
 drug_distribution <- function(df, drug_col, save_output = TRUE, time = NULL,
                               period_name = "Full", ...) {
-
   checkmate::assert_names(names(df), must.include = drug_col)
   checkmate::assert_list(time, null.ok = TRUE)
 
@@ -56,26 +55,21 @@ drug_distribution <- function(df, drug_col, save_output = TRUE, time = NULL,
 #' @keywords internal
 #'
 create_plots <- function(df, drug_col, period_name = "Full", save_output = TRUE, ...) {
-
   # Get actual categories present in the data
   available_categories <- unique(df[[drug_col]])
 
-  # Define core and optional categories
-  core_categories <- c("mixed_resistant", "resistant", "sensitive")
-  optional_categories <- c("missing", "undetermined")
+  # If no categories are found, return NULL or create a placeholder plot
+  if (length(available_categories) == 0) {
+    warning(paste("No drug resistance categories found for", drug_col))
 
-  # Verify core categories exist
-  missing_core <- setdiff(core_categories, available_categories)
-  if (length(missing_core) > 0) {
-    stop(sprintf("Required categories missing from data: %s",
-                 paste(missing_core, collapse = ", ")))
+    # Create a placeholder plot or return NULL
+    return(list(
+      Bar1 = NULL,
+      Bar2 = NULL,
+      Condition_Table1 = data.frame(),
+      Condition_Table2 = data.frame()
+    ))
   }
-
-  # Determine which categories to use based on what's in the data
-  categories_to_use <- intersect(
-    c(core_categories, optional_categories),
-    available_categories
-  )
 
   # Create summary table with only available categories
   summary_table <- data.frame(unclass(table(df[["Location"]], df[[drug_col]])))
@@ -83,12 +77,18 @@ create_plots <- function(df, drug_col, period_name = "Full", save_output = TRUE,
   # Calculate totals using only available columns
   summary_table <- summary_table %>%
     dplyr::mutate(
-      Total = rowSums(dplyr::select(., all_of(categories_to_use))),
-      all_resistant = rowSums(dplyr::select(., any_of(c("mixed_resistant", "resistant"))))
+      Total = rowSums(dplyr::select(., dplyr::all_of(available_categories))),
+      all_resistant = if("resistant" %in% available_categories ||
+                         "mixed_resistant" %in% available_categories) {
+        rowSums(dplyr::select(., any_of(c("mixed_resistant", "resistant"))))
+      } else {
+        0
+      }
     ) %>%
     dplyr::mutate(dplyr::across(everything(),
-                                ~ round(. / Total * 100, 1),
-                                .names = "{.col}.per")) %>%
+      ~ round(. / Total * 100, 1),
+      .names = "{.col}.per"
+    )) %>%
     dplyr::select(-Total.per)
 
   summary_table$Location <- rownames(summary_table)
@@ -96,21 +96,23 @@ create_plots <- function(df, drug_col, period_name = "Full", save_output = TRUE,
 
   # Create the long-format summary table with only available categories
   summary_table_long <- summary_table %>%
-    dplyr::select(all_of(c(categories_to_use, "Location"))) %>%
-    tidyr::pivot_longer(cols = all_of(categories_to_use),
-                        names_to = "Sample_Type",
-                        values_to = "Count")
+    dplyr::select(dplyr::all_of(c(available_categories, "Location"))) %>%
+    tidyr::pivot_longer(
+      cols = dplyr::all_of(available_categories),
+      names_to = "Sample_Type",
+      values_to = "Count"
+    )
 
   # Filter colors to match available categories
-  colors = c(
-    "mixed_resistant" = "#808000",  # olive green
-    "resistant" = "#525CEB",        # blue
-    "sensitive" = "#800000",        # dark red
-    "missing" = "#808080",          # gray
-    "undetermined" = "pink"      # black
+  colors <- c(
+    "mixed_resistant" = "#808000",
+    "resistant" = "#525CEB",
+    "sensitive" = "#800000",
+    "missing" = "#808080",
+    "undetermined" = "pink"
   )
 
-  colors_to_use <- colors[names(colors) %in% categories_to_use]
+  colors_to_use <- colors[names(colors) %in% available_categories]
 
   # Create a summarized bar chart data by drug type
   bar_chart_data <- df %>%
@@ -119,15 +121,21 @@ create_plots <- function(df, drug_col, period_name = "Full", save_output = TRUE,
     dplyr::mutate(prob = round(Count / sum(Count) * 100, 2))
 
   # Build the first plot (for drug conditions by location)
-  bar1 <- ggplot(summary_table_long,
-                 aes(x = stats::reorder(Location, +Count),
-                     y = Count,
-                     fill = Sample_Type)) +
+  bar1 <- ggplot(
+    summary_table_long,
+    aes(
+      x = stats::reorder(Location, +Count),
+      y = Count,
+      fill = Sample_Type
+    )
+  ) +
     geom_bar(stat = "identity") +
     labs(
       x = "Location", y = "Count",
-      title = paste0("Distribution of ", drug_col,
-                     " Drug Conditions by Location (", period_name, ")")
+      title = paste0(
+        "Distribution of ", drug_col,
+        " Drug Conditions by Location (", period_name, ")"
+      )
     ) +
     theme_classic() +
     theme(
@@ -139,18 +147,25 @@ create_plots <- function(df, drug_col, period_name = "Full", save_output = TRUE,
     guides(fill = guide_legend(title = "Status")) +
     scale_fill_manual(values = colors_to_use) +
     geom_text(aes(Location, Total + 6, label = Total, fill = NULL),
-              data = summary_table)
+      data = summary_table
+    )
 
   # Build the second plot (for drug condition proportions)
-  bar2 <- ggplot(bar_chart_data,
-                 aes(x = stats::reorder(!!rlang::sym(drug_col), +prob),
-                     y = prob,
-                     fill = !!rlang::sym(drug_col))) +
+  bar2 <- ggplot(
+    bar_chart_data,
+    aes(
+      x = stats::reorder(!!rlang::sym(drug_col), +prob),
+      y = prob,
+      fill = !!rlang::sym(drug_col)
+    )
+  ) +
     geom_bar(stat = "identity", width = 0.7) +
     coord_flip() +
     labs(
-      title = paste0("Proportion of ", drug_col,
-                     " Drug Conditions (", period_name, ")"),
+      title = paste0(
+        "Proportion of ", drug_col,
+        " Drug Conditions (", period_name, ")"
+      ),
       x = drug_col,
       y = "Percentage (%)"
     ) +
@@ -166,8 +181,10 @@ create_plots <- function(df, drug_col, period_name = "Full", save_output = TRUE,
     geom_text(aes(label = paste0(prob, "%")), hjust = -0.8, fontface = "bold")
 
   if (save_output) {
-    save_path <- file.path(get("Output_Dir", envir = .GlobalEnv),
-                           "Drug_Resistant_Plots")
+    save_path <- file.path(
+      get("Output_Dir", envir = .GlobalEnv),
+      "Drug_Resistant_Plots"
+    )
     dir.create(save_path, showWarnings = FALSE)
     ggsave(
       filename = paste0("DrugStatus_BarChart1_", period_name, ".jpeg"),
@@ -225,7 +242,6 @@ create_plots <- function(df, drug_col, period_name = "Full", save_output = TRUE,
 drug_distribution_pm <- function(df, drug_col, save_output = TRUE, period_name = "Full", map_data,
                                  time = NULL, label_size = 2.5, circle_num_size = 3.1, label_repel = 1.3,
                                  scale_circle_size = 10, ...) {
-
   checkmate::assert_names(names(df), must.include = drug_col)
   checkmate::assert_list(map_data, len = 2, names = "named")
   checkmate::assert_class(map_data$shapefile, "sf")
@@ -270,26 +286,21 @@ drug_distribution_pm <- function(df, drug_col, save_output = TRUE, period_name =
 #'
 create_p_map <- function(df, drug_col, save_output = TRUE, period_name = "Full", map_data, label_repel = 1.3,
                          label_size = 2.5, circle_num_size = 3.1, scale_circle_size = 10, ...) {
-
   # Get actual categories present in the data
   available_categories <- unique(df[[drug_col]])
 
-  # Define core and optional categories
-  core_categories <- c("mixed_resistant", "resistant", "sensitive")
-  optional_categories <- c("missing", "undetermined")
+  # If no categories are found, return NULL or create a placeholder plot
+  if (length(available_categories) == 0) {
+    warning(paste("No drug resistance categories found for", drug_col))
 
-  # Verify core categories exist
-  missing_core <- setdiff(core_categories, available_categories)
-  if (length(missing_core) > 0) {
-    stop(sprintf("Required categories missing from data: %s",
-                 paste(missing_core, collapse = ", ")))
+    # Create a placeholder plot or return NULL
+    return(list(
+      Bar1 = NULL,
+      Bar2 = NULL,
+      Condition_Table1 = data.frame(),
+      Condition_Table2 = data.frame()
+    ))
   }
-
-  # Determine which categories to use based on what's in the data
-  categories_to_use <- intersect(
-    c(core_categories, optional_categories),
-    available_categories
-  )
 
   # Create summary table with only available categories
   summary_table <- data.frame(unclass(table(df[["Location"]], df[[drug_col]])))
@@ -297,12 +308,18 @@ create_p_map <- function(df, drug_col, save_output = TRUE, period_name = "Full",
   # Calculate totals using only available columns
   summary_table <- summary_table %>%
     dplyr::mutate(
-      Total = rowSums(dplyr::select(., all_of(categories_to_use))),
-      all_resistant = rowSums(dplyr::select(., any_of(c("mixed_resistant", "resistant"))))
+      Total = rowSums(dplyr::select(., dplyr::all_of(available_categories))),
+      all_resistant = if("resistant" %in% available_categories ||
+                         "mixed_resistant" %in% available_categories) {
+        rowSums(dplyr::select(., any_of(c("mixed_resistant", "resistant"))))
+      } else {
+        0
+      }
     ) %>%
     dplyr::mutate(dplyr::across(everything(),
-                                ~ round(. / Total * 100, 1),
-                                .names = "{.col}.per")) %>%
+      ~ round(. / Total * 100, 1),
+      .names = "{.col}.per"
+    )) %>%
     dplyr::select(-Total.per)
 
   summary_table$Location <- rownames(summary_table)
@@ -317,7 +334,6 @@ create_p_map <- function(df, drug_col, save_output = TRUE, period_name = "Full",
   dc_maps <- list()
 
   for (p_column in colnames(summary_table)[grep("\\.per$", colnames(summary_table))]) {
-
     p <- ggplot() +
       geom_sf(data = map_data$shapefile, fill = "white", color = "#023020", linewidth = 0.4) +
       geom_sf(data = summary_table_sf, aes(size = 50, color = get(p_column))) +

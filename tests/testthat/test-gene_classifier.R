@@ -1,9 +1,7 @@
-
 # Setup test data
 grc_file <- readxl::read_excel(system.file("extdata", "GRC_Sheet.xlsx", package = "grcMPB"))
 
 test_that("gene_classifier classifies drug resistance correctly", {
-
   result <- gene_classifier(
     df = grc_file,
     drug_column = NULL,
@@ -22,11 +20,12 @@ test_that("gene_classifier classifies drug resistance correctly", {
 })
 
 test_that("gene_classifier handles different drug columns", {
+  drugs <- c(
+    "Chloroquine", "Multidrug", "Artemisinin",
+    "Sulfadoxine", "Pyrimethamine"
+  )
 
-  drugs <- c("Chloroquine", "Multidrug", "Artemisinin",
-             "Sulfadoxine", "Pyrimethamine")
-
-  for(drug in drugs) {
+  for (drug in drugs) {
     result <- gene_classifier(
       df = grc_file,
       drug_column = drug,
@@ -39,7 +38,6 @@ test_that("gene_classifier handles different drug columns", {
 })
 
 test_that("gene_classifier validates inputs correctly", {
-
   # Test invalid drug column
   expect_error(
     gene_classifier(
@@ -51,7 +49,6 @@ test_that("gene_classifier validates inputs correctly", {
 })
 
 test_that("gene_classifier handles save_output correctly", {
-
   # Create temporary output directory
   temp_dir <- tempdir()
   assign("Output_Dir", temp_dir, envir = .GlobalEnv)
@@ -63,6 +60,8 @@ test_that("gene_classifier handles save_output correctly", {
   )
 
   # Check if output file was created
-  expect_true(file.exists(file.path(temp_dir,
-    "Chloroquine_filtered_GRC_Sheet.xlsx")))
+  expect_true(file.exists(file.path(
+    temp_dir,
+    "Chloroquine_filtered_GRC_Sheet.xlsx"
+  )))
 })

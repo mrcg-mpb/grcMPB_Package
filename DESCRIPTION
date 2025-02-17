@@ -20,7 +20,6 @@ Imports:
     scatterpie,
     ggrepel,
     stringr,
-    pheatmap,
     forcats,
     glue,
     ggtree,
@@ -29,7 +28,9 @@ Imports:
     reshape2,
     rlang,
     checkmate,
-    data.table
+    data.table,
+    ComplexHeatmap,
+    grid
 Suggests: 
     BiocManager,
     knitr,

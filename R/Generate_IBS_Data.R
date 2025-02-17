@@ -27,7 +27,6 @@
 #' @export
 #'
 generate_ibs_data <- function(df, snp_data, drug_col = NULL) {
-
   checkmate::assert_names(names(df), must.include = drug_col)
 
   # Inner function to calculate IBS scores between sample pairs
@@ -83,17 +82,17 @@ generate_ibs_data <- function(df, snp_data, drug_col = NULL) {
   # Add metadata (locations, drug conditions, regions) for both samples
   ibs_data_frame <- ibs_data_frame %>%
     dplyr::left_join(df %>%
-                       dplyr::select(`Sample Internal ID`, LS1 = Location), by = c("S1" = "Sample Internal ID")) %>%
+      dplyr::select(`Sample Internal ID`, LS1 = Location), by = c("S1" = "Sample Internal ID")) %>%
     dplyr::left_join(df %>%
-                       dplyr::select(`Sample Internal ID`, LS2 = Location), by = c("S2" = "Sample Internal ID"))
+      dplyr::select(`Sample Internal ID`, LS2 = Location), by = c("S2" = "Sample Internal ID"))
 
   # Add th drug col if it exist in the data set
   if (!is.null(drug_col)) {
     ibs_data_frame <- ibs_data_frame %>%
       dplyr::left_join(df %>%
-                         dplyr::select(`Sample Internal ID`, DCS1 = drug_col), by = c("S1" = "Sample Internal ID")) %>%
+        dplyr::select(`Sample Internal ID`, DCS1 = drug_col), by = c("S1" = "Sample Internal ID")) %>%
       dplyr::left_join(df %>%
-                         dplyr::select(`Sample Internal ID`, DCS2 = drug_col), by = c("S2" = "Sample Internal ID"))
+        dplyr::select(`Sample Internal ID`, DCS2 = drug_col), by = c("S2" = "Sample Internal ID"))
   }
 
   # plot the IBS scores on a histogram

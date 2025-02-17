@@ -25,8 +25,7 @@
 #' @export
 #'
 diversity_map <- function(df, snp_data, label_size = 2.5, map_data, label_repel = 1.3,
-                      circle_num_size = 3.1, scale_circle_size = 10, save_output = TRUE, ...) {
-
+                          circle_num_size = 3.1, scale_circle_size = 10, save_output = TRUE, ...) {
   checkmate::assert_list(map_data, len = 2, names = "named")
   checkmate::assert_class(map_data$shapefile, "sf")
   checkmate::assert_data_frame(map_data$long_lat_data)
@@ -100,7 +99,7 @@ diversity_map <- function(df, snp_data, label_size = 2.5, map_data, label_repel 
   if (save_output) {
     save_path <- get("Output_Dir", envir = .GlobalEnv)
     ggsave(
-      filename = paste0("mean_Snp_Het_",".jpeg"),
+      filename = paste0("mean_Snp_Het_", ".jpeg"),
       path = save_path, plot = p, dpi = 300, width = 11, height = 6
     )
   }

@@ -1,9 +1,12 @@
-
 # Load sample data from package
 gmb_shpfile <- sf::st_read(system.file("extdata",
-                                     "geoBoundaries-GMB-ADM3_simplified.shp", package = "grcMPB"))
+  "geoBoundaries-GMB-ADM3_simplified.shp",
+  package = "grcMPB"
+))
 longitude_latitude <- readxl::read_excel(system.file("extdata",
-                                                "LongLat_data.xlsx", package = "grcMPB"))
+  "LongLat_data.xlsx",
+  package = "grcMPB"
+))
 # Setup test data
 grc_file <- readxl::read_excel(system.file("extdata", "GRC_Sheet.xlsx", package = "grcMPB"))
 
@@ -24,7 +27,6 @@ geo_data <-
   )
 
 test_that("sample_count_map handles basic input correctly", {
-
   result <- sample_count_map(
     df = grc_file,
     map_data = geo_data,
@@ -48,7 +50,6 @@ test_that("sample_count_map handles basic input correctly", {
 })
 
 test_that("sample_count_map handles time filtering correctly", {
-
   # Create test time periods
   time_periods <- list(
     list(name = "2021", type = "year", start = "2021")
@@ -63,12 +64,11 @@ test_that("sample_count_map handles time filtering correctly", {
 
   # Test that function returns results for specified time period
   expect_type(result, "list")
-  expect_length(result, 1)  # One time period
+  expect_length(result, 1) # One time period
   expect_named(result, "2021")
 })
 
 test_that("sample_count_map validates input parameters", {
-
   # Test invalid map_data structure
   expect_error(
     sample_count_map(
@@ -91,7 +91,6 @@ test_that("sample_count_map validates input parameters", {
 })
 
 test_that("sample_count_map handles visualization parameters correctly", {
-
   result <- sample_count_map(
     df = grc_file,
     map_data = geo_data,
@@ -104,7 +103,7 @@ test_that("sample_count_map handles visualization parameters correctly", {
 
   # Test that ggplot object contains expected layers
   plot_layers <- result$Sample_Count_Map$layers
-  expect_true(length(plot_layers) >= 4)  # Should have at least 4 layers
+  expect_true(length(plot_layers) >= 4) # Should have at least 4 layers
 
   # Test that plot title includes period name
   expect_true(grepl("Sample Count Map", result$Sample_Count_Map$labels$title))

@@ -61,14 +61,14 @@ grc_data2 <-
 Integrate shapefile data and geographic coordinates to create a list using mapping_data. This is necessary for creating spatial visualizations subsequent analyses.
 
 ```{r, echo = TRUE, eval = FALSE}
-# load the necessary libraries 
+# load the necessary libraries
 library(sf)
 library(readxl)
 
 # import your geographical data for mapping
 # shapefile
 gmb_shpfile <- st_read(system.file("extdata", "geoBoundaries-GMB-ADM3_simplified.shp", package = "grcMPB"))
-# excel sheet containing the location and their coordinates, longitude and latitude.  
+# excel sheet containing the location and their coordinates, longitude and latitude.
 longitude_latitude <- read_excel(system.file("extdata", "LongLat_data.xlsx", package = "grcMPB"))
 
 geo_data <-

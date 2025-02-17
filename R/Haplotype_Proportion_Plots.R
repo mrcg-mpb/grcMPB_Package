@@ -27,7 +27,6 @@
 haplotype_proportion <- function(df, gene_col, save_output = TRUE, label_repel = 1.3,
                                  period_name = "Full", label_size = 2.5, map_data,
                                  sacle_piechart_size = 0.035, time = NULL, ...) {
-
   checkmate::assert_names(names(df), must.include = gene_col)
   checkmate::assert_list(map_data, len = 2, names = "named")
   checkmate::assert_class(map_data$shapefile, "sf")
@@ -72,6 +71,26 @@ haplotype_proportion <- function(df, gene_col, save_output = TRUE, label_repel =
 create_haplotype_plots <- function(df, gene_col, save_output = TRUE, label_repel = 1.3,
                                    period_name = "Full", label_size = 2.5, map_data,
                                    sacle_piechart_size = 0.035, ...) {
+
+  # Check if the gene column is empty or has no variation
+  unique_haplotypes <- unique(df[[gene_col]])
+  if (length(unique_haplotypes) == 0) {
+    # Create placeholder plots if no haplotype data
+    bar_chart <- ggplot() +
+      labs(title = "No Haplotype Data Available") +
+      theme_minimal()
+
+    pie_chart <- ggplot() +
+      labs(title = "No Haplotype Data Available") +
+      theme_void()
+
+    return(list(
+      Bar_Chart = bar_chart,
+      Pie_Chart = pie_chart,
+      Haplotype_Summary_Table = NULL
+    ))
+  }
+
   # Group the data frame by the gene_col and count occurrences
   haplotype_table1 <- df %>%
     dplyr::group_by(!!rlang::sym(gene_col)) %>%
@@ -122,6 +141,11 @@ create_haplotype_plots <- function(df, gene_col, save_output = TRUE, label_repel
   # Summarise the data by location and gene_col status
   haplotype_table2 <- table(df[["Location"]], df[[gene_col]]) %>% as.data.frame.matrix()
 
+  # Ensure at least two columns for rowSums
+  if (ncol(haplotype_table2) == 1) {
+    haplotype_table2$Others <- 0
+  }
+
   # Calculate the "Others" column only if it exists
   if ("Others" %in% haplotype_table1[[gene_col]]) {
     # Get all gene_col values except "Others"
@@ -129,7 +153,7 @@ create_haplotype_plots <- function(df, gene_col, save_output = TRUE, label_repel
 
     # rowsum the the column
     haplotype_table2 <- haplotype_table2 %>%
-      dplyr::mutate(Others = rowSums(.[, !colnames(.) %in% gene_values]))
+      dplyr::mutate(Others = rowSums(.[, !colnames(.) %in% gene_values, drop = FALSE]))
 
     # Select the relevant columns
     haplotype_table2 <- haplotype_table2 %>%

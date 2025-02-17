@@ -2,9 +2,13 @@ library(testthat)
 
 # Load sample data from package
 gmb_shpfile <- sf::st_read(system.file("extdata",
-                                       "geoBoundaries-GMB-ADM3_simplified.shp", package = "grcMPB"))
+  "geoBoundaries-GMB-ADM3_simplified.shp",
+  package = "grcMPB"
+))
 longitude_latitude <- readxl::read_excel(system.file("extdata",
-                                                     "LongLat_data.xlsx", package = "grcMPB"))
+  "LongLat_data.xlsx",
+  package = "grcMPB"
+))
 # Setup test data
 grc_file <- readxl::read_excel(system.file("extdata", "GRC_Sheet.xlsx", package = "grcMPB"))
 
@@ -42,7 +46,6 @@ test_that("drug_distribution handles basic input correctly", {
 
   # Test that tables are data frames
   expect_s3_class(result$Condition_Table2, "data.frame")
-
 })
 
 test_that("drug_distribution handles time filtering correctly", {
@@ -82,8 +85,10 @@ test_that("drug_distribution_pm handles basic input correctly", {
   expect_type(result, "list")
   expect_named(result, c("Drug_Condition_Maps", "Drug_Condition_Table"))
   expect_named(result$Drug_Condition_Maps, c("mixed_resistant.per", "resistant.per", "sensitive.per", "all_resistant.per"))
-  expect_named(result2$Drug_Condition_Maps, c('missing.per', 'mixed_resistant.per', 'resistant.per',
-                                              'sensitive.per', 'undetermined.per', 'all_resistant.per'))
+  expect_named(result2$Drug_Condition_Maps, c(
+    "missing.per", "mixed_resistant.per", "resistant.per",
+    "sensitive.per", "undetermined.per", "all_resistant.per"
+  ))
 
   # Test that maps are ggplot objects
   expect_type(result$Drug_Condition_Maps, "list")
@@ -93,5 +98,3 @@ test_that("drug_distribution_pm handles basic input correctly", {
   expect_s3_class(result$Drug_Condition_Table, "data.frame")
   expect_class(result$Drug_Condition_Maps, "list")
 })
-
-

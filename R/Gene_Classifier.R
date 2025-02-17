@@ -164,9 +164,9 @@ gene_classifier <- function(df, drug_column = NULL, save_output = FALSE) {
   }
 
   # Filter based on the selected drug classifier
-  if(!is.null(drug_column)){
-  df <- df %>%
-    dplyr::filter(!(!!rlang::sym(drug_column) %in% c("undetermined", "missing")))
+  if (!is.null(drug_column)) {
+    df <- df %>%
+      dplyr::filter(!(!!rlang::sym(drug_column) %in% c("undetermined", "missing")))
   }
 
   if (save_output) {

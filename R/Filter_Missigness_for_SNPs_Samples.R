@@ -14,7 +14,6 @@
 #' @export
 #'
 filter_snp_x_samples <- function(df, m_threshold) {
-
   checkmate::assert_numeric(m_threshold, lower = 0.1, upper = 1, any.missing = FALSE, .var.name = "m_threshold")
 
   if (m_threshold > 0.50) {

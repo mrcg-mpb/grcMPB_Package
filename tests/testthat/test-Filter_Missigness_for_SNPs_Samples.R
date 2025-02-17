@@ -51,8 +51,8 @@ test_that("filter_snp_x_samples preserves data integrity", {
 
   # Test that non-X values are preserved
   original_values <- grc_file[grc_file$`Sample Internal ID` %in% rownames(result), ]
-  for(col in colnames(result)) {
-    if(col %in% colnames(original_values)) {
+  for (col in colnames(result)) {
+    if (col %in% colnames(original_values)) {
       expect_equal(
         result[, col][result[, col] != "X"],
         original_values[, col][original_values[, col] != "X"]

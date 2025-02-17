@@ -21,7 +21,6 @@
 #' @export
 #'
 pcoa_plots <- function(ibs_matrix, df, circle_size = 4, save_output = FALSE, drug_col = NULL) {
-
   if (!is.null(drug_col)) {
     checkmate::assert_names(names(df), must.include = drug_col)
   }
@@ -39,7 +38,7 @@ pcoa_plots <- function(ibs_matrix, df, circle_size = 4, save_output = FALSE, dru
   if (!is.null(drug_col)) {
     pcoa_data <- pcoa_data %>%
       dplyr::left_join(df %>%
-                         dplyr::select(`Sample Internal ID`, !!rlang::sym(drug_col)), by = "Sample Internal ID") %>%
+        dplyr::select(`Sample Internal ID`, !!rlang::sym(drug_col)), by = "Sample Internal ID") %>%
       dplyr::rename(condition = !!rlang::sym(drug_col))
 
     unique_conditions <- unique(pcoa_data$condition)

@@ -1,8 +1,12 @@
 # Load sample data from package
 gmb_shpfile <- sf::st_read(system.file("extdata",
-                                       "geoBoundaries-GMB-ADM3_simplified.shp", package = "grcMPB"))
+  "geoBoundaries-GMB-ADM3_simplified.shp",
+  package = "grcMPB"
+))
 longitude_latitude <- readxl::read_excel(system.file("extdata",
-                                                     "LongLat_data.xlsx", package = "grcMPB"))
+  "LongLat_data.xlsx",
+  package = "grcMPB"
+))
 # Setup test data
 grc_file <- readxl::read_excel(system.file("extdata", "GRC_Sheet.xlsx", package = "grcMPB"))
 
@@ -65,7 +69,6 @@ test_that("diversity_map validates input parameters", {
       save_output = FALSE
     )
   )
-
 })
 
 test_that("diversity_map handles visualization parameters correctly", {
@@ -82,7 +85,7 @@ test_that("diversity_map handles visualization parameters correctly", {
 
   # Test that ggplot object contains expected layers
   plot_layers <- result$Diversity_Map$layers
-  expect_true(length(plot_layers) >= 4)  # Should have at least 4 layers
+  expect_true(length(plot_layers) >= 4) # Should have at least 4 layers
 
   # Test that plot title includes period name
   expect_true(grepl("meanSnpHeterozygosity", result$Diversity_Map$labels$title))

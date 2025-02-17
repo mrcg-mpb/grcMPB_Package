@@ -1,8 +1,12 @@
 # Load sample data from package
 gmb_shpfile <- sf::st_read(system.file("extdata",
-                                       "geoBoundaries-GMB-ADM3_simplified.shp", package = "grcMPB"))
+  "geoBoundaries-GMB-ADM3_simplified.shp",
+  package = "grcMPB"
+))
 longitude_latitude <- readxl::read_excel(system.file("extdata",
-                                                     "LongLat_data.xlsx", package = "grcMPB"))
+  "LongLat_data.xlsx",
+  package = "grcMPB"
+))
 # Setup test data
 grc_file <- readxl::read_excel(system.file("extdata", "GRC_Sheet.xlsx", package = "grcMPB"))
 
@@ -66,7 +70,7 @@ test_that("haplotype_proportion handles time filtering correctly", {
 
   # Test that function returns results for specified time period
   expect_type(result, "list")
-  expect_length(result, 1)  # One time period
+  expect_length(result, 1) # One time period
   expect_named(result, "2021")
 })
 

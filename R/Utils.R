@@ -11,7 +11,6 @@
 #' @export
 #'
 mapping_data <- function(shapefile, long_lat_data, location_col, long_col, lat_col) {
-
   checkmate::assert_class(shapefile, "sf")
   checkmate::assert_names(names(long_lat_data), must.include = c(location_col, long_col, lat_col))
 
