@@ -1,4 +1,5 @@
 # Load sample data from package
+grc_file <- readxl::read_excel(system.file("extdata", "GRC_Sheet.xlsx", package = "grcMPB"))
 gmb_shpfile <- sf::st_read(system.file("extdata",
   "geoBoundaries-GMB-ADM3_simplified.shp",
   package = "grcMPB"
@@ -7,18 +8,10 @@ longitude_latitude <- readxl::read_excel(system.file("extdata",
   "LongLat_data.xlsx",
   package = "grcMPB"
 ))
-# Setup test data
-grc_file <- readxl::read_excel(system.file("extdata", "GRC_Sheet.xlsx", package = "grcMPB"))
-
-grc_file <-
-  gene_classifier(
-    df = grc_file,
-    drug_column = "Chloroquine",
-    save_output = FALSE
-  )
 
 geo_data <-
   mapping_data(
+    df = grc_file,
     shapefile = gmb_shpfile,
     long_lat_data = longitude_latitude,
     location_col = "Location",
@@ -26,43 +19,41 @@ geo_data <-
     lat_col = "lat"
   )
 
-barcode_data <-
-  filter_snp_x_samples(
-    df = grc_file,
-    m_threshold = 0.40
-  )
 
-# Tests for haplotype_proportion function
-test_that("haplotype_proportion handles basic input correctly", {
-  result <- haplotype_proportion(
+test_that("coi_proportions handles basic input correctly", {
+  result <- coi_proportions(
     df = grc_file,
-    gene_col = "PfCRT",
+    coi_column = "McCOIL",
     map_data = geo_data,
     save_output = FALSE
   )
 
   # Test that function returns expected list structure
   expect_type(result, "list")
-  expect_named(result, c("Bar_Chart", "Pie_Chart", "Haplotype_Summary_Table"))
+  expect_named(result, c("COI_DC", "COI_PMap", "COI_Table"))
 
-  # Test that plots are ggplot objects
-  expect_s3_class(result$Bar_Chart, "ggplot")
-  expect_s3_class(result$Pie_Chart, "ggplot")
+  # Test that the plots are ggplot objects
+  expect_s3_class(result$COI_DC, "ggplot")
+  expect_s3_class(result$COI_PMap, "ggplot")
 
-  # Test that summary table is a list with two data frames
-  expect_type(result$Haplotype_Summary_Table, "list")
-  expect_length(result$Haplotype_Summary_Table, 2)
+  # Test that COI table has correct structure
+  expect_type(result$COI_Table, "list")
+  expect_length(result$COI_Table, 2)
+  expect_s3_class(result$COI_Table[[1]], "data.frame")
+  expect_s3_class(result$COI_Table[[2]], "data.frame")
+
+
 })
 
-test_that("haplotype_proportion handles time filtering correctly", {
+test_that("coi_proportions handles time filtering correctly", {
   # Create test time periods
   time_periods <- list(
     list(name = "2021", type = "year", start = "2021")
   )
 
-  result <- haplotype_proportion(
+  result <- coi_proportions(
     df = grc_file,
-    gene_col = "PfCRT",
+    coi_column = "McCOIL",
     map_data = geo_data,
     time = time_periods,
     save_output = FALSE
@@ -74,12 +65,12 @@ test_that("haplotype_proportion handles time filtering correctly", {
   expect_named(result, "2021")
 })
 
-test_that("haplotype_proportion validates input parameters", {
+test_that("coi_proportions validates input parameters", {
   # Test missing required column
   expect_error(
-    haplotype_proportion(
+    coi_proportions(
       df = grc_file,
-      gene_col = "NonExistentColumn",
+      coi_column = "NonExistingColumn",
       map_data = geo_data,
       save_output = FALSE
     )
@@ -87,9 +78,9 @@ test_that("haplotype_proportion validates input parameters", {
 
   # Test invalid map_data structure
   expect_error(
-    haplotype_proportion(
+    coi_proportions(
       df = grc_file,
-      gene_col = "PfCRT",
+      coi_column = "McCOIL",
       map_data = list(wrong = "structure"),
       save_output = FALSE
     )

@@ -1,29 +1,23 @@
 # Setup test data
 grc_file <- readxl::read_excel(system.file("extdata", "GRC_Sheet.xlsx", package = "grcMPB"))
-
-grc_file <-
-  gene_classifier(
-    df = grc_file,
-    drug_column = "Chloroquine",
-    save_output = FALSE
-  )
+grc_file <- pf_resistance_genotyper(df = grc_file)
 
 test_that("filter_snp_x_samples handles basic filtering correctly", {
   # Test with threshold 0.5 (50% missingness allowed)
-  result_0.5 <- filter_snp_x_samples(grc_file, 0.5)
+  result_filtered <- filter_snp_x_samples(grc_file, 0.5)
 
   # Test return type
-  expect_s3_class(result_0.5, "data.frame")
+  expect_s3_class(result_filtered, "data.frame")
 
   # Test that row names are sample IDs
-  expect_true(all(rownames(result_0.5) %in% grc_file$`Sample Internal ID`))
+  expect_true(all(rownames(result_filtered) %in% grc_file$`Sample Internal ID`))
 
   # Test that column names start with Pf3D7_
-  expect_true(all(grepl("^Pf3D7_", colnames(result_0.5))))
+  expect_true(all(grepl("^Pf3D7_", colnames(result_filtered))))
 
   # Test filtering - should keep SNPs and samples with <= 50% missingness
-  expect_true(all(colSums(result_0.5 == "X", na.rm = TRUE) / nrow(result_0.5) <= 0.5))
-  expect_true(all(rowSums(result_0.5 == "X", na.rm = TRUE) / ncol(result_0.5) <= 0.5))
+  expect_true(all(colSums(result_filtered == "X", na.rm = TRUE) / nrow(result_filtered) <= 0.5))
+  expect_true(all(rowSums(result_filtered == "X", na.rm = TRUE) / ncol(result_filtered) <= 0.5))
 })
 
 test_that("filter_snp_x_samples validates input parameters", {

@@ -7,6 +7,7 @@
 mutation_frequency(
   df,
   gene_col,
+  filter_gene_col = FALSE,
   save_output = TRUE,
   period_name = "Full",
   time = NULL,
@@ -16,13 +17,18 @@ mutation_frequency(
   circle_num_size = 3.1,
   scale_circle_size = 10,
   include_mixed = FALSE,
+  plot_width = 11,
+  plot_height = 6,
+  plot_dpi = 600,
   ...
 )
 }
 \arguments{
-\item{df}{Final GRC data frame}
+\item{df}{Combined GRC data frame}
 
 \item{gene_col}{The column containing haplotype data (e.g., "PfCRT", "PfDHPS", "PfDHFR", "PfMDR1")}
+
+\item{filter_gene_col}{A Boolean (TRUE or FALSE). If TRUE, samples with missen haplotypes are filtered out of the data set.}
 
 \item{save_output}{Logical. If \code{TRUE}, saves the plot as a JPEG file in the output directory (default: \code{FALSE}).}
 
@@ -41,6 +47,12 @@ mutation_frequency(
 \item{scale_circle_size}{Numeric. Scales the maximum circle size. Default: \code{10}.}
 
 \item{include_mixed}{Boolean, whether to include mixed haplotypes in counts}
+
+\item{plot_width}{Sets the width (in inches) of the saved plot. Default: \code{11}.}
+
+\item{plot_height}{Sets the height (in inches) of the saved plot. Default: \code{6}.}
+
+\item{plot_dpi}{Numeric. Sets the resolution (dots per inch) for the saved plot. Default: 600.}
 
 \item{...}{Additional arguments passed to other functions.}
 }

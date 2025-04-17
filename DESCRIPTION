@@ -29,8 +29,11 @@ Imports:
     rlang,
     checkmate,
     data.table,
-    ComplexHeatmap,
-    grid
+    pheatmap,
+    grid,
+    tidygraph,
+    igraph,
+    ggraph
 Suggests: 
     BiocManager,
     knitr,

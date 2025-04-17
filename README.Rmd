@@ -23,7 +23,7 @@ Below is a simple workflow example demonstrating the main functions in the MPB g
 The combine_grc_sheets function consolidates multiple SpotMalaria Genetic Report Cards (GRC) into a single data set for downstream analysis. This function also allows you to filter the data by country.
 
 ```{r eval = FALSE}
-grc_data <-
+grc_dataTotal <-
   combine_grc_sheets(
     input_folder = "C:/Users/bngwa/Documents/Brandon/GDA_Markdown/All_GRC_Reads_Gambia",
     country = "Gambia",

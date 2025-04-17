@@ -1,24 +1,12 @@
 # Load sample data from package
-gmb_shpfile <- sf::st_read(system.file("extdata",
-  "geoBoundaries-GMB-ADM3_simplified.shp",
-  package = "grcMPB"
-))
-longitude_latitude <- readxl::read_excel(system.file("extdata",
-  "LongLat_data.xlsx",
-  package = "grcMPB"
-))
-# Setup test data
 grc_file <- readxl::read_excel(system.file("extdata", "GRC_Sheet.xlsx", package = "grcMPB"))
-
-grc_file <-
-  gene_classifier(
-    df = grc_file,
-    drug_column = "Chloroquine",
-    save_output = FALSE
-  )
+grc_file <- pf_resistance_genotyper(df = grc_file)
+gmb_shpfile <- sf::st_read(system.file("extdata", "geoBoundaries-GMB-ADM3_simplified.shp", package = "grcMPB"))
+longitude_latitude <- readxl::read_excel(system.file("extdata", "LongLat_data.xlsx", package = "grcMPB"))
 
 geo_data <-
   mapping_data(
+    df = grc_file,
     shapefile = gmb_shpfile,
     long_lat_data = longitude_latitude,
     location_col = "Location",
@@ -39,17 +27,17 @@ test_that("mutation_frequency handles basic input correctly", {
   expect_named(result, c("Mutation_Plots", "Mutation_Freq_Tables"))
 
   # Test plots structure
-  expect_named(result$Mutation_Plots, c("BarChart", "M_Maps"))
+  expect_named(result$Mutation_Plots, c("BarChart", "Mt_Maps"))
   expect_s3_class(result$Mutation_Plots$BarChart, "ggplot")
-  expect_type(result$Mutation_Plots$M_Maps, "list")
-  expect_true(all(sapply(result$Mutation_Plots$M_Maps, function(x) inherits(x, "ggplot"))))
+  expect_type(result$Mutation_Plots$Mt_Maps, "list")
+  expect_true(all(sapply(result$Mutation_Plots$Mt_Maps, function(x) inherits(x, "ggplot"))))
 
-  # Test tables structure
+  # Test wether tables are there
   expect_type(result$Mutation_Freq_Tables, "list")
-  expect_named(result$Mutation_Freq_Tables, c("Table1", "Table2"))
+  expect_length(result$Mutation_Freq_Tables, 2)
 
   # Test plot names
-  expect_named(result$Mutation_Plots$M_Maps, c("C72S", "V73S", "M74I", "N75E", "K76T"))
+  expect_named(result$Mutation_Plots$Mt_Maps, c("C72S", "V73S", "M74I", "N75E", "K76T"))
 })
 
 test_that("mutation_frequency validates gene input", {
@@ -91,10 +79,16 @@ test_that("mutation_frequency handles include_mixed parameter correctly", {
     save_output = FALSE
   )
 
-  # Test that results are different when include_mixed is changed
+  # Test that results are different when include_mixed is changed for the result_table1
   expect_false(identical(
-    result_with_mixed$Mutation_Freq_Tables$Table1,
-    result_without_mixed$Mutation_Freq_Tables$Table1
+    result_with_mixed$Mutation_Freq_Tables[[1]],
+    result_without_mixed$Mutation_Freq_Tables[[1]]
+  ))
+
+  # Test that results are different when include_mixed is changed for the result_table2
+  expect_false(identical(
+    result_with_mixed$Mutation_Freq_Tables[[2]],
+    result_without_mixed$Mutation_Freq_Tables[[2]]
   ))
 })
 

@@ -7,36 +7,67 @@
 drug_distribution(
   df,
   drug_col,
+  filter_drug_col = FALSE,
   save_output = TRUE,
-  time = NULL,
   period_name = "Full",
+  map_data,
+  time = NULL,
+  label_size = 2.5,
+  circle_num_size = 3.1,
+  label_repel = 1.3,
+  donut_chart_size = 0.5,
+  scale_circle_size = 10,
+  plot_width = 11,
+  plot_height = 8,
+  plot_dpi = 600,
   ...
 )
 }
 \arguments{
-\item{df}{Final GRC data frame.}
+\item{df}{Combined GRC data frame}
 
-\item{drug_col}{The name of the column representing the drug conditions (e.g., "Chloroquine" with
-categories like Resistant, Mixed Resistant, and Sensitive).}
+\item{drug_col}{The name of the column representing the antimalarial drug
+(e.g., "Chloroquine", "Pyrimethamine", "Sulfadoxine", "Artemisinin", or "SP_Mutations").}
+
+\item{filter_drug_col}{A boolean (TRUE or FALSE). If TRUE, samples classified as "missing"
+or "undetermined" for the selected drug will be filtered out of the data set before visualization.}
 
 \item{save_output}{Logical. If \code{TRUE}, saves the plot as a JPEG file in the output directory (default: \code{FALSE}).}
 
+\item{period_name}{The period name for the plot. Defualt: \code{FULL}}
+
+\item{map_data}{A list containing the shape file and longitude-latitude data for mapping.}
+
 \item{time}{Optional. A list defining time periods for filtering the data.}
 
-\item{period_name}{The period name for the plot. Defualt: \code{FULL}}
+\item{label_size}{Numeric. Controls the size of location labels on the map. Default: \code{2.5}.}
+
+\item{circle_num_size}{Numeric. Controls the numbers inside the circles. Default: \code{3.1}}
+
+\item{label_repel}{Numeric. Controls the distance of the label from the points on the map. Default: \code{1.3}}
+
+\item{scale_circle_size}{Numeric. Scales the maximum circle size. Default: \code{10}.}
+
+\item{plot_width}{Sets the width (in inches) of the saved plot. Default: \code{11}.}
+
+\item{plot_height}{Sets the height (in inches) of the saved plot. Default: \code{8}.}
+
+\item{plot_dpi}{Numeric. Sets the resolution (dots per inch) for the saved plot. Default: \code{600}.}
 
 \item{...}{Additional arguments passed to other functions.}
 }
 \value{
 A list containing:
 \itemize{
-\item \code{Bar1}: A bar plot showing the distribution of conditions across all locations.
-\item \code{Bar2}: A bar plot showing the distribution of conditions grouped by location.
-\item \code{Condition_Table1}: A summary table showing the count of each condition for each location.
-\item \code{Condition_Table2}: A summary table showing the percentage of each condition for the entire data set.
+\item \code{Donut_Chart_Map}: A bar plot showing the distribution of conditions across all locations.
+\item \code{donut_chart}: A bar plot showing the distribution of conditions grouped by location.
+\item \code{Maps}: A list of ggplot objects for the drug condition maps.
+\item \code{Table1}: A summary table showing the count of each condition for each location.
+\item \code{Table2}: A summary table showing the percentage of each condition for the entire data set.
 }
 }
 \description{
-This function generates bar charts and summary data of drug conditions for a specific drug,(e.g, Chloroquine)
+This function generates bar charts, maps and summary tables
+of drug phenotype for the different antimalarial drugs,(e.g, Chloroquine)
 in the data set and another showing the distribution for each location.
 }

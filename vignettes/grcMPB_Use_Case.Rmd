@@ -16,55 +16,55 @@ knitr::opts_chunk$set(
 
 This vignette showcases the functionality of the grcMPB package, designed for analyzing SpotMalaria Genetic Report Cards (GRC). The package provides a comprehensive toolkit for population genetics analysis, seamlessly integrating spatial data and visualization to facilitate the following:
 
-* **Prevalence and Diversity Analysis:** Gain insights into the prevalence and genetic diversity of malaria parasites across various locations.
-* **Drug Resistance Profiling:** Detect and characterize drug resistance patterns in malaria strains.
-* **Geographical Mapping:** Visualize the distribution and movement of malaria strains across different locations..
-* **Genetic Relationship Exploration:** Examine genetic relatedness among samples using IBS (Identity-By-State) matrices and associated plots.
+-   **Prevalence and Diversity Analysis:** Gain insights into the prevalence and genetic diversity of malaria parasites across various locations.
+-   **Drug Resistance Profiling:** Detect and characterize drug resistance patterns in malaria strains.
+-   **Geographical Mapping:** Visualize the distribution and movement of malaria strains across different locations..
+-   **Genetic Relationship Exploration:** Examine genetic relatedness among samples using IBS (Identity-By-State) matrices and associated plots.
 
-Below is workflow of how we use the package functions to perform this analyse and a brief explanation of what each function aims to achieve.
-To get more details about each function put a question mark before the function, e.g, **?combine_grc_sheets**.
+Below is a workflow of how we use the package functions to perform this analysis and a brief explanation of what each function aims to achieve. To get more details about each function put a question mark before the function, e.g, `?combine_grc_sheets`.
 
 ```{r setup}
 library(grcMPB)
 ```
 
-## Create final GRC Data 
+## Create final GRC Data
 
-The combine_grc_sheets() function simplifies the process of merging multiple SpotMalaria Genetic Report Cards (GRCs) into a single dataset for downstream analysis. It also provides the flexibility to filter data by country, ensuring that users can focus on specific geographic regions of interest.
+The `combine_grc_sheets` function simplifies the process of merging multiple SpotMalaria Genetic Report Cards (GRCs) into a single dataset for downstream analysis. It also provides the flexibility to filter data by country, ensuring that users can focus on specific geographic regions of interest.
 
-All Genetic Report Cards should be stored in a single folder. The path to this folder is passed to the input_folder argument.The user can also specify an output_dir to save analysis results. If save_output = FALSE, the consolidated data set and related results are saved to this location.
+All Genetic Report Cards should be stored in a single folder. The path to this folder is passed to the input_folder argument.The user can also specify an output_dir to save analysis results. If `save_output = FALSE`, the consolidated data set and related results are saved to this location.
 
 ```{r eval=FALSE}
 grc_data <-
   combine_grc_sheets(
-    input_folder = system.file("extdata", "example_GRC_sheets", package = "grcMPB"),
+    input_folder = "C:/Users/bngwa/Documents/Brandon/GDA_Markdown/All_GRC_Reads_Gambia",
+    filter_pf = TRUE,
     country = "Gambia",
-    save_output = TRUE,
+    save_output = FALSE,
     output_dir = "C:/Users/bngwa/Videos"
   )
 ```
 
+## Create drug resistance status columns
 
-## Create drug condition columns
+The **pf_resistance_genotyper** function analyzes genetic mutations in Plasmodium falciparum to classify resistance patterns to multiple antimalarial drugs. It examines specific genetic markers in **PfCRT**, **PfDHFR**, **PfDHPS**, and **Kelch** proteins to
+determine resistance status for **chloroquine**, **pyrimethamine**, **sulfadoxine** and **artemisinin**.
+The resistance phenotype categories are:
 
-Use the gene_classifier function to classify samples into categories such as **Resistant**, **Sensitive**, **Mixed_Resistance**, **Undetermined** and **Missing** based on the haplotypes of certain gene markers associated with specific drugs, e.g, PfCRT which is associated with Chloroquine. New columns are then created using the name of each drug. Users can select which drug to work with for the downstream analyses my passing the name to the drug_column argument in the function. This then filters the data set deleting the undetermined and missing cases. The new drug column created are (**Chloroquine**, **Multidrug**, **Artemisinin**, **Sulfadoxine** and **Pyrimethamine**).
+- **resistant**: Confirmed resistance-conferring mutation
+- **sensitive**: Wild-type or non-resistance-conferring allele
+- **mixed_resistant**: Both resistant and sensitive alleles detected in the same sample
+- **undetermined**: Mutation present but with unclear resistance association
+- **missing**: No data available for the relevant marker 
+
+Additionally, the function classifies samples based on the common **SP (sulfadoxine-pyrimethamine)** resistance mutation patterns, ranging from triple to octuple mutations. The SP classification system categorizes samples based on the cumulative number of mutations across the PfDHFR and PfDHPS genes, with the PfDHFR triple mutant **(N51I+C59R+S108N)** serving as the foundation.
+
+The classification methodology follows the phenotype inference rules outlined in this study, https://elifesciences.org/articles/62997, with slight modifications. Notably, mixed_resistant cases refer to samples where resistance-related positions in the gene show a heterozygous format—meaning both the alternative and reference alleles are present. Users can download the phenotype classification rules for these genes from MalariaGEN using this link, https://www.malariagen.net/resource/29/, which is also referenced in the paper.
+
+After classification, the function creates the following columns for different antimalarial drugs:
+**Chloroquine**, **Artemisinin**, **Sulfadoxine**, **Pyrimethamine** and **SP_Mutations**.
 
 ```{r eval=FALSE}
-# create drug columns without filtering for any drug
-grc_data1 <-
-  gene_classifier(
-    df = grc_data,
-    drug_column = NULL,
-    save_output = FALSE
-  )
-
-# create drug columns and filter for one of the drugs, in this case chloroquine
-grc_data2 <-
-  gene_classifier(
-    df = grc_data1,
-    drug_column = "Chloroquine",
-    save_output = FALSE
-  )
+grc_data <- pf_resistance_genotyper(df = grc_data)
 ```
 
 
@@ -78,13 +78,13 @@ library(sf)
 library(readxl)
 
 # import your geographical data for mapping
-# shapefile
 gmb_shpfile <- st_read(system.file("extdata", "geoBoundaries-GMB-ADM3_simplified.shp", package = "grcMPB"))
 # excel sheet containing the location and their coordinates, longitude and latitude.
 longitude_latitude <- read_excel(system.file("extdata", "LongLat_data.xlsx", package = "grcMPB"))
 
 geo_data <-
   mapping_data(
+    df = grc_data,
     shapefile = gmb_shpfile,
     long_lat_data = longitude_latitude,
     location_col = "Location",
@@ -96,7 +96,7 @@ geo_data <-
 
 ## Create Sample Count Map
 
-This map shows the geographical distribution of sample collection across different locations. 
+This map shows the geographical distribution of sample collection across different locations.
 
 ```{r eval=FALSE}
 ## You can create a single or range of years to filter by before generating the plots.
@@ -114,61 +114,79 @@ sample_count_map(
   label_size = 2.5,
   label_repel = 1.3,
   scale_circle_size = 11,
-  save_output = TRUE
+  save_output = FALSE,
+  plot_width = 11,
+  plot_height = 6,
+  plot_dpi = 600
 )
 ```
 
 
-## Create Distrubution table and barchart 
+## Complexity of Infection (COI) plots 
 
-This function generates bar charts summarizing the distribution of samples across different drug resistance categories. Users need to specify which drug to generate these plots for by passing the name of the drug to the drug_col argument. E.g, in this case chloroquine.
-Two plots are then generated, one showing the distrubition across different locations and th other across the entire data.
+Create plots showing distribution of single infections and mixed infections in the data indicating the complexity of infection.
+
+```{r eval=FALSE}
+coi_proportions(
+  df = grc_data,
+  coi_column = "McCOIL",
+  time = NULL,
+  map_data = geo_data,
+  label_size = 2.5,
+  label_repel = 1.2,
+  donut_chart_size = 0.7,
+  save_output = FALSE,
+  plot_width = 11,
+  plot_height = 6,
+  plot_dpi = 600
+)
+```
+
+
+## Create Distribution tables and plots
+
+This function generates bar charts and maps summarizing the distribution of samples across different drug resistance categories and locations. Users need to specify which drug to generate these plots for by passing the name of the drug to the drug_col argument. E.g, in this case chloroquine.
 
 ```{r eval=FALSE}
 drug_distribution(
-  df = grc_data1,
+  df = grc_data,
   drug_col = "Chloroquine",
-  save_output = FALSE,
-  time = NULL
-)
-```
-
-
-## Drug Resistance Prevalence Proportion Maps
-
-Create proportion maps showing the prevalence of drug resistant categories across different locations for a specific drug. 
-
-```{r eval=FALSE}
-drug_distribution_pm(
-  df = grc_data1,
-  drug_col = "Chloroquine",
-  save_output = FALSE,
+  filter_drug_col = TRUE,
   time = NULL,
   map_data = geo_data,
   label_size = 2.5,
   label_repel = 1.3,
+  donut_chart_size = 0.7,
   circle_num_size = 3.1,
-  scale_circle_size = 10
+  scale_circle_size = 10,
+  save_output = FALSE,
+  plot_width = 11,
+  plot_height = 6,
+  plot_dpi = 600
 )
 ```
 
 
-## Mutation Frequency table and plots 
+## Mutation Frequency table and plots
 
-Calculate mutation frequencies at specific positions within a genetic marker of the malaria parasite and visualize them. A bar chart displays these frequencies for the entire data set, while maps illustrate the frequencies across different locations. With this we can  monitor the prevalence and geographical spread of mutations associated with drug resistance.
+Calculate mutation frequencies at specific positions within a genetic marker of the malaria parasite and visualize them. A bar chart displays these frequencies for the entire data set, while maps illustrate the frequencies across different locations. With this we can monitor the prevalence and geographical spread of mutations associated with drug resistance.
 
 ```{r eval=FALSE}
 mutation_frequency(
-  df = grc_data1,
+  df = grc_data,
   gene_col = "PfCRT",
-  save_output = FALSE,
+  filter_gene_col = TRUE,
   time = NULL,
   map_data = geo_data,
   label_size = 2.5,
   label_repel = 1.5,
   circle_num_size = 3.1,
   scale_circle_size = 10,
-  include_mixed = FALSE
+  include_mixed = FALSE,
+  save_output = FALSE,
+  plot_width = 11,
+  plot_height = 6,
+  plot_dpi = 600
 )
 ```
 
@@ -178,62 +196,67 @@ mutation_frequency(
 Visualize haplotype proportions for specific genes as pie charts over geographic locations on a map. This approach provides insights into the genetic diversity of malaria parasite populations across different locations, highlights the prevalence of resistant and sensitive haplotypes, and helps identify areas with higher frequencies of specific haplotypes.
 
 ```{r eval=FALSE}
-haplotype_proportion(
-  df = grc_data1,
+haplotype_frequency(
+  df = grc_data,
   gene_col = "PfCRT",
-  save_output = FALSE,
+  filter_gene_col = TRUE,
   time = NULL,
   map_data = geo_data,
   label_size = 2.5,
-  label_repel = 1.5,
-  sacle_piechart_size = 0.035
+  label_repel = 1.2,
+  donut_chart_size = 0.7,
+  save_output = FALSE,
+  plot_width = 11,
+  plot_height = 6,
+  plot_dpi = 600
 )
 ```
 
 
-## Filter SNPs and Samples for missigness
+## Filter SNPs and Samples for missingness
 
-Use the filter_snp_x_samples function to create the genetic bar code using the SNPs columns in your grc_data. Then, filter the samples and SNPs for missingness less than or equal to a specific threshold.
+Use the `filter_snp_x_samples` function to create the genetic bar code using the 101 SNPs in your grc_data. Then, filter the samples and SNPs for missingness less than or equal to a specific threshold.
 
 ```{r eval=FALSE}
 barcode_data <-
   filter_snp_x_samples(
-    df = grc_data1,
-    m_threshold = 0.20
+    df = grc_data,
+    m_threshold = 0.40
   )
-
-utils::head(barcode_data)
 ```
 
 
 ## Diversity Map
 
-The Diversity Map shows the genetic variability of malaria parasite populations across different locations, using the mean SNP heterozygosity (meanSnpHet). SNP heterozygosity is calculated at each locus using the formula: **(N/(N-1))(1-sum(p^2))** where **N** is the total number of samples and **p** is the proportion of samples with a specific allele at the locus. The mean SNP heterozygosity is then obtained by averaging the heterozygosity values across all SNP loci for each location. The values range from **0** to **1**, with higher values indicating greater genetic diversity.
+The Diversity Map shows the genetic variability of malaria parasite populations across different locations, using the mean SNP heterozygosity (meanSnpHet). SNP heterozygosity is calculated at each locus using the formula: **(N/(N-1))(1-sum(p\^2))** where **N** is the total number of samples and **p** is the proportion of samples with a specific allele at the locus. The mean SNP heterozygosity is then obtained by averaging the heterozygosity values across all SNP loci for each location. The values range from **0** to **1**, with higher values indicating greater genetic diversity.
 
 This map helps to identify areas with varying levels of genetic diversity in the malaria parasite population. Locations with high diversity may have greater evolutionary potential, possibly affecting drug resistance or treatment efficacy.
 
 ```{r eval=FALSE}
 diversity_map(
-  df = grc_data1,
+  df = grc_data,
   snp_data = barcode_data,
   map_data = geo_data,
   label_size = 2.5,
   label_repel = 1.2,
   circle_num_size = 3.1,
   scale_circle_size = 10,
-  save_output = FALSE
+  save_output = FALSE,
+  plot_width = 11,
+  plot_height = 6,
+  plot_dpi = 600
 )
 ```
 
 
 ## Calculate the Identity By State (IBS) and save it as a dataframe.
 
-This function generates the IBS matrix using barcode data, which is a sequence composed of all available SNPs. The resulting matrix is then melted, and metadata—such as sample locations—is added. Users can optionally include a drug resistance column in the metadata, allowing them to filter plots based on drug resistance categories. In this example, we selected chloroquine.
+This function generates the IBS matrix using barcode data, which is a sequence composed of all available SNPs. The resulting matrix is then melted, and metadata—such as sample locations—is added. Users can optionally include a extra for any antimalarial drug in the metadata, allowing them to filter plots based on drug resistance categories. In this example, we selected chloroquine.
 
 ```{r eval=FALSE}
 ibs_data_list <-
   generate_ibs_data(
-    df = grc_data2,
+    df = grc_data,
     snp_data = barcode_data,
     drug_col = "Chloroquine"
   )
@@ -244,7 +267,7 @@ ibs_data_list$IBS_Histogram
 
 ## Summarise IBS by the same location and draw the proportion map
 
-To summarize IBS scores within the same location, the median IBS score of all sample pairs from that location is calculated and represented as circles on the map. Locations with higher median IBS scores indicate greater genetic similarity among malaria parasite strains within that location. 
+To summarize IBS scores within the same location, the median IBS score of all sample pairs from that location is calculated and represented as circles on the map. Locations with higher median IBS scores indicate greater genetic similarity among malaria parasite strains within that location.
 
 ```{r eval=FALSE}
 ibs_data_sl(
@@ -254,26 +277,31 @@ ibs_data_sl(
   label_repel = 1,
   circle_num_size = 3.1,
   scale_circle_size = 10,
-  save_output = FALSE
+  save_output = FALSE,
+  plot_width = 11,
+  plot_height = 6,
+  plot_dpi = 600
 )
 ```
 
 
-## Summarise IBS by diffrent location and draw the proportion map
+## Summarise IBS by diffrent location and draw the connectivity maps.
 
 To summarize IBS scores between different locations, connectivity maps are generated to illustrate the proportion of highly related sample pairs (with a minimum IBS score of **0.75**) shared across locations. Users can adjust this threshold using the ibs_threshold argument, but since the goal is to visualize highly related pairs, it is recommended to use a threshold of 0.75 or higher.
 
 The number of highly related pairs between locations is used to calculate two distinct proportions:
 
-1. **Total Pairs Proportion:** This proportion looks at the percentage of highly related pairs among all pairs in the IBS matrix after filtering out duplicate pairs and pairs from the same location. 
-   + **Insight:** It helps us understand the general prevalence of high genetic relatedness in the entire data set. A higher proportion indicates that a significant number of samples from different specific locations pairs are genetically similar, suggesting widespread transmission or common sources of infection.
+1. **Group Pairs Proportion:** This proportion represents the percentage of highly related pairs contributed by each location pair relative to all highly related pairs.
+    -   **Insight:** Highlights location pairs that are major contributors to genetic relatedness. These hotspots help identify regions with significant parasite transmission or closely related strains.
+    
+2. **Group Location Pairs Proportion:** This proportion represents the percentage of highly related pairs relative to all possible sample pairs between specific locations.
+    -   **Insight:** It focuses on the intensity of genetic relatedness within specific location pairs. A higher proportion suggests localized transmission dynamics or shared infection sources in these areas.
 
-2. **Group Pairs Proportion:** This proportion represents the percentage of highly related pairs contributed by each location pair relative to all highly related pairs.
-   + **Insight:** Highlights location pairs that are major contributors to genetic relatedness. These hotspots help identify regions with significant parasite transmission or closely related strains.
+3. **Drug Status Group Location Pairs Proportion:** If drug_status is specified in the function, e.g, **("resistant", "sensitive", mixed_resistance")**, this additional proportion column is created. This proportion represents the percentage of highly related pairs with the same drug status relative to all possible sample pairs between specific locations. 
+    -   **Insight:** Provides a comprehensive measure of drug status clustering that accounts for both genetic relatedness and drug response, helping identify areas where specific drug response patterns are both common and genetically similar.
+    
+**Note:** To incorporate drug resistance information, specify the relevant column using the **drug_col** argument in the **generate_ibs_data** function. If **drug_status** is set to **NULL**, the **ibs_data_dl** function will not be able generate connectivity maps for drug Status
 
-3. **Location Pairs Proportion:** This proportion represents the percentage of highly related pairs relative to all possible sample pairs between specific locations.
-   + **Insight:** It focuses on the intensity of genetic relatedness within specific location pairs. A higher proportion suggests localized transmission dynamics or shared infection sources in these areas.
-   
 After calculating these proportions, they are filtered to only include values above **1%** by default. Users can modify this threshold using the percentage_cutoff argument. This flexibility ensures that the maps effectively highlight significant patterns while removing less relevant connections.
 
 ```{r eval=FALSE}
@@ -286,7 +314,11 @@ ibs_data_dl(
   label_repel = 1.23,
   breaks = seq(0, 18, 3),
   curve_degree = 0.3,
-  save_output = FALSE
+  drug_status = "resistant",
+  save_output = FALSE,
+  plot_width = 11,
+  plot_height = 6,
+  plot_dpi = 600
 )
 ```
 
@@ -297,27 +329,34 @@ The heat maps display clusters of genetically similar malaria parasite samples b
 
 ```{r eval=FALSE}
 ibs_heat_map(
-  df = grc_data1,
+  df = grc_data,
   snp_data = barcode_data,
   ibs_matrix = ibs_data_list$IBS_matrix,
-  map_data = geo_data,
+  drug_col = "Chloroquine",
+  location_colors = geo_data$location_colors,
   save_output = FALSE,
-  drug_col = "Chloroquine"
+  plot_width = 18,
+  plot_height = 12,
+  plot_dpi = 600
 )
 ```
 
 
 ## Generate the PCoA Plots
 
-These plots depict the genetic distances between parasite samples in a reduced-dimensional space using Principal Coordinates Analysis (PCoA). They provide a clear view of the overall genetic structure of the parasite population, making it easier to identify distinct genetic groups, potential clusters of related samples, and outliers. 
+These plots depict the genetic distances between parasite samples in a reduced-dimensional space using Principal Coordinates Analysis (PCoA). They provide a clear view of the overall genetic structure of the parasite population, making it easier to identify distinct genetic groups, potential clusters of related samples, and outliers.
 
 ```{r eval=FALSE}
 pcoa_plots(
-  ibs_matrix = ibs_data_list1$IBS_matrix,
-  df = grc_data1,
+  ibs_matrix = ibs_data_list$IBS_matrix,
+  df = grc_data,
   circle_size = 4,
+  drug_col = "Chloroquine",
+  location_colors = geo_data$location_colors,
   save_output = FALSE,
-  drug_col = "Chloroquine"
+  plot_width = 14,
+  plot_height = 10,
+  plot_dpi = 600
 )
 ```
 
@@ -332,7 +371,33 @@ nj_tree(
   df = grc_data,
   tippoint_size = 5,
   line_size = 0.7,
+  drug_col = "Chloroquine",
+  location_colors = geo_data$location_colors,
   save_output = FALSE,
-  drug_col = NULL
+  plot_width = 14,
+  plot_height = 10,
+  plot_dpi = 600
 )
 ```
+
+
+## Generate the Netwrok Plots
+
+Network analysis was performed to visualize genetic relationships between parasite samples. First, Identity-by-State (IBS) matrices were computed from SNP barcode data for each sample. The pairwise IBS matrix is converted to a weighted adjacency matrix, and connections with IBS values below a chosen threshold **(e.g., 0.80)** are set to zero to retain only meaningful genetic relationships. For visualization, the plot uses the ggraph packages, employing the **graphopt** algorithm to optimize node placement and highlight genetic clusters. Nodes representing individual samples were colored according to geographical location, with edges reflecting the genetic similarity between connected samples. 
+
+```{r eval=FALSE}
+network_plot(
+  ibs_matrix = ibs_data_list$IBS_matrix,
+  df = grc_data,
+  ibs_th = 0.90,
+  nodepoint_size = 2.5,
+  edge_arc_strength = 0.3,
+  drug_col = "Chloroquine",
+  location_colors = geo_data$location_colors,
+  save_output = FALSE,
+  plot_width = 14,
+  plot_height = 10,
+  plot_dpi = 600
+)
+```
+

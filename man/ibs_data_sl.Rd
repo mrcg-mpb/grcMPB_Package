@@ -11,7 +11,10 @@ ibs_data_sl(
   label_repel = 1.2,
   circle_num_size = 3.1,
   scale_circle_size = 10,
-  save_output = TRUE
+  save_output = TRUE,
+  plot_width = 11,
+  plot_height = 6,
+  plot_dpi = 600
 )
 }
 \arguments{
@@ -28,6 +31,12 @@ ibs_data_sl(
 \item{scale_circle_size}{Numeric. Scales the maximum circle size. Default: \code{10}.}
 
 \item{save_output}{Logical. If \code{TRUE}, saves the plot as a JPEG file in the output directory (default: \code{FALSE}).}
+
+\item{plot_width}{Sets the width (in inches) of the saved plot. Default: \code{11}.}
+
+\item{plot_height}{Sets the height (in inches) of the saved plot. Default: \code{6}.}
+
+\item{plot_dpi}{Numeric. Sets the resolution (dots per inch) for the saved plot. Default: \code{600}.}
 }
 \value{
 A data data frame and map showing the the median Ibs score for each location.

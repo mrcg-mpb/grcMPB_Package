@@ -32,6 +32,41 @@ filter_snp_x_samples <- function(df, m_threshold) {
   # Set the row names to the sample identifiers
   rownames(barcode_data) <- df$`Sample Internal ID`
 
+  barcode_data <- barcode_data %>%
+    dplyr::mutate(
+      XN_Count = rowSums(. == "X", na.rm = TRUE),
+      XN_Prop = round(XN_Count / ncol(.), 2)
+    )
+
+  missingness_summary <- sapply(seq(10, 90, by = 10), function(threshold) {
+    sum(barcode_data$XN_Prop <= threshold / 100)
+  }) %>%
+    tidyr::tibble(
+      Range = paste0("<=", seq(10, 90, by = 10), "%"),
+      Count = .
+    )
+
+  rounded_max <- ceiling(max(missingness_summary$Count) / 100) * 100
+
+  plot <- ggplot(missingness_summary, aes(x = factor(Range, levels = unique(Range)), y = Count)) +
+    geom_bar(stat = "identity", fill = "#008080", alpha = 0.7, width = 0.7) +
+    labs(
+      title = "Sample counts across 101 SNPs missingness thresholds before filtering",
+      x = "Missingness Threshold",
+      y = paste("Number of Samples (n=", nrow(barcode_data), ")")
+    ) +
+    scale_y_continuous(breaks = seq(0, rounded_max, 100), limits = c(0, rounded_max)) +
+    theme_classic() +
+    theme(
+      axis.text.x = element_text(face = "bold", size = 10),
+      axis.text.y = element_text(face = "bold", size = 10),
+      axis.title = element_text(face = "bold")
+    ) +
+    geom_text(aes(label = Count), vjust = -0.5, fontface = "bold")
+
+  barcode_data <- barcode_data %>%
+    dplyr::select(-XN_Count, -XN_Prop)
+
   # Transpose the dataframe so SNPs are rows and samples are columns
   barcode_data <- as.data.frame(t(barcode_data))
 
@@ -56,6 +91,24 @@ filter_snp_x_samples <- function(df, m_threshold) {
     dplyr::filter(XN_Prop <= m_threshold) %>%
     dplyr::select(-XN_Count, -XN_Prop)
 
-  # Return the filtered dataframe
-  return(barcode_data)
+  barcode_data$`Sample Internal ID` <- rownames(barcode_data)
+  barcode_data <- barcode_data %>%
+    dplyr::left_join(df %>%
+                       dplyr::select(`Sample Internal ID`, Location), by = "Sample Internal ID") %>%
+    dplyr::group_by(Location) %>%
+    dplyr::filter(dplyr::n() >= 10) %>%
+    dplyr::ungroup() %>%
+    as.data.frame()
+
+  rownames(barcode_data) <- barcode_data$`Sample Internal ID`
+  barcode_data <- barcode_data %>%
+    dplyr::select(-c(`Sample Internal ID`, Location))
+
+  cat("Number of SNPs after filtration:", ncol(barcode_data), "\n")
+  cat("Number of Samples after filtration:", nrow(barcode_data), "\n")
+
+  print(plot)
+
+  # call the data
+  barcode_data
 }

@@ -9,16 +9,11 @@ longitude_latitude <- readxl::read_excel(system.file("extdata",
 ))
 # Setup test data
 grc_file <- readxl::read_excel(system.file("extdata", "GRC_Sheet.xlsx", package = "grcMPB"))
-
-grc_file <-
-  gene_classifier(
-    df = grc_file,
-    drug_column = "Chloroquine",
-    save_output = FALSE
-  )
+grc_file <- pf_resistance_genotyper(df = grc_file)
 
 geo_data <-
   mapping_data(
+    df = grc_file,
     shapefile = gmb_shpfile,
     long_lat_data = longitude_latitude,
     location_col = "Location",

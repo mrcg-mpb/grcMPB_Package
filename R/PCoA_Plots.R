@@ -4,11 +4,15 @@
 #' merging sample metadata and generating pairwise PCoA plots.
 #'
 #' @param ibs_matrix Matrix of IBS scores for all sample pairs. Row and column names should match `Sample Internal ID`.
-#' @param df Final GRC data frame
+#' @param df Combined GRC data frame
 #' @param circle_size Numeric. Scales the circle size. Default: `4`.
 #' @param save_output Logical. If `TRUE`, saves the plot as a JPEG file in the output directory (default: `FALSE`).
 #' @param drug_col The name of the column representing the drug conditions (e.g., "Chloroquine" with
 #' categories like Resistant, Mixed Resistant, and Sensitive).
+#' @param plot_width Sets the width (in inches) of the saved plot. Default: `18`.
+#' @param plot_height Sets the height (in inches) of the saved plot. Default: `10`.
+#' @param plot_dpi Numeric. Sets the resolution (dots per inch) for the saved plot. Default: `600`.
+#' @param location_colors Named vector of colors for locations, typically from mapping_data$location_colors.
 #'
 #' @return A list containing the pairwise pcoa scatter plots, (PCoA1 vs PCoA2,PCoA1 vs PCoA3, and PCoA2 vs PCoA3).
 #'
@@ -20,7 +24,8 @@
 #'
 #' @export
 #'
-pcoa_plots <- function(ibs_matrix, df, circle_size = 4, save_output = FALSE, drug_col = NULL) {
+pcoa_plots <- function(ibs_matrix, df, circle_size = 4, save_output = FALSE, drug_col = NULL,
+                       plot_width = 18, plot_height = 10, plot_dpi = 600, location_colors) {
   if (!is.null(drug_col)) {
     checkmate::assert_names(names(df), must.include = drug_col)
   }
@@ -38,12 +43,13 @@ pcoa_plots <- function(ibs_matrix, df, circle_size = 4, save_output = FALSE, dru
   if (!is.null(drug_col)) {
     pcoa_data <- pcoa_data %>%
       dplyr::left_join(df %>%
-        dplyr::select(`Sample Internal ID`, !!rlang::sym(drug_col)), by = "Sample Internal ID") %>%
-      dplyr::rename(condition = !!rlang::sym(drug_col))
+                         dplyr::select(`Sample Internal ID`, !!rlang::sym(drug_col)), by = "Sample Internal ID") %>%
+      dplyr::rename(condition = !!rlang::sym(drug_col)) %>%
+      dplyr::filter(condition %in% c("mixed_resistant", "resistant", "sensitive"))
 
-    unique_conditions <- unique(pcoa_data$condition)
+    unique_conditions <- unique(pcoa_data$Condition)
+    unique_conditions <- unique_conditions[!unique_conditions %in% c("undetermined", "missing")]
   } else {
-    unique_conditions <- "All"
     pcoa_data$condition <- "All" # Create a single dummy condition if drug_col is NULL
   }
   rownames(pcoa_data) <- pcoa_data$`Sample Internal ID`
@@ -53,8 +59,16 @@ pcoa_plots <- function(ibs_matrix, df, circle_size = 4, save_output = FALSE, dru
   overall_range <- range(pcoa_data[, c("PCoA1", "PCoA2", "PCoA3")], na.rm = TRUE)
   overall_breaks <- round(seq(from = overall_range[1], to = overall_range[2], by = 0.1), 1)
 
-  # Define colors for unique locations
-  location_colors <- generate_location_colors(pcoa_data, "Location")
+  # Verify that all locations in pcoa_data have a color in location_colors
+  unique_locations <- unique(pcoa_data$Location)
+  missing_locations <- setdiff(unique_locations, names(location_colors))
+
+  if (length(missing_locations) > 0) {
+    warning(
+      "Some locations in meta_data are missing from location_colors: ",
+      paste(missing_locations, collapse = ", ")
+    )
+  }
 
   # Create an empty list to store the plots
   plot_list <- list()
@@ -74,19 +88,25 @@ pcoa_plots <- function(ibs_matrix, df, circle_size = 4, save_output = FALSE, dru
         y = glue::glue("{y_var} ({pcoa_percent[pair[2]]}%)"),
         title = paste("PCoA Plot")
       ) +
-      scale_fill_manual(name = "Location", values = location_colors, labels = names(location_colors)) +
+      scale_fill_manual(name = "Location", values = location_colors) +
       scale_x_continuous(limits = overall_range, breaks = overall_breaks) +
       theme_classic() +
       theme(
-        axis.text.x = element_text(size = 13),
-        axis.text.y = element_text(size = 13),
-        axis.title.x = element_text(size = 16),
-        axis.title.y = element_text(size = 16),
-        legend.title = element_text(size = 14),
-        legend.text = element_text(size = 12),
-        legend.key.size = unit(0.8, "cm"),
-        strip.text = element_text(face = "bold", size = 13),
-        panel.border = element_rect(color = "black", fill = NA, size = 0.5)
+        plot.title = element_text(size = 15, face = "bold"),
+        axis.text.x = element_text(size = 18, face = "bold"),
+        axis.text.y = element_text(size = 18, face = "bold"),
+        axis.title.x = element_text(size = 18, face = "bold", margin = margin(t = 10)),
+        axis.title.y = element_text(size = 18, face = "bold", margin = margin(r = 10)),
+        axis.ticks = element_line(linewidth = 1, linetype = "solid"),
+        axis.ticks.length = unit(0.15, "inch"),
+        axis.line = element_line(linewidth = 1, linetype = "solid"),
+        legend.title = element_text(size = 17, face = "bold"),
+        legend.text = element_text(size = 15),
+        legend.key.size = unit(1, "cm"),
+        legend.justification = "center",
+        legend.margin = margin(6, 6, 6, 50),
+        strip.text = element_text(size = 16, face = "bold"),
+        strip.background = element_rect(fill = "white", color = "black", linewidth = 2, linetype = "solid")
       ) +
       facet_wrap(~condition)
 
@@ -95,13 +115,18 @@ pcoa_plots <- function(ibs_matrix, df, circle_size = 4, save_output = FALSE, dru
       save_path <- file.path(get("Output_Dir", envir = .GlobalEnv), "IBS_PCoA_Plots")
       dir.create(save_path, showWarnings = FALSE)
 
+      if (!is.null(drug_col)) {
+        save_path <- file.path(get("Output_Dir", envir = .GlobalEnv), "IBS_PCoA_Plots", drug_col)
+        dir.create(save_path, showWarnings = FALSE)
+      }
+
       ggsave(
         path = save_path,
-        filename = paste(x_var, y_var, ".jpeg", sep = "_"),
+        filename = paste0(x_var, "_", y_var, ".jpeg"),
         plot = p,
-        dpi = 600,
-        width = 18,
-        height = 10
+        dpi = plot_dpi,
+        width = plot_width,
+        height = plot_height
       )
     }
 

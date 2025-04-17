@@ -6,6 +6,7 @@
 \usage{
 combine_grc_sheets(
   input_folder,
+  filter_pf = TRUE,
   country = NULL,
   save_output = TRUE,
   output_dir = NULL
@@ -13,6 +14,8 @@ combine_grc_sheets(
 }
 \arguments{
 \item{input_folder}{Path to the folder containing the GRC Excel files.}
+
+\item{filter_pf}{Logical. If \code{TRUE}the data is filtered for only \verb{pf(plasmoduim falciparum)}specie.}
 
 \item{country}{A character string representing the country for which specific data cleaning rules should be applied (optional).
 If "Gambia", location names will be re coded and some locations will be filtered out.}

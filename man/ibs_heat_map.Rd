@@ -8,25 +8,34 @@ ibs_heat_map(
   df,
   snp_data,
   ibs_matrix,
-  map_data,
   save_output = FALSE,
-  drug_col = NULL
+  drug_col = NULL,
+  plot_width = 16,
+  plot_height = 18,
+  plot_dpi = 600,
+  location_colors
 )
 }
 \arguments{
-\item{df}{Final GRC data frame.}
+\item{df}{Combined GRC data frame}
 
 \item{snp_data}{A data frame of SNP data, where each row represents a sample and each column corresponds to a
 genetic locus (e.g., "Pf3D7_"). The row names should correspond to the "Sample Internal ID".}
 
 \item{ibs_matrix}{Matrix of IBS scores for all sample pairs. Row and column names should match \verb{Sample Internal ID}.}
 
-\item{map_data}{A list containing the shape file and longitude-latitude data for mapping.}
-
 \item{save_output}{Logical. If \code{TRUE}, saves the plot as a JPEG file in the output directory (default: \code{FALSE}).}
 
 \item{drug_col}{The name of the column representing the drug conditions (e.g., "Chloroquine" with
 categories like Resistant, Mixed Resistant, and Sensitive).}
+
+\item{plot_width}{Sets the width (in inches) of the saved plot. Default: \code{16}.}
+
+\item{plot_height}{Sets the height (in inches) of the saved plot. Default: \code{18}.}
+
+\item{plot_dpi}{Numeric. Sets the resolution (dots per inch) for the saved plot. Default: \code{600}.}
+
+\item{location_colors}{Named vector of colors for locations, typically from mapping_data$location_colors.}
 }
 \value{
 A list containing the heat maps.

@@ -4,7 +4,7 @@
 #' up of the SNPs columns in th GRC Data. It reshapes the IBS matrix into a long format and annotates the data with metadata,
 #' including sample locations, drug conditions, location of the samples pairing, etc.
 #'
-#' @param df Final GRC data frame
+#' @param df Combined GRC data frame
 #' @param snp_data A data frame of SNP data, where each row represents a sample and each column corresponds to a
 #' genetic locus (e.g., "Pf3D7_"). The row names should correspond to the "Sample Internal ID".
 #' @param drug_col The name of the column representing the drug conditions (e.g., "Chloroquine" with
@@ -70,7 +70,8 @@ generate_ibs_data <- function(df, snp_data, drug_col = NULL) {
         ibs_matrix[k, i] <- ibs_value
       }
     }
-    return(ibs_matrix)
+    # call the ibs matrix
+    ibs_matrix
   }
 
   # Calculate the IBS matrix for the SNP data
@@ -82,17 +83,17 @@ generate_ibs_data <- function(df, snp_data, drug_col = NULL) {
   # Add metadata (locations, drug conditions, regions) for both samples
   ibs_data_frame <- ibs_data_frame %>%
     dplyr::left_join(df %>%
-      dplyr::select(`Sample Internal ID`, LS1 = Location), by = c("S1" = "Sample Internal ID")) %>%
+                       dplyr::select(`Sample Internal ID`, LS1 = Location), by = c("S1" = "Sample Internal ID")) %>%
     dplyr::left_join(df %>%
-      dplyr::select(`Sample Internal ID`, LS2 = Location), by = c("S2" = "Sample Internal ID"))
+                       dplyr::select(`Sample Internal ID`, LS2 = Location), by = c("S2" = "Sample Internal ID"))
 
-  # Add th drug col if it exist in the data set
+  # Add the drug col if it exist in the data set
   if (!is.null(drug_col)) {
     ibs_data_frame <- ibs_data_frame %>%
       dplyr::left_join(df %>%
-        dplyr::select(`Sample Internal ID`, DCS1 = drug_col), by = c("S1" = "Sample Internal ID")) %>%
+                         dplyr::select(`Sample Internal ID`, DCS1 = drug_col), by = c("S1" = "Sample Internal ID")) %>%
       dplyr::left_join(df %>%
-        dplyr::select(`Sample Internal ID`, DCS2 = drug_col), by = c("S2" = "Sample Internal ID"))
+                         dplyr::select(`Sample Internal ID`, DCS2 = drug_col), by = c("S2" = "Sample Internal ID"))
   }
 
   # plot the IBS scores on a histogram

@@ -13,7 +13,11 @@ ibs_data_dl(
   breaks = seq(0, 8, 2),
   curve_degree = 0.5,
   save_output = TRUE,
-  percentage_cutoff = 1
+  percentage_cutoff = 1,
+  drug_status = NULL,
+  plot_width = 17,
+  plot_height = 10,
+  plot_dpi = 600
 )
 }
 \arguments{
@@ -34,21 +38,42 @@ ibs_data_dl(
 \item{save_output}{Logical. If \code{TRUE}, saves the plot as a JPEG file in the output directory (default: \code{FALSE}).}
 
 \item{percentage_cutoff}{The minimum percentage to use for the proportion columns. Default: \code{1}.}
-}
-\value{
-A data frame and connectivity maps showing the proportion of samples pairing between different locations.
+
+\item{drug_status}{Optional. A character string specifying the drug status to analyze (e.g., "resistant", "sensitive", "mixed_resistant").
+If provided, additional statistics and maps will be generated specific to the given drug status.}
+
+\item{plot_width}{Sets the width (in inches) of the saved plot. Default: 17.}
+
+\item{plot_height}{Sets the height (in inches) of the saved plot. Default: 10.}
+
+\item{plot_dpi}{Numeric. Sets the resolution (dots per inch) for the saved plot. Default: 600.
+
+' @return A list containing:
+\itemize{
+\item \code{Connectivity_Map}: A list of ggplot objects showing connectivity maps for different percentage metrics.
+\item \code{Table}: A data frame with the following columns:
 \itemize{
 \item \code{LS1, LS2}: The locations in each pair.
 \item \code{mean_IBS}: The mean IBS score for the pair.
 \item \code{median_IBS}: The median IBS score for the pair.
 \item \code{TotalPairCount}: The total number of pairs between the two locations.
 \item \code{<ibs_threshold>_PairCount}: The total number of pairs with an IBS score greater than or equal to the threshold.
-\item \code{TotalPairCount_per}: The percentage of total pairs for each location pair.
-\item \code{<ibs_threshold>_PairCount.per}: The percentage of total pairs that meet or exceed the IBS threshold.
-\item \code{<ibs_threshold>_LocationPairCount.per}: The percentage of pairs for each location that meet or exceed the IBS threshold.
+\item \code{<ibs_threshold>_TotalPairCount.per}: The percentage of total pairs that meet or exceed the IBS threshold.
+\item \code{<ibs_threshold>_LocationPairCount.per}: The percentage of pairs for each location pair that meet or exceed the IBS threshold.
 \item \code{Lat1, Long1, Lat2, Long2}: The latitude and longitude for both locations in each pair.
 }
 }
+
+When \code{drug_status} is provided, additional columns are included:
+\itemize{
+\item \code{<drug_status>_PairCount}: The number of pairs with the same drug status.
+\item \code{<drug_status>_<ibs_threshold>_PairCount}: The number of pairs with the same drug status and >= the IBS threshold.
+\item \code{<drug_status>_PairCountLocation.per}: The percentage of pairs with the same drug status relative to the total pairs for each location pair.
+\item \code{<drug_status>_<ibs_threshold>_PairCountLocation.per}: The percentage of pairs with the same drug that exceed the IBS threshold relative to total pairs for each location pair.
+}}
+}
 \description{
-Summarize the IBS score by different location pairs.
+Summarize the IBS score by different location pairs and generates connectivity maps
+showing the proportion of samples pairing between different locations. When drug_status is provided,
+additional statistics and maps will be generated for the specified drug status.
 }

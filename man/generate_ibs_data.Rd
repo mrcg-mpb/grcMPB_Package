@@ -7,7 +7,7 @@
 generate_ibs_data(df, snp_data, drug_col = NULL)
 }
 \arguments{
-\item{df}{Final GRC data frame}
+\item{df}{Combined GRC data frame}
 
 \item{snp_data}{A data frame of SNP data, where each row represents a sample and each column corresponds to a
 genetic locus (e.g., "Pf3D7_"). The row names should correspond to the "Sample Internal ID".}

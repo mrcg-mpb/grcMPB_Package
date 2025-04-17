@@ -4,9 +4,11 @@
 \alias{mapping_data}
 \title{Mapping data helper function}
 \usage{
-mapping_data(shapefile, long_lat_data, location_col, long_col, lat_col)
+mapping_data(df, shapefile, long_lat_data, location_col, long_col, lat_col)
 }
 \arguments{
+\item{df}{Combined GRC data frame}
+
 \item{shapefile}{An \code{sf} object representing the shape file of the country.}
 
 \item{long_lat_data}{A dataframe containing the locations and their geographical coordinates (longitude and latitude).}
@@ -18,8 +20,10 @@ mapping_data(shapefile, long_lat_data, location_col, long_col, lat_col)
 \item{lat_col}{The name of the latitude column.}
 }
 \value{
-A list containing the \code{shapefile} and standardized \code{long_lat_data}.
+A list containing the \code{shapefile}, standardized \code{long_lat_data} with an added color column,
+and \code{location_colors} mapping for use in other visualizations.
 }
 \description{
 Standardizes the structure of location data for mapping functions by checking and renaming specified columns.
+The function also assigns colors to each location which can be used in subsequent plots.
 }

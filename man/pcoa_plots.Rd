@@ -9,13 +9,17 @@ pcoa_plots(
   df,
   circle_size = 4,
   save_output = FALSE,
-  drug_col = NULL
+  drug_col = NULL,
+  plot_width = 18,
+  plot_height = 10,
+  plot_dpi = 600,
+  location_colors
 )
 }
 \arguments{
 \item{ibs_matrix}{Matrix of IBS scores for all sample pairs. Row and column names should match \verb{Sample Internal ID}.}
 
-\item{df}{Final GRC data frame}
+\item{df}{Combined GRC data frame}
 
 \item{circle_size}{Numeric. Scales the circle size. Default: \code{4}.}
 
@@ -23,6 +27,14 @@ pcoa_plots(
 
 \item{drug_col}{The name of the column representing the drug conditions (e.g., "Chloroquine" with
 categories like Resistant, Mixed Resistant, and Sensitive).}
+
+\item{plot_width}{Sets the width (in inches) of the saved plot. Default: \code{18}.}
+
+\item{plot_height}{Sets the height (in inches) of the saved plot. Default: \code{10}.}
+
+\item{plot_dpi}{Numeric. Sets the resolution (dots per inch) for the saved plot. Default: \code{600}.}
+
+\item{location_colors}{Named vector of colors for locations, typically from mapping_data$location_colors.}
 }
 \value{
 A list containing the pairwise pcoa scatter plots, (PCoA1 vs PCoA2,PCoA1 vs PCoA3, and PCoA2 vs PCoA3).

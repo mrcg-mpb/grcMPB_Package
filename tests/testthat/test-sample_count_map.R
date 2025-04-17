@@ -1,24 +1,11 @@
 # Load sample data from package
-gmb_shpfile <- sf::st_read(system.file("extdata",
-  "geoBoundaries-GMB-ADM3_simplified.shp",
-  package = "grcMPB"
-))
-longitude_latitude <- readxl::read_excel(system.file("extdata",
-  "LongLat_data.xlsx",
-  package = "grcMPB"
-))
-# Setup test data
 grc_file <- readxl::read_excel(system.file("extdata", "GRC_Sheet.xlsx", package = "grcMPB"))
-
-grc_file <-
-  gene_classifier(
-    df = grc_file,
-    drug_column = "Chloroquine",
-    save_output = FALSE
-  )
+gmb_shpfile <- sf::st_read(system.file("extdata", "geoBoundaries-GMB-ADM3_simplified.shp", package = "grcMPB"))
+longitude_latitude <- readxl::read_excel(system.file("extdata", "LongLat_data.xlsx", package = "grcMPB"))
 
 geo_data <-
   mapping_data(
+    df = grc_file,
     shapefile = gmb_shpfile,
     long_lat_data = longitude_latitude,
     location_col = "Location",

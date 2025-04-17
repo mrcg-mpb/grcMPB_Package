@@ -4,7 +4,15 @@
 \alias{ibs_data_summary}
 \title{Manipulate the IBS Group data frames}
 \usage{
-ibs_data_summary(melted_ibs_data, ibs_th = 0.75)
+ibs_data_summary(melted_ibs_data, ibs_th = 0.75, drug_status = NULL)
+}
+\arguments{
+\item{melted_ibs_data}{A data frame containing the melted IBS matrix.}
+
+\item{ibs_th}{A numeric value between 0 and 1 representing the IBS threshold for pair counts. Default is 0.75.}
+
+\item{drug_status}{Optional. A character string specifying the drug status to filter by (e.g., "resistant").
+If provided, additional statistics will be calculated for pairs with matching drug status.}
 }
 \value{
 A data frame summarizing the IBS scores between location pairs. The output data frame contains the following columns:
@@ -14,16 +22,23 @@ A data frame summarizing the IBS scores between location pairs. The output data 
 \item \code{median_IBS}: The median IBS score for the pair.
 \item \code{TotalPairCount}: The total number of pairs between the two locations.
 \item \code{<ibs_threshold>_PairCount}: The number of pairs with an IBS score greater than or equal to the threshold.
-\item \code{TotalPairCount_per}: The percentage of total pairs in the data set.
 \item \code{<ibs_threshold>_PairCountGroup.per}: The percentage of total pairs that meet or exceed the IBS threshold.
-\item \code{<ibs_threshold>_LocationPairCount.per}: The percentage of pairs for each location that meet or exceed the IBS threshold.
+\item \code{<ibs_threshold>_LocationPairCount.per}: The percentage of pairs for each location pair that meet or exceed the IBS threshold.
 \item \code{Lat1, Long1, Lat2, Long2}: The latitude and longitude for both locations in each pair.
+}
+
+When \code{drug_status} is provided, additional columns are included:
+\itemize{
+\item \code{<drug_status>_PairCount}: The number of pairs with the same drug status.
+\item \code{<drug_status>_<ibs_threshold>_PairCount}: The number of pairs with the same drug status and >= the IBS threshold.
+\item \code{<drug_status>_<ibs_threshold>_PairCountLocation.per}: The percentage of pairs with the same drug that exceed the IBS threshold relative to total pairs for each location pair.
 }
 }
 \description{
 This function processes and summarizes a melted IBS matrix
 It calculates the mean and median IBS values for each location pair, counts the total number of pairs,
 and determines the number of pairs above a user-defined IBS threshold.
+When a drug status is provided, it also calculates statistics specifically for that drug status.
 The function also calculates various percentages and appends geographical coordinates for each location.
 }
 \keyword{internal}
